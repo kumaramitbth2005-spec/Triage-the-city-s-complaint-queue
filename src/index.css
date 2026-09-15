@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --color-navy-800: #1e293b;
+  --color-navy-900: #0f172a;
+  --color-accent-500: #3b82f6;
+  --color-accent-600: #2563eb;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-800 font-sans antialiased;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Hide scrollbar for filter badges row */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ensure responsive images everywhere */
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Safe area insets for notched mobile devices */
+@supports (padding: env(safe-area-inset-bottom)) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Focus-visible styles for keyboard accessibility */
+:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Better touch targets on mobile */
+@media (pointer: coarse) {
+  button, a, [role="button"], select, input[type="checkbox"], input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  select {
+    min-height: 44px;
+  }
+}
+
+/* Accessibility Settings Classes */
+html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+html.hide-focus *:focus-visible {
+  outline: none !important;
+}
+
+html.high-contrast {
+  filter: contrast(120%);
+}
+
+html.text-sm { font-size: 14px; }
+html.text-md { font-size: 16px; }
+html.text-lg { font-size: 18px; }
+html.text-xl { font-size: 20px; }
