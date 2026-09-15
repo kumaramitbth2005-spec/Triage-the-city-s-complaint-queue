@@ -8,7 +8,10 @@ const app = express();
 
 // Security Middlewares
 app.use(helmet());
-app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
+const allowedOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim()) 
+  : '*';
+app.use(cors({ origin: allowedOrigins }));
 
 // Rate Limiting
 const limiter = rateLimit({
