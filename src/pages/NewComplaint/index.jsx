@@ -1,8 +1,7 @@
-import React, { useState, useRef, useCallback } from 'react';
-import { Mic, Camera, MapPin, Loader2, ArrowRight, X, CheckCircle, Navigation } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Mic, Camera, MapPin, Loader2, ArrowRight, X, Navigation } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/Badge';
 import { VoiceRecorder } from './VoiceRecorder';
 import { AIGuidancePanel } from './AIGuidancePanel';
 import { AIAnalysisPanel } from './AIAnalysisPanel';
@@ -10,7 +9,6 @@ import { ComplaintReceipt } from './ComplaintReceipt';
 import { analyzeComplaint, detectMissingInfo } from '../../services/intake/aiTriageService';
 import { findDuplicates } from '../../services/intake/duplicateDetectionService';
 import { requestGPSLocation, reverseGeocode } from '../../services/intake/locationService';
-import { assembleComplaint } from '../../services/intake/complaintService';
 import { useAppContext } from '../../context/AppContext';
 
 const STEP = { INPUT: 'input', ANALYSING: 'analysing', REVIEW: 'review', DONE: 'done' };
@@ -118,18 +116,37 @@ export function NewComplaint() {
     }
   };
 
-  const handleConfirmSubmit = (overrides) => {
-    const fullComplaint = assembleComplaint({
-      originalText: complaintText,
-      voiceTranscript,
-      inputMethod,
-      analysis: { ...analysis, ...overrides },
-      photoAttachment: photo,
-      operatorOverrides: overrides,
-    });
-    addComplaint(fullComplaint);
-    setSubmittedComplaint(fullComplaint);
-    setStep(STEP.DONE);
+  const handleConfirmSubmit = async (overrides) => {
+    try {
+      const payload = {
+        originalText: complaintText,
+        voiceTranscript: voiceTranscript || null,
+        inputMethod,
+        language: analysis?.language || 'English',
+        location: analysis?.locality
+          ? {
+              locality: analysis.locality,
+              ward: overrides?.ward || analysis.ward || '',
+              addressText: complaintText,
+              source: analysis.locationSource || 'complaint_text',
+              confidence: (analysis.locationConfidence || 70) / 100,
+            }
+          : {},
+        attachments: photo ? [photo.name] : [],
+        // Pass AI pre-analysis hints to the backend
+        _aiHints: {
+          department: overrides?.department || analysis?.department,
+          category: overrides?.category || analysis?.category,
+          urgency: overrides?.urgency || analysis?.urgency,
+        },
+      };
+      const result = await addComplaint(payload);
+      setSubmittedComplaint(result || payload);
+      setStep(STEP.DONE);
+    } catch (err) {
+      setAnalyseError('Failed to submit complaint. Please try again.');
+      setStep(STEP.INPUT);
+    }
   };
 
   const handleReset = () => {

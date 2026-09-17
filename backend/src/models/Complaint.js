@@ -80,7 +80,7 @@ const complaintSchema = new mongoose.Schema({
   resolvedAt: { type: Date }
 }, { timestamps: true });
 
-complaintSchema.index({ complaintId: 1 });
+// Note: complaintId unique index is defined inline above; no need to repeat here
 complaintSchema.index({ status: 1 });
 complaintSchema.index({ department: 1 });
 complaintSchema.index({ category: 1 });

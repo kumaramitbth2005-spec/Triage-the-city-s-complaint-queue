@@ -3,6 +3,9 @@ const Notification = require('../models/Notification');
 // GET /api/notifications
 exports.getNotifications = async (req, res, next) => {
   try {
+    if (!req.user) {
+      return res.json({ success: true, data: [] });
+    }
     const notifications = await Notification.find({ userId: req.user._id })
       .sort({ createdAt: -1 })
       .limit(50)

@@ -73,11 +73,11 @@ exports.login = async (req, res, next) => {
   }
 };
 
-exports.logout = async (req, res, next) => {
+exports.logout = async (req, res, _next) => {
   res.json({ success: true, message: 'Logged out successfully' });
 };
 
-exports.refresh = async (req, res, next) => {
+exports.refresh = async (req, res, _next) => {
   // In a real app, verify refresh token and issue new JWT
   res.json({ success: true, message: 'Token refreshed (mocked)' });
 };

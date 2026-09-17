@@ -5,7 +5,7 @@ const activitySchema = new mongoose.Schema({
   action: { 
     type: String, 
     enum: [
-      'LOGIN', 'COMPLAINT_VIEWED', 'COMPLAINT_CREATED', 
+      'LOGIN', 'COMPLAINT_VIEWED', 'COMPLAINT_CREATED', 'COMPLAINT_DELETED',
       'TRIAGE_CONFIRMED', 'TRIAGE_EDITED', 'DUPLICATE_REVIEWED', 
       'CLUSTER_VIEWED', 'REPORT_VIEWED', 'SETTINGS_UPDATED', 'PROFILE_UPDATED'
     ],

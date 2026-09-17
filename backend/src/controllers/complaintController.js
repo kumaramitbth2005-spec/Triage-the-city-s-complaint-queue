@@ -131,3 +131,28 @@ exports.getTriageQueue = async (req, res, next) => {
     next(err);
   }
 };
+
+// DELETE /api/complaints/:id
+exports.deleteComplaint = async (req, res, next) => {
+  try {
+    const complaint = await Complaint.findOneAndDelete({
+      $or: [
+        { _id: req.params.id.match(/^[0-9a-fA-F]{24}$/) ? req.params.id : null },
+        { complaintId: req.params.id }
+      ]
+    });
+
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: 'Complaint not found' });
+    }
+
+    if (req.user) {
+      await Activity.create({ userId: req.user._id, action: 'COMPLAINT_DELETED', entityId: complaint._id });
+    }
+
+    res.json({ success: true, message: 'Complaint deleted successfully', complaintId: complaint.complaintId });
+  } catch (err) {
+    next(err);
+  }
+};
+

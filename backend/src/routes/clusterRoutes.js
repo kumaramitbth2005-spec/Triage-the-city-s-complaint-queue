@@ -1,10 +1,10 @@
 const express = require('express');
 const { getClusters, getClusterById } = require('../controllers/clusterController');
-const { protect } = require('../middleware/auth');
+const { optionalProtect } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/', protect, getClusters);
-router.get('/:id', protect, getClusterById);
+router.get('/', optionalProtect, getClusters);
+router.get('/:id', optionalProtect, getClusterById);
 
 module.exports = router;

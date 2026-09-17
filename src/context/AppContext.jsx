@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { complaintApi } from '../api/complaintApi';
 import { notificationApi } from '../api/notificationApi';
-import { mockComplaints } from '../data/mockComplaints';
 
 const AppContext = createContext();
 
@@ -37,10 +36,10 @@ export function AppProvider({ children }) {
       setComplaints(normalized);
       setUsingMockData(false);
     } catch (err) {
-      console.warn('Backend unavailable, using mock data:', err.message);
-      setComplaints(mockComplaints);
-      setUsingMockData(true);
-      setError('Backend unavailable — showing demo data.');
+      console.error('Failed to fetch complaints:', err.message);
+      setComplaints([]);
+      setUsingMockData(false);
+      setError('Backend unavailable. Please check your connection.');
     } finally {
       setLoading(false);
     }
@@ -62,14 +61,6 @@ export function AppProvider({ children }) {
   }, [fetchComplaints, fetchNotifications]);
 
   const updateComplaintStatus = async (id, newStatus, newUrgency, newCategory, newDepartment) => {
-    if (usingMockData) {
-      setComplaints(prev => prev.map(c =>
-        (c.id === id || c.complaintId === id)
-          ? { ...c, status: newStatus, urgency: newUrgency || c.urgency, category: newCategory || c.category, department: newDepartment || c.department }
-          : c
-      ));
-      return;
-    }
     try {
       await complaintApi.triage(id, {
         status: newStatus,
@@ -90,20 +81,6 @@ export function AppProvider({ children }) {
   };
 
   const addComplaint = async (complaintData) => {
-    if (usingMockData) {
-      const mockEntry = { ...complaintData, id: complaintData.id || `CMP-${Date.now()}` };
-      setComplaints(prev => [mockEntry, ...prev]);
-      setNotifications(prev => [{
-        id: Date.now(),
-        type: 'complaint',
-        title: 'New Complaint Received',
-        message: `${mockEntry.id} — ${mockEntry.category} in ${mockEntry.normalizedLocality || 'Unknown area'}`,
-        time: 'Just now',
-        read: false,
-        route: '/complaints',
-      }, ...prev]);
-      return mockEntry;
-    }
     try {
       const res = await complaintApi.create(complaintData);
       await fetchComplaints();
@@ -114,12 +91,22 @@ export function AppProvider({ children }) {
     }
   };
 
+  const deleteComplaint = async (id) => {
+    try {
+      await complaintApi.delete(id);
+      await fetchComplaints();
+    } catch (err) {
+      console.error('Failed to delete complaint', err);
+      throw err;
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       complaints, setComplaints,
       loading, error, usingMockData,
       isDataImported, setIsDataImported,
-      updateComplaintStatus, addComplaint,
+      updateComplaintStatus, addComplaint, deleteComplaint,
       notifications, setNotifications,
       fetchComplaints
     }}>
@@ -131,3 +118,4 @@ export function AppProvider({ children }) {
 export function useAppContext() {
   return useContext(AppContext);
 }
+

@@ -15,16 +15,16 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 const navItems = [
-  { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { name: 'Complaints', path: '/complaints', icon: Inbox },
-  { name: 'AI Triage', path: '/triage', icon: BrainCircuit },
-  { name: 'Duplicate Clusters', path: '/clusters', icon: Copy },
-  { name: 'Reports', path: '/reports', icon: BarChart3 },
-  { name: 'Data Import', path: '/import', icon: Database },
+  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+  { name: 'Complaints', path: '/dashboard/complaints', icon: Inbox },
+  { name: 'AI Triage', path: '/dashboard/triage', icon: BrainCircuit },
+  { name: 'Duplicate Clusters', path: '/dashboard/clusters', icon: Copy },
+  { name: 'Reports', path: '/dashboard/reports', icon: BarChart3 },
+  { name: 'Data Import', path: '/dashboard/import', icon: Database },
 ];
 
 const bottomNavItems = [
-  { name: 'Settings', path: '/settings', icon: SettingsIcon },
+  { name: 'Settings', path: '/dashboard/settings', icon: SettingsIcon },
 ];
 
 export function Sidebar({ isOpen, setIsOpen }) {
@@ -59,7 +59,7 @@ export function Sidebar({ isOpen, setIsOpen }) {
         {/* Report Complaint CTA */}
         <div className="px-4 pb-3">
           <button
-            onClick={() => { navigate('/new-complaint'); setIsOpen(false); }}
+            onClick={() => { navigate('/dashboard/new-complaint'); setIsOpen(false); }}
             className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-colors"
             aria-label="Report a new complaint"
           >

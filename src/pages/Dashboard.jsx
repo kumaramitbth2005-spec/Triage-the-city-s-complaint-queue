@@ -8,8 +8,33 @@ import { AlertTriangle, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function Dashboard() {
-  const { complaints, loading, error, usingMockData, fetchComplaints } = useAppContext();
+  // All hooks must be called at top level
+  const { complaints, loading, error, fetchComplaints, deleteComplaint } = useAppContext();
   const navigate = useNavigate();
+
+  const [complaintToDelete, setComplaintToDelete] = React.useState(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [deleteError, setDeleteError] = React.useState(null);
+
+  const handleDeleteClick = (e, id) => {
+    e.stopPropagation();
+    setComplaintToDelete(id);
+    setDeleteError(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!complaintToDelete) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteComplaint(complaintToDelete);
+      setComplaintToDelete(null);
+    } catch (err) {
+      setDeleteError('Unable to delete complaint. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const [emergingCluster, setEmergingCluster] = React.useState(null);
 
@@ -49,6 +74,29 @@ export function Dashboard() {
 
   return (
     <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
+      {/* Delete Confirmation Modal */}
+      {complaintToDelete && (
+        <div className="fixed inset-0 bg-slate-900/50 z-[100] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-sm rounded-xl p-6 shadow-xl">
+            <h3 className="font-semibold text-slate-800 text-lg mb-2">Delete Complaint?</h3>
+            <p className="text-sm text-slate-600 mb-4">Are you sure you want to permanently delete this complaint?</p>
+            {deleteError && (
+              <div className="mb-4 p-2 bg-red-50 text-red-600 text-xs rounded border border-red-100">
+                {deleteError}
+              </div>
+            )}
+            <div className="flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setComplaintToDelete(null)} disabled={isDeleting}>
+                Cancel
+              </Button>
+              <Button variant="danger" onClick={confirmDelete} disabled={isDeleting}>
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
@@ -86,7 +134,7 @@ export function Dashboard() {
                 {emergingCluster.complaintCount} similar complaints detected in {emergingCluster.ward ? `Ward ${emergingCluster.ward}` : ''} {emergingCluster.locality ? `(${emergingCluster.locality})` : ''} regarding {emergingCluster.category} during {emergingCluster.timeWindow || 'recent period'}.
               </p>
             </div>
-            <Button variant="outline" className="w-full sm:w-auto mt-2 sm:mt-0 border-amber-300 text-amber-700 hover:bg-amber-100 shrink-0 text-xs sm:text-sm py-1.5 sm:py-2" onClick={() => navigate('/clusters')}>
+            <Button variant="outline" className="w-full sm:w-auto mt-2 sm:mt-0 border-amber-300 text-amber-700 hover:bg-amber-100 shrink-0 text-xs sm:text-sm py-1.5 sm:py-2" onClick={() => navigate('/dashboard/clusters')}>
               View Cluster
             </Button>
           </CardContent>
@@ -98,7 +146,7 @@ export function Dashboard() {
         <Card className="xl:col-span-2 flex flex-col min-w-0 overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6 pb-4 border-b border-gray-100">
             <CardTitle className="text-lg sm:text-xl">Recent Complaints</CardTitle>
-            <Button variant="ghost" size="sm" className="text-blue-600 px-2 sm:px-4 text-xs sm:text-sm" onClick={() => navigate('/complaints')}>
+            <Button variant="ghost" size="sm" className="text-blue-600 px-2 sm:px-4 text-xs sm:text-sm" onClick={() => navigate('/dashboard/complaints')}>
               <span className="hidden sm:inline">View all</span>
               <span className="sm:hidden">All</span> 
               <ArrowRight size={16} className="ml-1 shrink-0"/>
@@ -131,9 +179,14 @@ export function Dashboard() {
                     <td className="px-4 sm:px-6 py-3 sm:py-4"><UrgencyBadge level={c.urgency} /></td>
                     <td className="px-4 sm:px-6 py-3 sm:py-4"><Badge>{c.status}</Badge></td>
                     <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
-                      <Button variant="outline" size="sm" className="opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap" onClick={() => navigate('/triage')}>
-                        Review
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" size="sm" className="opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap" onClick={(e) => { e.stopPropagation(); navigate('/dashboard/triage'); }}>
+                          Review
+                        </Button>
+                        <Button variant="danger" size="sm" className="opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap" onClick={(e) => handleDeleteClick(e, c.id)}>
+                          Delete
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}

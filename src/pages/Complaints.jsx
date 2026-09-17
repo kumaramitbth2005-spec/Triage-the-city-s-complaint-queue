@@ -7,20 +7,44 @@ import { Search, Filter, Mic, Image as ImageIcon, FileText, X } from 'lucide-rea
 import { useNavigate } from 'react-router-dom';
 
 export function Complaints() {
-  const { complaints } = useAppContext();
+  const [complaintToDelete, setComplaintToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+  
+  const { complaints, deleteComplaint } = useAppContext();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
   const filtered = complaints.filter(c => 
     c.originalText.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    c.id.toLowerCase().includes(searchTerm.toLowerCase())
+    (c.id && c.id.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const getIconForType = (type) => {
     if (type === 'Voice') return <Mic size={14} className="text-purple-500 shrink-0" />;
     if (type === 'Image') return <ImageIcon size={14} className="text-blue-500 shrink-0" />;
     return <FileText size={14} className="text-gray-500 shrink-0" />;
+  };
+
+  const handleDeleteClick = (e, id) => {
+    e.stopPropagation();
+    setComplaintToDelete(id);
+    setDeleteError(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!complaintToDelete) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteComplaint(complaintToDelete);
+      setComplaintToDelete(null);
+    } catch (err) {
+      setDeleteError('Unable to delete complaint. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -66,6 +90,29 @@ export function Complaints() {
                 <select className="w-full border-gray-200 rounded-lg text-sm"><option>All</option><option>Needs Review</option></select>
               </div>
               <Button className="w-full mt-4" onClick={() => setShowFilters(false)}>Apply Filters</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {complaintToDelete && (
+        <div className="fixed inset-0 bg-slate-900/50 z-[100] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-sm rounded-xl p-6 shadow-xl">
+            <h3 className="font-semibold text-slate-800 text-lg mb-2">Delete Complaint?</h3>
+            <p className="text-sm text-slate-600 mb-4">Are you sure you want to permanently delete this complaint?</p>
+            {deleteError && (
+              <div className="mb-4 p-2 bg-red-50 text-red-600 text-xs rounded border border-red-100">
+                {deleteError}
+              </div>
+            )}
+            <div className="flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setComplaintToDelete(null)} disabled={isDeleting}>
+                Cancel
+              </Button>
+              <Button variant="danger" onClick={confirmDelete} disabled={isDeleting}>
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </Button>
             </div>
           </div>
         </div>
@@ -123,9 +170,14 @@ export function Complaints() {
                     Confidence: <span className="font-semibold text-blue-600">{c.confidence}%</span>
                   </div>
                 </div>
-                <Button className="w-auto md:w-full text-xs sm:text-sm px-3 py-1.5 sm:py-2 h-8 sm:h-10" onClick={() => navigate('/triage')}>
-                  Review
-                </Button>
+                <div className="flex gap-2 w-auto md:w-full">
+                  <Button className="flex-1 text-xs sm:text-sm px-3 py-1.5 sm:py-2 h-8 sm:h-10" onClick={(e) => { e.stopPropagation(); navigate('/dashboard/triage'); }}>
+                    Review
+                  </Button>
+                  <Button variant="danger" className="flex-1 text-xs sm:text-sm px-3 py-1.5 sm:py-2 h-8 sm:h-10" onClick={(e) => handleDeleteClick(e, c.id)}>
+                    Delete
+                  </Button>
+                </div>
               </div>
 
             </CardContent>

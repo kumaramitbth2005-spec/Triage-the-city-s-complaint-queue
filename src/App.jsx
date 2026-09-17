@@ -13,6 +13,7 @@ import { SettingsProvider } from './context/SettingsContext';
 // New Settings route import (lazy load optional)
 import { SettingsLayout } from './pages/Settings/SettingsLayout';
 import { NewComplaint } from './pages/NewComplaint';
+import { LandingPage } from './pages/LandingPage';
 
 export default function App() {
   return (
@@ -20,7 +21,8 @@ export default function App() {
       <AppProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Layout />}>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/dashboard" element={<Layout />}>
               <Route index element={<Dashboard />} />
               <Route path="complaints" element={<Complaints />} />
               <Route path="triage" element={<AITriage />} />
@@ -29,8 +31,9 @@ export default function App() {
               <Route path="import" element={<DataImport />} />
               <Route path="settings/*" element={<SettingsLayout />} />
               <Route path="new-complaint" element={<NewComplaint />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Route>
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </AppProvider>
