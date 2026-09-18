@@ -2,8 +2,14 @@ const mongoose = require('mongoose');
 
 const complaintSchema = new mongoose.Schema({
   complaintId: { type: String, required: true, unique: true },
+  title: { type: String },
   originalText: { type: String },
   normalizedText: { type: String },
+  citizenInfo: {
+    name: String,
+    phone: String,
+    email: String
+  },
   
   inputMethod: { 
     type: String, 

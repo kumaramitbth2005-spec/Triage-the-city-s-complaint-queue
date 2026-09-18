@@ -1,106 +1,287 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { useSettings } from '../../context/SettingsContext';
+import { UserCircle, Edit3, Save, X, CheckCircle2, AlertCircle, Loader2, Camera } from 'lucide-react';
 
 export function ProfileSettings() {
   const { state, dispatch } = useSettings();
-  const [name, setName] = useState(state.profile.name);
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const handleSave = () => {
-    dispatch({ type: 'UPDATE_PROFILE', payload: { name } });
-    // show toast in a real app
+  const [formData, setFormData] = useState({
+    name: '',
+    username: '',
+    email: '',
+    phone: '',
+    bio: '',
+    zone: '',
+    department: '',
+    avatar: '',
+  });
+
+  // Sync with context
+  useEffect(() => {
+    if (state.profile) {
+      setFormData({
+        name: state.profile.name || '',
+        username: state.profile.username || 'operator_1',
+        email: state.profile.email || 'operator@municipal.gov',
+        phone: state.profile.phone || '',
+        bio: state.profile.bio || '',
+        zone: state.profile.zone || 'Zone 1 - Central',
+        department: state.profile.department || 'Public Works & Sanitation',
+        avatar: state.profile.avatar || '',
+      });
+    }
+  }, [state.profile]);
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setErrorMessage('');
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setErrorMessage('');
+    // Reset to context state
+    if (state.profile) {
+      setFormData({
+        name: state.profile.name || '',
+        username: state.profile.username || 'operator_1',
+        email: state.profile.email || 'operator@municipal.gov',
+        phone: state.profile.phone || '',
+        bio: state.profile.bio || '',
+        zone: state.profile.zone || 'Zone 1 - Central',
+        department: state.profile.department || 'Public Works & Sanitation',
+        avatar: state.profile.avatar || '',
+      });
+    }
+  };
+
+  const handleSave = async () => {
+    // Validation
+    if (!formData.name.trim()) {
+      setErrorMessage('Full name cannot be empty.');
+      return;
+    }
+    if (formData.phone && formData.phone.length > 20) {
+      setErrorMessage('Phone number cannot exceed 20 characters.');
+      return;
+    }
+    if (formData.bio && formData.bio.length > 500) {
+      setErrorMessage('Bio cannot exceed 500 characters.');
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage('');
+
+    try {
+      await dispatch({
+        type: 'UPDATE_PROFILE',
+        payload: {
+          name: formData.name.trim(),
+          username: formData.username.trim(),
+          phone: formData.phone.trim(),
+          bio: formData.bio.trim(),
+          zone: formData.zone,
+          avatar: formData.avatar,
+        }
+      });
+
+      setIsEditing(false);
+      setSuccessMessage('Profile updated successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err) {
+      setErrorMessage('Failed to update profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
-        <p className="text-gray-500 mt-1">Manage your public information and avatar.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">User Profile</h1>
+          <p className="text-gray-500 mt-1">Manage your account information, public profile, and identity.</p>
+        </div>
+        {!isEditing ? (
+          <Button onClick={() => setIsEditing(true)} className="gap-2 self-start sm:self-auto">
+            <Edit3 size={16} /> Edit Profile
+          </Button>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleCancel} disabled={loading} className="gap-1.5">
+              <X size={15} /> Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={loading} className="gap-1.5 bg-blue-600 hover:bg-blue-700">
+              {loading ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+              Save Changes
+            </Button>
+          </div>
+        )}
       </div>
+
+      {successMessage && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-sm flex items-center gap-2 animate-in fade-in">
+          <CheckCircle2 size={18} className="text-emerald-600" />
+          <span>{successMessage}</span>
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-800 text-sm flex items-center gap-2 animate-in fade-in">
+          <AlertCircle size={18} className="text-red-600" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
 
       <Card>
         <CardHeader>
           <CardTitle>Personal Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center gap-6">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-2xl font-bold border-2 border-white shadow-sm overflow-hidden">
-                {state.profile.avatar ? (
-                  <img src={state.profile.avatar} alt="Avatar" className="w-full h-full object-cover" />
+          {/* Avatar Section */}
+          <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-gray-100">
+            <div className="relative group">
+              <div className="w-24 h-24 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-3xl font-bold border-4 border-white shadow-md overflow-hidden">
+                {formData.avatar ? (
+                  <img src={formData.avatar} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
-                  <span>{name.charAt(0)}</span>
+                  <span>{formData.name ? formData.name.charAt(0).toUpperCase() : 'U'}</span>
                 )}
               </div>
-              <button className="absolute bottom-0 right-0 bg-white p-1.5 rounded-full border border-gray-200 shadow-sm text-gray-600 hover:text-blue-600 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
-              </button>
+              {isEditing && (
+                <div className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full shadow-md border-2 border-white hover:bg-blue-700 cursor-pointer">
+                  <Camera size={14} />
+                </div>
+              )}
             </div>
-            <div>
-              <div className="text-sm text-gray-500 mb-1">Recommended size: 256x256px</div>
-              <div className="flex gap-2">
-                <Button variant="outline" className="text-xs">Upload new</Button>
-                <Button variant="outline" className="text-xs text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300">Remove</Button>
-              </div>
+
+            <div className="flex-1 text-center sm:text-left space-y-1">
+              <div className="text-base font-semibold text-gray-900">{formData.name || 'User'}</div>
+              <div className="text-xs text-gray-500">{state.profile.role || 'Operator'} • {formData.email}</div>
+              {isEditing && (
+                <div className="pt-2">
+                  <input 
+                    type="url"
+                    placeholder="Paste image URL for avatar"
+                    value={formData.avatar}
+                    onChange={(e) => handleChange('avatar', e.target.value)}
+                    className="w-full max-w-md text-xs px-3 py-1.5 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Form Fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">Full Name</label>
+              <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider">Full Name</label>
               <input 
                 type="text" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                disabled={!isEditing}
+                value={formData.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                className={`w-full rounded-lg px-3.5 py-2.5 text-sm transition-all ${
+                  isEditing 
+                    ? 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white shadow-xs' 
+                    : 'border-gray-200 bg-gray-50/70 text-gray-700 cursor-not-allowed'
+                }`}
               />
             </div>
-            
+
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">Email Address (Read-only)</label>
+              <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider">Username</label>
+              <input 
+                type="text" 
+                disabled={!isEditing}
+                value={formData.username}
+                onChange={(e) => handleChange('username', e.target.value)}
+                className={`w-full rounded-lg px-3.5 py-2.5 text-sm transition-all ${
+                  isEditing 
+                    ? 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white shadow-xs' 
+                    : 'border-gray-200 bg-gray-50/70 text-gray-700 cursor-not-allowed'
+                }`}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                Email Address <span className="text-[10px] text-gray-400 font-normal lowercase">(read-only)</span>
+              </label>
               <input 
                 type="email" 
-                value="operator@municipal.gov"
                 disabled
-                className="w-full rounded-md border-gray-200 bg-gray-50 text-gray-500 shadow-sm sm:text-sm"
+                value={formData.email}
+                className="w-full rounded-lg px-3.5 py-2.5 text-sm border-gray-200 bg-gray-50/70 text-gray-500 cursor-not-allowed"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">Role (Read-only)</label>
+              <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider">Phone Number</label>
               <input 
-                type="text" 
-                value={state.profile.role}
-                disabled
-                className="w-full rounded-md border-gray-200 bg-gray-50 text-gray-500 shadow-sm sm:text-sm"
+                type="tel" 
+                disabled={!isEditing}
+                placeholder="+91 00000 00000"
+                value={formData.phone}
+                onChange={(e) => handleChange('phone', e.target.value)}
+                className={`w-full rounded-lg px-3.5 py-2.5 text-sm transition-all ${
+                  isEditing 
+                    ? 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white shadow-xs' 
+                    : 'border-gray-200 bg-gray-50/70 text-gray-700 cursor-not-allowed'
+                }`}
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">Assigned Zone (Read-only)</label>
+              <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider">Assigned Zone / Ward</label>
               <input 
                 type="text" 
-                value={state.profile.zone}
+                disabled={!isEditing}
+                value={formData.zone}
+                onChange={(e) => handleChange('zone', e.target.value)}
+                className={`w-full rounded-lg px-3.5 py-2.5 text-sm transition-all ${
+                  isEditing 
+                    ? 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white shadow-xs' 
+                    : 'border-gray-200 bg-gray-50/70 text-gray-700 cursor-not-allowed'
+                }`}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                System Role <span className="text-[10px] text-gray-400 font-normal lowercase">(read-only)</span>
+              </label>
+              <input 
+                type="text" 
                 disabled
-                className="w-full rounded-md border-gray-200 bg-gray-50 text-gray-500 shadow-sm sm:text-sm"
+                value={state.profile.role || 'Complaint Desk Operator'}
+                className="w-full rounded-lg px-3.5 py-2.5 text-sm border-gray-200 bg-gray-50/70 text-gray-500 cursor-not-allowed"
+              />
+            </div>
+
+            <div className="md:col-span-2 space-y-1.5">
+              <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider">Bio & Notes</label>
+              <textarea 
+                rows={3}
+                disabled={!isEditing}
+                placeholder="Brief description about your role or ward jurisdiction..."
+                value={formData.bio}
+                onChange={(e) => handleChange('bio', e.target.value)}
+                className={`w-full rounded-lg px-3.5 py-2.5 text-sm transition-all resize-none ${
+                  isEditing 
+                    ? 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white shadow-xs' 
+                    : 'border-gray-200 bg-gray-50/70 text-gray-700 cursor-not-allowed'
+                }`}
               />
             </div>
           </div>
-
-          <div className="pt-4 border-t border-gray-100 flex justify-end">
-            <Button onClick={handleSave}>Save Changes</Button>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Card className="border-red-200">
-        <CardHeader>
-          <CardTitle className="text-red-600">Danger Zone</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-600 mb-4">You can request to have your account deactivated by contacting the system administrator.</p>
-          <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300">Request Deactivation</Button>
         </CardContent>
       </Card>
     </div>

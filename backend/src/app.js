@@ -7,11 +7,21 @@ const mongoose = require('mongoose');
 const app = express();
 
 // Security Middlewares
-app.use(helmet());
 const allowedOrigins = process.env.CORS_ORIGIN 
   ? process.env.CORS_ORIGIN.split(',').map(o => o.trim()) 
   : '*';
-app.use(cors({ origin: allowedOrigins }));
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Blocked by CORS'));
+  },
+  credentials: true
+}));
 
 // Rate Limiting
 const limiter = rateLimit({
@@ -45,9 +55,11 @@ app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/search', require('./routes/searchRoutes'));
 app.use('/api/settings', require('./routes/settingsRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
+app.use('/api/user/profile', require('./routes/profileRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/import', require('./routes/importRoutes'));
 app.use('/api/activities', require('./routes/activityRoutes'));
+app.use('/api/activity', require('./routes/activityRoutes'));
 
 // 404 handler
 app.use((req, res) => {

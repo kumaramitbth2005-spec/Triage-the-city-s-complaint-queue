@@ -3,14 +3,11 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { SettingsSidebar } from './SettingsSidebar';
 import { Menu } from 'lucide-react';
 
-// Lazy loading category components or importing them directly
-// For now, importing them directly since they are small
 import { GeneralSettings } from './GeneralSettings';
-import { AppearanceSettings } from './AppearanceSettings';
+import { ThemeSettings } from './ThemeSettings';
 import { LanguageSettings } from './LanguageSettings';
 import { NotificationSettings } from './NotificationSettings';
 import { ProfileSettings } from './ProfileSettings';
-import { SearchSettings } from './SearchSettings';
 import { PrivacySettings } from './PrivacySettings';
 import { AccessibilitySettings } from './AccessibilitySettings';
 import { ActivityHistory } from './ActivityHistory';
@@ -20,7 +17,7 @@ export function SettingsLayout() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-full bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden relative">
+    <div className="flex h-full bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden relative min-h-[calc(100vh-8rem)]">
       <SettingsSidebar 
         isMobileOpen={isMobileSidebarOpen} 
         setIsMobileOpen={setIsMobileSidebarOpen} 
@@ -28,30 +25,32 @@ export function SettingsLayout() {
       
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         {/* Mobile Header for Settings Sidebar */}
-        <div className="lg:hidden p-4 border-b border-gray-200 flex items-center bg-gray-50">
+        <div className="lg:hidden p-3.5 border-b border-gray-200 flex items-center justify-between bg-gray-50/80">
           <button 
             onClick={() => setIsMobileSidebarOpen(true)}
-            className="mr-3 p-1.5 rounded-md text-gray-500 hover:bg-gray-200"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-gray-700 bg-white border border-gray-200 shadow-xs hover:bg-gray-100 text-xs font-semibold"
           >
-            <Menu size={20} />
+            <Menu size={16} />
+            <span>Settings Menu</span>
           </button>
-          <span className="font-semibold text-gray-700">Settings Menu</span>
+          <span className="text-xs text-gray-500 font-medium">Preferences</span>
         </div>
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-slate-50">
-          <div className="max-w-4xl mx-auto">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-slate-50/60">
+          <div className="max-w-4xl mx-auto pb-10">
             <Routes>
-              <Route path="" element={<GeneralSettings />} />
-              <Route path="appearance" element={<AppearanceSettings />} />
+              <Route index element={<Navigate to="general" replace />} />
+              <Route path="general" element={<GeneralSettings />} />
+              <Route path="theme" element={<ThemeSettings />} />
+              <Route path="appearance" element={<Navigate to="../theme" replace />} />
               <Route path="language" element={<LanguageSettings />} />
               <Route path="notifications" element={<NotificationSettings />} />
               <Route path="profile" element={<ProfileSettings />} />
-              <Route path="search" element={<SearchSettings />} />
               <Route path="privacy" element={<PrivacySettings />} />
               <Route path="accessibility" element={<AccessibilitySettings />} />
               <Route path="activity" element={<ActivityHistory />} />
               <Route path="about" element={<AboutSettings />} />
-              <Route path="*" element={<Navigate to="" replace />} />
+              <Route path="*" element={<Navigate to="general" replace />} />
             </Routes>
           </div>
         </main>

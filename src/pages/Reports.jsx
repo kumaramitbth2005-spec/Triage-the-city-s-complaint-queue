@@ -44,6 +44,21 @@ export function Reports() {
     })();
   }, []);
 
+  const handleExportCSV = () => {
+    const deptPerformance = reportData?.deptPerformance || FALLBACK.deptPerformance;
+    const headers = ['Department', 'Received', 'Resolved', 'Median Time', 'Repeat Complaints'];
+    const rows = deptPerformance.map(d => [d.dept, d.received, d.resolved, d.time, d.repeat]);
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `department_report_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const deptPerformance = reportData?.deptPerformance || FALLBACK.deptPerformance;
   const trendData = reportData?.trendData || FALLBACK.trendData;
   const hotspots = reportData?.hotspots || FALLBACK.hotspots;
@@ -67,7 +82,7 @@ export function Reports() {
             <CalendarIcon size={14} className="mr-1.5 shrink-0 sm:w-4 sm:h-4 sm:mr-2" />
             <span className="truncate">{dateRange}</span>
           </Button>
-          <Button className="text-xs sm:text-sm h-9 sm:h-10 justify-center">
+          <Button onClick={handleExportCSV} className="text-xs sm:text-sm h-9 sm:h-10 justify-center">
             <Download size={14} className="mr-1.5 shrink-0 sm:w-4 sm:h-4 sm:mr-2" />
             Export Digest
           </Button>

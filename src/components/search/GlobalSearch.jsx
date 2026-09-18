@@ -70,7 +70,10 @@ export function GlobalSearch() {
     }
     setIsOpen(false);
     setQuery('');
-    navigate(item.route);
+    const targetRoute = item.route.startsWith('/dashboard') 
+      ? item.route 
+      : (item.route.startsWith('/') ? `/dashboard${item.route}` : `/dashboard/${item.route}`);
+    navigate(targetRoute);
   };
 
   const hasResults = Object.keys(results).length > 0;
@@ -86,6 +89,24 @@ export function GlobalSearch() {
           onChange={(e) => {
             setQuery(e.target.value);
             setIsOpen(true);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (hasResults && isOpen) {
+                const firstCategory = Object.keys(results)[0];
+                if (results[firstCategory] && results[firstCategory].length > 0) {
+                  handleSelect(results[firstCategory][0]);
+                  return;
+                }
+              }
+              if (query.trim()) {
+                setIsOpen(false);
+                navigate(`/dashboard/complaints?q=${encodeURIComponent(query.trim())}`);
+              }
+            } else if (e.key === 'Escape') {
+              setIsOpen(false);
+            }
           }}
           onFocus={() => setIsOpen(true)}
           placeholder="Search complaints, wards... (Ctrl+K)" 

@@ -126,7 +126,7 @@ export function Complaints() {
 
       <div className="grid grid-cols-1 gap-4">
         {filtered.map(c => (
-          <Card key={c.id} className="hover:shadow-md transition-shadow min-w-0">
+          <Card key={c.id} className="hover:shadow-md transition-shadow min-w-0 cursor-pointer" onClick={() => navigate(`/dashboard/complaints/${c.id}`)}>
             <CardContent className="p-4 sm:p-5 flex flex-col md:flex-row gap-4 sm:gap-6">
               
               <div className="flex-1 space-y-3 min-w-0">

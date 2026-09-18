@@ -103,10 +103,75 @@ html.hide-focus *:focus-visible {
 }
 
 html.high-contrast {
-  filter: contrast(120%);
+  filter: contrast(130%);
 }
 
 html.text-sm { font-size: 14px; }
 html.text-md { font-size: 16px; }
 html.text-lg { font-size: 18px; }
 html.text-xl { font-size: 20px; }
+
+/* Compact Mode */
+html.compact-mode {
+  --compact-padding-multiplier: 0.75;
+}
+html.compact-mode .p-6 { padding: 1rem !important; }
+html.compact-mode .p-4 { padding: 0.65rem !important; }
+html.compact-mode .p-8 { padding: 1.25rem !important; }
+html.compact-mode .py-4 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+html.compact-mode .py-3 { padding-top: 0.35rem !important; padding-bottom: 0.35rem !important; }
+html.compact-mode .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.85rem !important; }
+html.compact-mode .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.6rem !important; }
+html.compact-mode .gap-6 { gap: 0.75rem !important; }
+html.compact-mode .gap-4 { gap: 0.5rem !important; }
+
+/* Global Dark Mode Support */
+html.dark body {
+  background-color: #0f172a !important;
+  color: #f1f5f9 !important;
+}
+html.dark .bg-white {
+  background-color: #1e293b !important;
+  color: #f1f5f9 !important;
+}
+html.dark .bg-slate-50, html.dark .bg-gray-50 {
+  background-color: #0f172a !important;
+  color: #f1f5f9 !important;
+}
+html.dark .bg-gray-100 {
+  background-color: #334155 !important;
+}
+html.dark .border-gray-200, html.dark .border-gray-100, html.dark .border-slate-200 {
+  border-color: #334155 !important;
+}
+html.dark .text-gray-900, html.dark .text-slate-800, html.dark .text-slate-900 {
+  color: #f8fafc !important;
+}
+html.dark .text-gray-700, html.dark .text-slate-700 {
+  color: #cbd5e1 !important;
+}
+html.dark .text-gray-600, html.dark .text-gray-500, html.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+html.dark input, html.dark select, html.dark textarea {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #475569 !important;
+}
+html.dark input:disabled, html.dark select:disabled {
+  background-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+html.dark table thead {
+  background-color: #1e293b !important;
+  color: #cbd5e1 !important;
+}
+html.dark table tbody tr {
+  border-color: #334155 !important;
+}
+html.dark table tbody tr:hover {
+  background-color: #334155/50 !important;
+}
+html.dark .shadow-sm, html.dark .shadow-md, html.dark .shadow-xl {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4) !important;
+}

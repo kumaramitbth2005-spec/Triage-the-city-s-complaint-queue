@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Mic, Square, X, RotateCcw, Loader2 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { speechToTextService } from '../../services/intake/speechToTextService';
+import { useSettings } from '../../context/SettingsContext';
 import { cn } from '../../lib/utils';
 
 const STATES = { IDLE: 'idle', RECORDING: 'recording', TRANSCRIBING: 'transcribing', DONE: 'done', ERROR: 'error' };
 
 export function VoiceRecorder({ onTranscript, onClose }) {
+  const { state: settingsState } = useSettings();
   const [state, setState] = useState(STATES.IDLE);
   const [interimText, setInterimText] = useState('');
   const [finalText, setFinalText] = useState('');
@@ -39,10 +41,10 @@ export function VoiceRecorder({ onTranscript, onClose }) {
     startTimer();
     try {
       await speechToTextService.startRecording(
-        'en-IN',
+        settingsState.language || 'en',
         (interim) => setInterimText(interim),
         (final) => {
-          setFinalText(prev => prev + ' ' + final);
+          setFinalText(prev => prev ? prev + ' ' + final : final);
           setInterimText('');
         }
       );
@@ -51,8 +53,8 @@ export function VoiceRecorder({ onTranscript, onClose }) {
       const msgMap = {
         'PERMISSION_DENIED': 'Microphone permission was denied. Please allow microphone access in your browser settings.',
         'MICROPHONE_UNAVAILABLE': 'No microphone detected on this device.',
-        'SPEECH_API_UNAVAILABLE': 'Voice input is not supported in this browser. Please use Chrome.',
-        'NO_SPEECH_DETECTED': 'No speech was detected. Please try again.',
+        'SPEECH_API_UNAVAILABLE': 'Voice input is not supported on this browser or device.',
+        'NO_SPEECH_DETECTED': 'No speech was detected. Please speak clearly into your microphone.',
       };
       setErrorMsg(msgMap[e.message] || 'Voice recording failed. Please try again.');
       setState(STATES.ERROR);
@@ -104,7 +106,7 @@ export function VoiceRecorder({ onTranscript, onClose }) {
           {!isSupported && (
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
               <p className="font-semibold mb-1">Voice input is unavailable</p>
-              <p>Your browser does not support speech recognition. Please use Google Chrome, or type your complaint instead.</p>
+              <p>Your browser or device does not support audio recording. Please type your complaint instead.</p>
             </div>
           )}
 

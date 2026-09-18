@@ -20,7 +20,7 @@ export function AITriage() {
         <CheckCircle size={48} className="text-emerald-500 mb-4" />
         <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Queue Cleared!</h2>
         <p className="text-sm sm:text-base text-slate-500 mt-2">All complaints have been triaged.</p>
-        <Button className="mt-6 w-full sm:w-auto" onClick={() => navigate('/complaints')}>Back to All Complaints</Button>
+        <Button className="mt-6 w-full sm:w-auto" onClick={() => navigate('/dashboard/complaints')}>Back to All Complaints</Button>
       </div>
     );
   }
@@ -160,7 +160,7 @@ export function AITriage() {
                   Possible Duplicate
                 </div>
                 <div className="text-[10px] sm:text-sm text-amber-700 leading-relaxed">
-                  Matches existing complaint <a href="#" className="underline font-medium break-all">#{c.linkedComplaint}</a> with 92% similarity.
+                  Matches existing complaint <button type="button" onClick={() => navigate('/dashboard/clusters')} className="underline font-medium break-all text-amber-900 hover:text-amber-950">#{c.linkedComplaint}</button> with 92% similarity.
                 </div>
               </div>
             )}

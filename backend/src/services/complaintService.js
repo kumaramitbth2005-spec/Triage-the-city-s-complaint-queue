@@ -24,14 +24,19 @@ async function createComplaint(data, userId) {
   // 2. Build initial complaint
   const complaintData = {
     complaintId,
+    title: data.title || (data.originalText || data.text || '').slice(0, 60),
     originalText: data.originalText || data.text,
     normalizedText: (data.originalText || data.text || '').trim(),
+    citizenInfo: data.citizenInfo || (data.citizenName ? { name: data.citizenName, phone: data.citizenPhone, email: data.citizenEmail } : undefined),
     inputMethod: data.inputMethod || 'text',
     originalLanguage: data.language || 'English',
     detectedLanguage: data.language || 'English',
     voiceTranscript: data.voiceTranscript || null,
     attachments: data.attachments || [],
     location: data.location || {},
+    category: data.category || undefined,
+    department: data.department || undefined,
+    urgency: data.urgency || undefined,
     status: 'RECEIVED',
     statusHistory: [{ status: 'RECEIVED', changedBy: userId, timestamp: new Date() }],
     createdBy: userId

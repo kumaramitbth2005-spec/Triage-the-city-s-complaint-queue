@@ -48,21 +48,21 @@ export function ProfileMenu() {
           
           <div className="py-2">
             <button 
-              onClick={() => handleNavigate('/settings/profile')}
+              onClick={() => handleNavigate('/dashboard/settings/profile')}
               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3 transition-colors"
             >
               <UserCircle size={16} className="text-gray-400" />
               My Profile
             </button>
             <button 
-              onClick={() => handleNavigate('/settings')}
+              onClick={() => handleNavigate('/dashboard/settings')}
               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3 transition-colors"
             >
               <Settings size={16} className="text-gray-400" />
               Settings
             </button>
             <button 
-              onClick={() => handleNavigate('/settings/activity')}
+              onClick={() => handleNavigate('/dashboard/settings/activity')}
               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3 transition-colors"
             >
               <History size={16} className="text-gray-400" />
@@ -72,7 +72,12 @@ export function ProfileMenu() {
           
           <div className="py-2 border-t border-gray-100">
             <button 
-              onClick={() => { setIsOpen(false); alert('Logged out successfully (Mock)'); }}
+              onClick={() => { 
+                setIsOpen(false); 
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('auth_user');
+                navigate('/');
+              }}
               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
             >
               <LogOut size={16} />

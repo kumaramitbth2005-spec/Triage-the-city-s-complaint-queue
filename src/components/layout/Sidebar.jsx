@@ -10,7 +10,11 @@ import {
   Database,
   X,
   Settings as SettingsIcon,
-  PlusCircle
+  PlusCircle,
+  Map,
+  LineChart,
+  Building2,
+  Users
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,8 +23,15 @@ const navItems = [
   { name: 'Complaints', path: '/dashboard/complaints', icon: Inbox },
   { name: 'AI Triage', path: '/dashboard/triage', icon: BrainCircuit },
   { name: 'Duplicate Clusters', path: '/dashboard/clusters', icon: Copy },
+  { name: 'Map View', path: '/dashboard/map', icon: Map },
+  { name: 'Analytics', path: '/dashboard/analytics', icon: LineChart },
   { name: 'Reports', path: '/dashboard/reports', icon: BarChart3 },
   { name: 'Data Import', path: '/dashboard/import', icon: Database },
+];
+
+const adminNavItems = [
+  { name: 'Departments', path: '/dashboard/departments', icon: Building2 },
+  { name: 'Users', path: '/dashboard/users', icon: Users },
 ];
 
 const bottomNavItems = [
@@ -75,7 +86,7 @@ export function Sidebar({ isOpen, setIsOpen }) {
               className={({ isActive }) => cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors duration-200 ease-in-out",
                 isActive 
-                  ? "bg-blue-50 text-blue-600 font-semibold" 
+                  ? "text-blue-600 font-semibold" 
                   : "text-gray-600 hover:bg-gray-100 hover:text-blue-600"
               )}
             >
@@ -84,7 +95,26 @@ export function Sidebar({ isOpen, setIsOpen }) {
             </NavLink>
           ))}
         </nav>
-        <div className="mt-auto px-6 py-4 border-t border-gray-200 bg-white">
+        <div className="mt-auto px-6 pb-3 border-t border-gray-100 pt-3">
+          <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-3 mb-1">Admin</div>
+          {adminNavItems.map((item) => (
+            <NavLink
+              key={item.name}
+              to={item.path}
+              onClick={() => setIsOpen(false)}
+              className={({ isActive }) => cn(
+                "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors duration-200 ease-in-out",
+                isActive 
+                  ? "text-blue-600 font-semibold" 
+                  : "text-gray-600 hover:bg-gray-100 hover:text-blue-600"
+              )}
+            >
+              <item.icon size={18} className="shrink-0" />
+              <span className="truncate">{item.name}</span>
+            </NavLink>
+          ))}
+        </div>
+        <div className="px-6 py-4 border-t border-gray-200 bg-white">
           {bottomNavItems.map((item) => (
             <NavLink
               key={item.name}
@@ -93,7 +123,7 @@ export function Sidebar({ isOpen, setIsOpen }) {
               className={({ isActive }) => cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors duration-200 ease-in-out",
                 isActive 
-                  ? "bg-blue-50 text-blue-600 font-semibold" 
+                  ? "text-blue-600 font-semibold" 
                   : "text-gray-600 hover:bg-gray-100 hover:text-blue-600"
               )}
             >

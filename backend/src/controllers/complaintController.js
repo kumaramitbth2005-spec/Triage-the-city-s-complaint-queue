@@ -20,6 +20,9 @@ exports.getComplaints = async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     const filter = {};
+    if (req.user && req.user.role === 'citizen') {
+      filter.createdBy = req.user._id;
+    }
     if (req.query.status) filter.status = req.query.status;
     if (req.query.department) filter.department = new RegExp(req.query.department, 'i');
     if (req.query.urgency) filter.urgency = req.query.urgency;
@@ -50,6 +53,12 @@ exports.getComplaintById = async (req, res, next) => {
 
     if (!complaint) {
       return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Complaint not found' } });
+    }
+
+    if (req.user && req.user.role === 'citizen' && complaint.createdBy) {
+      if (complaint.createdBy.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'Not authorized to view this complaint' } });
+      }
     }
 
     if (req.user) {
@@ -135,15 +144,21 @@ exports.getTriageQueue = async (req, res, next) => {
 // DELETE /api/complaints/:id
 exports.deleteComplaint = async (req, res, next) => {
   try {
-    const complaint = await Complaint.findOneAndDelete({
+    const query = {
       $or: [
         { _id: req.params.id.match(/^[0-9a-fA-F]{24}$/) ? req.params.id : null },
         { complaintId: req.params.id }
       ]
-    });
+    };
+
+    if (req.user && req.user.role === 'citizen') {
+      query.createdBy = req.user._id;
+    }
+
+    const complaint = await Complaint.findOneAndDelete(query);
 
     if (!complaint) {
-      return res.status(404).json({ success: false, message: 'Complaint not found' });
+      return res.status(404).json({ success: false, message: 'Complaint not found or unauthorized' });
     }
 
     if (req.user) {

@@ -84,7 +84,7 @@ export function ComplaintReceipt({ complaint, onClose }) {
       <div className="flex flex-col sm:flex-row gap-3">
         <Button
           className="flex-1 gap-2"
-          onClick={() => navigate('/complaints')}
+          onClick={() => navigate('/dashboard/complaints')}
         >
           <LayoutDashboard size={15} /> View in Dashboard
         </Button>
