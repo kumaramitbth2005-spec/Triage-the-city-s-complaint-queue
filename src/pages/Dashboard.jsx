@@ -6,6 +6,7 @@ import { useAppContext } from '../context/AppContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { AlertTriangle, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { clusterApi } from '../api/clusterApi';
 
 export function Dashboard() {
   // All hooks must be called at top level
@@ -39,12 +40,10 @@ export function Dashboard() {
   const [emergingCluster, setEmergingCluster] = React.useState(null);
 
   React.useEffect(() => {
-    import('../api/clusterApi').then(({ clusterApi }) => {
-      clusterApi.getAll().then(res => {
-        const emerging = res.data?.data?.find(c => c.isEmerging);
-        if (emerging) setEmergingCluster(emerging);
-      }).catch(() => {});
-    });
+    clusterApi.getAll().then(res => {
+      const emerging = res.data?.data?.find(c => c.isEmerging);
+      if (emerging) setEmergingCluster(emerging);
+    }).catch(() => {});
   }, []);
 
   if (loading) return (
