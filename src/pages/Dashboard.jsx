@@ -181,7 +181,11 @@ export function Dashboard() {
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
                 {complaints.slice(0,5).map(c => (
-                  <tr key={c.id} className="hover:bg-gray-50/80 transition-colors group">
+                  <tr
+                    key={c.id}
+                    onClick={() => navigate(`/dashboard/complaints/${c.id}`)}
+                    className="hover:bg-blue-50/50 cursor-pointer transition-colors group"
+                  >
                     <td className="px-4 sm:px-6 py-3 sm:py-4 font-medium text-slate-700">{c.id}</td>
                     <td className="px-4 sm:px-6 py-3 sm:py-4">
                       <div className="font-medium text-slate-800">{c.department}</div>

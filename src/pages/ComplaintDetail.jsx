@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
+import { complaintApi } from '../api/complaintApi';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Badge, UrgencyBadge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -26,14 +27,53 @@ const MOCK_MESSAGES = [
 export function ComplaintDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { complaints, updateComplaintStatus, deleteComplaint } = useAppContext();
+  const { complaints, loading: contextLoading, updateComplaintStatus, deleteComplaint } = useAppContext();
   const [showFullText, setShowFullText] = useState(false);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState(MOCK_MESSAGES);
   const [activeTab, setActiveTab] = useState('overview');
   const [deleting, setDeleting] = useState(false);
+  const [apiComplaint, setApiComplaint] = useState(null);
+  const [apiLoading, setApiLoading] = useState(false);
 
-  const complaint = complaints.find(c => c.id === id || c.complaintId === id);
+  // Look for complaint in context complaints
+  const contextComplaint = complaints.find(
+    c => c.id === id || c.complaintId === id || c._id === id
+  );
+
+  useEffect(() => {
+    // If not in context and not currently loading context, attempt fetch by ID
+    if (!contextComplaint && id) {
+      setApiLoading(true);
+      complaintApi.getById(id)
+        .then(res => {
+          if (res.data?.data) {
+            const raw = res.data.data;
+            setApiComplaint({
+              ...raw,
+              id: raw.complaintId || raw._id,
+              ward: raw.location?.ward || raw.ward || '1',
+              normalizedLocality: raw.location?.locality || raw.normalizedLocality || 'Bhopal',
+              urgencyReason: raw.aiAnalysis?.explanation?.[1] || '',
+              sourceChannel: raw.inputMethod === 'voice' ? 'Voice' : 'App'
+            });
+          }
+        })
+        .catch(() => {})
+        .finally(() => setApiLoading(false));
+    }
+  }, [id, contextComplaint]);
+
+  const complaint = contextComplaint || apiComplaint;
+
+  if (contextLoading || apiLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-3 text-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+        <p className="text-xs text-slate-500 font-medium">Loading complaint details...</p>
+      </div>
+    );
+  }
 
   if (!complaint) {
     return (

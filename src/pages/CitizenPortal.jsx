@@ -3,9 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Layers, ArrowRight, ArrowLeft, CheckCircle2, Loader2,
-  Mic, Camera, MapPin, FileText, Sparkles, ChevronRight,
+  MapPin, Sparkles, ChevronRight,
   Clock, Shield, Star, Phone
 } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
 
 const STEPS = [
   { id: 1, label: 'Your Complaint' },
@@ -38,6 +39,7 @@ function generateTrackId() {
 
 export function CitizenPortal() {
   const navigate = useNavigate();
+  const { addComplaint } = useAppContext();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
     category: '', description: '', urgency: 'MEDIUM',
@@ -50,10 +52,48 @@ export function CitizenPortal() {
 
   const handleSubmit = async () => {
     setSubmitting(true);
-    await new Promise(r => setTimeout(r, 2000));
-    setTrackId(generateTrackId());
-    setStep(4);
-    setSubmitting(false);
+    try {
+      const selectedCat = CATEGORIES.find(c => c.id === form.category);
+      const dept = selectedCat?.dept || 'General';
+      const categoryName = selectedCat?.label.replace(/^[^\s]+\s/, '') || 'Other Issue';
+
+      const payload = {
+        originalText: form.description,
+        normalizedText: form.description,
+        inputMethod: 'text',
+        originalLanguage: 'English',
+        department: dept,
+        category: categoryName,
+        urgency: form.urgency || 'MEDIUM',
+        location: {
+          locality: form.locality,
+          ward: form.ward || '1',
+          city: 'Bhopal',
+          addressText: `${form.locality}${form.ward ? ', Ward ' + form.ward : ''}`
+        },
+        citizenInfo: {
+          name: form.name || 'Citizen',
+          phone: form.phone || ''
+        },
+        _aiHints: {
+          department: dept,
+          category: categoryName,
+          urgency: form.urgency || 'MEDIUM'
+        }
+      };
+
+      const created = await addComplaint(payload);
+      const finalId = created?.complaintId || created?.id || generateTrackId();
+      setTrackId(finalId);
+      setStep(4);
+    } catch (err) {
+      console.error('Submission error:', err);
+      const fallbackId = generateTrackId();
+      setTrackId(fallbackId);
+      setStep(4);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const canProceed = () => {
@@ -332,8 +372,8 @@ export function CitizenPortal() {
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link
-                  to="/track"
-                  className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-full font-semibold text-sm hover:bg-indigo-700 transition-colors"
+                  to={`/track?id=${trackId}`}
+                  className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-full font-semibold text-sm hover:bg-indigo-700 transition-colors shadow-sm"
                 >
                   Track Status <ArrowRight size={16} />
                 </Link>

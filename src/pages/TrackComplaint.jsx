@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Layers, Search, ArrowRight, CheckCircle2, Clock,
   AlertCircle, Sparkles, MapPin, Building2, ChevronRight
 } from 'lucide-react';
+import { complaintApi } from '../api/complaintApi';
+import { useAppContext } from '../context/AppContext';
 
 const MOCK_STATUSES = {
   'CMP-A1B2C3': {
@@ -22,22 +24,111 @@ const MOCK_STATUSES = {
   }
 };
 
+const formatComplaintForTracking = (c) => {
+  const statusMap = {
+    'RECEIVED': 'Submitted',
+    'AI_TRIAGED': 'In Progress',
+    'AWAITING_REVIEW': 'In Progress',
+    'ASSIGNED': 'In Progress',
+    'IN_PROGRESS': 'In Progress',
+    'RESOLVED': 'Resolved',
+    'REJECTED': 'Escalated',
+    'DUPLICATE': 'Resolved',
+    'NEEDS_INFORMATION': 'In Progress',
+    'Needs Review': 'In Progress',
+    'New': 'Submitted'
+  };
+
+  const isResolved = c.status === 'RESOLVED' || c.status === 'Resolved';
+  const isAssigned = isResolved || c.status === 'ASSIGNED' || c.status === 'IN_PROGRESS';
+  const isTriaged = isAssigned || c.status === 'AI_TRIAGED' || c.status === 'AWAITING_REVIEW';
+
+  const timeStr = c.timestamp || c.createdAt;
+  const formattedDate = timeStr ? new Date(timeStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently';
+
+  return {
+    id: c.complaintId || c.id || c._id,
+    category: c.category || 'Civic Issue',
+    dept: c.department || 'Municipal Administration',
+    locality: c.location?.locality || c.normalizedLocality || 'Bhopal',
+    ward: c.location?.ward || c.ward || '1',
+    urgency: c.urgency || 'MEDIUM',
+    status: statusMap[c.status] || c.status || 'In Progress',
+    submittedAt: formattedDate,
+    originalText: c.originalText || c.description,
+    timeline: [
+      { event: 'Complaint Submitted & Logged', time: formattedDate, done: true },
+      { event: `AI Triaged — ${c.department || 'Assigned Department'}`, time: 'Verified', done: isTriaged },
+      { event: `Forwarded to ${c.department || 'Department'} Field Team`, time: isAssigned ? 'Active' : 'Pending', done: isAssigned },
+      { event: 'Field Inspection & Remediation', time: isAssigned ? 'In Progress' : 'Pending', done: isAssigned },
+      { event: 'Resolution Verified & Closed', time: isResolved ? 'Completed' : 'Estimated: 24-48h', done: isResolved }
+    ]
+  };
+};
+
 export function TrackComplaint() {
-  const [query, setQuery] = useState('');
+  const [searchParams] = useSearchParams();
+  const { complaints } = useAppContext();
+  const [query, setQuery] = useState(searchParams.get('id') || '');
   const [result, setResult] = useState(null);
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSearch = async () => {
-    if (!query.trim()) return;
+  const handleSearch = useCallback(async (searchTarget) => {
+    const rawId = (searchTarget || query || '').trim();
+    if (!rawId) return;
+
     setLoading(true);
     setNotFound(false);
-    await new Promise(r => setTimeout(r, 800));
-    const found = MOCK_STATUSES[query.trim().toUpperCase()];
-    setResult(found || null);
-    setNotFound(!found);
+
+    const cleanId = rawId.toUpperCase();
+
+    // 1. Check in AppContext complaints first
+    const localMatch = complaints.find(
+      c => (c.id && c.id.toUpperCase() === cleanId) ||
+           (c.complaintId && c.complaintId.toUpperCase() === cleanId) ||
+           (c._id && c._id.toUpperCase() === cleanId)
+    );
+
+    if (localMatch) {
+      setResult(formatComplaintForTracking(localMatch));
+      setNotFound(false);
+      setLoading(false);
+      return;
+    }
+
+    // 2. Try fetching from backend API
+    try {
+      const res = await complaintApi.getById(cleanId);
+      if (res.data?.data) {
+        setResult(formatComplaintForTracking(res.data.data));
+        setNotFound(false);
+        setLoading(false);
+        return;
+      }
+    } catch {
+      // Backend not found or offline, proceed to fallback
+    }
+
+    // 3. Check mock demo statuses
+    const mockMatch = MOCK_STATUSES[cleanId];
+    if (mockMatch) {
+      setResult(mockMatch);
+      setNotFound(false);
+    } else {
+      setResult(null);
+      setNotFound(true);
+    }
     setLoading(false);
-  };
+  }, [query, complaints]);
+
+  useEffect(() => {
+    const paramId = searchParams.get('id');
+    if (paramId) {
+      setQuery(paramId);
+      handleSearch(paramId);
+    }
+  }, [searchParams, handleSearch]);
 
   const statusColors = {
     'Submitted': 'bg-blue-100 text-blue-700',
@@ -91,13 +182,13 @@ export function TrackComplaint() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
-              placeholder="e.g. CMP-A1B2C3"
+              placeholder="e.g. CMP-2026-100001"
               className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-sm font-mono"
             />
             <button
-              onClick={handleSearch}
+              onClick={() => handleSearch()}
               disabled={loading || !query.trim()}
-              className="px-5 py-3 bg-indigo-600 text-white rounded-xl font-semibold text-sm hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+              className="px-5 py-3 bg-indigo-600 text-white rounded-xl font-semibold text-sm hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center gap-2 shrink-0"
             >
               {loading ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -107,7 +198,20 @@ export function TrackComplaint() {
               Track
             </button>
           </div>
-          <p className="text-xs text-slate-400 mt-2">Try: CMP-A1B2C3 for a demo result</p>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="text-xs text-slate-400">Quick test IDs:</span>
+            {['CMP-2026-100001', 'CMP-2026-100003', 'CMP-2026-100004', 'CMP-A1B2C3'].map(id => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => { setQuery(id); handleSearch(id); }}
+                className="text-xs bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 text-slate-600 px-2.5 py-1 rounded-md font-mono transition-colors"
+              >
+                {id}
+              </button>
+            ))}
+          </div>
         </motion.div>
 
         {/* Not found */}

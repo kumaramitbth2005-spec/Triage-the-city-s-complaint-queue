@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/Card';
 import { Badge, UrgencyBadge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -10,11 +10,31 @@ import { useNavigate } from 'react-router-dom';
 export function AITriage() {
   const { complaints, updateComplaintStatus } = useAppContext();
   const navigate = useNavigate();
-  // We'll triage the first complaint that needs review for the demo
   const [activeComplaintIndex, setActiveComplaintIndex] = useState(0);
-  const triageQueue = complaints.filter(c => c.status === 'Needs Review' || c.status === 'New');
-  
-  if (triageQueue.length === 0) {
+
+  const triageQueue = complaints.filter(
+    c => c.status === 'AWAITING_REVIEW' ||
+         c.status === 'AI_TRIAGED' ||
+         c.status === 'RECEIVED' ||
+         c.status === 'Needs Review' ||
+         c.status === 'New'
+  );
+
+  const [confirmedDept, setConfirmedDept] = useState('');
+  const [confirmedCategory, setConfirmedCategory] = useState('');
+  const [confirmedUrgency, setConfirmedUrgency] = useState('');
+
+  const c = triageQueue[activeComplaintIndex] || triageQueue[0];
+
+  useEffect(() => {
+    if (c) {
+      setConfirmedDept(c.department || 'Water Supply');
+      setConfirmedCategory(c.category || 'Civic Issue');
+      setConfirmedUrgency(c.urgency || 'MEDIUM');
+    }
+  }, [c?.id, c?.department, c?.category, c?.urgency]);
+
+  if (triageQueue.length === 0 || !c) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center py-20 px-4">
         <CheckCircle size={48} className="text-emerald-500 mb-4" />
@@ -25,12 +45,29 @@ export function AITriage() {
     );
   }
 
-  const c = triageQueue[activeComplaintIndex];
-  
   const handleConfirm = () => {
-    updateComplaintStatus(c.id, 'Confirmed', c.urgency, c.category, c.department);
+    updateComplaintStatus(c.id, 'ASSIGNED', confirmedUrgency || c.urgency, confirmedCategory || c.category, confirmedDept || c.department);
     if (activeComplaintIndex < triageQueue.length - 1) {
       setActiveComplaintIndex(prev => prev + 1);
+    } else {
+      setActiveComplaintIndex(0);
+    }
+  };
+
+  const handleSkip = () => {
+    if (activeComplaintIndex < triageQueue.length - 1) {
+      setActiveComplaintIndex(prev => prev + 1);
+    } else {
+      setActiveComplaintIndex(0);
+    }
+  };
+
+  const handleMarkDuplicate = () => {
+    updateComplaintStatus(c.id, 'DUPLICATE', c.urgency, c.category, c.department);
+    if (activeComplaintIndex < triageQueue.length - 1) {
+      setActiveComplaintIndex(prev => prev + 1);
+    } else {
+      setActiveComplaintIndex(0);
     }
   };
 
@@ -42,7 +79,7 @@ export function AITriage() {
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">Review and confirm AI routing decisions.</p>
         </div>
         <div className="text-xs sm:text-sm font-medium text-slate-600 bg-slate-200 px-3 py-1 rounded-full self-start sm:self-auto">
-          {activeComplaintIndex + 1} of {triageQueue.length} in Queue
+          {Math.min(activeComplaintIndex + 1, triageQueue.length)} of {triageQueue.length} in Queue
         </div>
       </div>
 
@@ -187,26 +224,46 @@ export function AITriage() {
             <div className="space-y-3 sm:space-y-4">
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Confirm Department</label>
-                <select className="w-full h-9 sm:h-10 px-2 sm:px-3 rounded-lg border border-gray-300 bg-white text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                  <option>{c.department}</option>
-                  <option>Water Supply</option>
-                  <option>Roads</option>
-                  <option>Street Lighting</option>
-                  <option>Public Works</option>
+                <select
+                  value={confirmedDept}
+                  onChange={e => setConfirmedDept(e.target.value)}
+                  className="w-full h-9 sm:h-10 px-2 sm:px-3 rounded-lg border border-gray-300 bg-white text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                >
+                  <option value="Water Supply">Water Supply</option>
+                  <option value="Sanitation">Sanitation</option>
+                  <option value="Roads">Roads & Infrastructure</option>
+                  <option value="Electrical">Electrical / Street Lighting</option>
+                  <option value="Parks">Parks & Gardens</option>
+                  <option value="Public Works">Public Works</option>
+                  <option value="General">General Administration</option>
                 </select>
               </div>
               
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Confirm Category</label>
-                <select className="w-full h-9 sm:h-10 px-2 sm:px-3 rounded-lg border border-gray-300 bg-white text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                  <option>{c.category}</option>
-                  <option>Other</option>
+                <select
+                  value={confirmedCategory}
+                  onChange={e => setConfirmedCategory(e.target.value)}
+                  className="w-full h-9 sm:h-10 px-2 sm:px-3 rounded-lg border border-gray-300 bg-white text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                >
+                  <option value={c.category}>{c.category}</option>
+                  <option value="Water Pipeline Leakage">Water Pipeline Leakage</option>
+                  <option value="Contaminated Water">Contaminated Water</option>
+                  <option value="Low Pressure">Low Pressure</option>
+                  <option value="Garbage Overflow">Garbage Overflow</option>
+                  <option value="Potholes">Potholes</option>
+                  <option value="Streetlight Outage">Streetlight Outage</option>
+                  <option value="Other">Other Civic Issue</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Confirm Urgency</label>
-                <select className="w-full h-9 sm:h-10 px-2 sm:px-3 rounded-lg border border-gray-300 bg-white text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none" defaultValue={c.urgency}>
+                <select
+                  value={confirmedUrgency}
+                  onChange={e => setConfirmedUrgency(e.target.value)}
+                  className="w-full h-9 sm:h-10 px-2 sm:px-3 rounded-lg border border-gray-300 bg-white text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                >
                   <option value="LOW">Low</option>
                   <option value="MEDIUM">Medium</option>
                   <option value="HIGH">High</option>
@@ -217,8 +274,20 @@ export function AITriage() {
 
             {c.duplicateStatus === 'Possible' && (
               <div className="flex flex-col sm:flex-row gap-2">
-                <Button variant="outline" className="flex-1 text-[11px] sm:text-sm border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 py-1.5 sm:py-2">Mark Duplicate</Button>
-                <Button variant="outline" className="flex-1 text-[11px] sm:text-sm py-1.5 sm:py-2">Not Duplicate</Button>
+                <Button
+                  onClick={handleMarkDuplicate}
+                  variant="outline"
+                  className="flex-1 text-[11px] sm:text-sm border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 py-1.5 sm:py-2"
+                >
+                  Mark Duplicate
+                </Button>
+                <Button
+                  onClick={handleSkip}
+                  variant="outline"
+                  className="flex-1 text-[11px] sm:text-sm py-1.5 sm:py-2"
+                >
+                  Not Duplicate
+                </Button>
               </div>
             )}
 
@@ -229,14 +298,23 @@ export function AITriage() {
               </label>
               <textarea 
                 className="w-full p-2.5 sm:p-3 rounded-lg border border-gray-300 bg-white text-xs sm:text-sm h-20 sm:h-24 focus:ring-2 focus:ring-blue-500 outline-none resize-none leading-relaxed"
-                defaultValue={`Your complaint regarding ${c.category.toLowerCase()} in ${c.normalizedLocality} has been registered and forwarded to the ${c.department} Department for review.`}
+                defaultValue={`Your complaint regarding ${(c.category || 'civic issue').toLowerCase()} in ${c.normalizedLocality || 'Bhopal'} has been registered and forwarded to the ${confirmedDept || c.department} Department for review.`}
               />
             </div>
 
           </CardContent>
           <CardFooter className="bg-white p-3 sm:p-4 border-t border-gray-200 gap-2 sm:gap-3 flex-col sm:flex-row justify-end rounded-b-xl shrink-0">
-             <Button variant="ghost" className="w-full sm:w-auto order-2 sm:order-1 h-9 sm:h-10 text-xs sm:text-sm">Skip</Button>
-             <Button onClick={handleConfirm} className="w-full sm:w-auto order-1 sm:order-2 h-9 sm:h-10 text-xs sm:text-sm">
+             <Button
+               variant="ghost"
+               onClick={handleSkip}
+               className="w-full sm:w-auto order-2 sm:order-1 h-9 sm:h-10 text-xs sm:text-sm"
+             >
+               Skip
+             </Button>
+             <Button
+               onClick={handleConfirm}
+               className="w-full sm:w-auto order-1 sm:order-2 h-9 sm:h-10 text-xs sm:text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+             >
                <Send size={14} className="mr-1.5 sm:mr-2 sm:w-4 sm:h-4" />
                Confirm & Route
              </Button>
