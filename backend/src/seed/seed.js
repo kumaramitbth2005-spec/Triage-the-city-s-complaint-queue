@@ -2,17 +2,18 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
+const connectDB = require('../config/db');
 const User = require('../models/User');
 const Complaint = require('../models/Complaint');
 const DuplicateCluster = require('../models/DuplicateCluster');
 const Notification = require('../models/Notification');
 const Gazetteer = require('../models/Gazetteer');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/city_complaint_triage';
-
-async function seed() {
-  await mongoose.connect(MONGODB_URI);
-  console.log('Connected to MongoDB');
+async function seedDatabase(options = { disconnect: true }) {
+  if (mongoose.connection.readyState !== 1) {
+    await connectDB();
+  }
+  console.log('🌱 Seeding database...');
 
   // Clear all collections
   await Promise.all([
@@ -261,10 +262,17 @@ async function seed() {
   console.log('  Admin: admin@city.gov / admin123');
   console.log('  Operator: operator@city.gov / operator123');
 
-  await mongoose.disconnect();
+  if (options.disconnect) {
+    await mongoose.disconnect();
+  }
 }
 
-seed().catch(err => {
-  console.error('Seed failed:', err);
-  process.exit(1);
-});
+if (require.main === module) {
+  seedDatabase({ disconnect: true }).catch(err => {
+    console.error('Seed failed:', err);
+    process.exit(1);
+  });
+}
+
+module.exports = seedDatabase;
+

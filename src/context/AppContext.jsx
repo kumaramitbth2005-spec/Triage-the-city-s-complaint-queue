@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { complaintApi } from '../api/complaintApi';
 import { notificationApi } from '../api/notificationApi';
+import { fallbackComplaints } from '../data/mockComplaints';
 
 const AppContext = createContext();
 
@@ -11,13 +12,14 @@ export function AppProvider({ children }) {
   const [isDataImported, setIsDataImported] = useState(true);
   const [notifications, setNotifications] = useState([]);
   const [usingMockData, setUsingMockData] = useState(false);
+  const reconnectIntervalRef = useRef(null);
 
   const fetchComplaints = useCallback(async (params = {}) => {
     setLoading(true);
-    setError(null);
     try {
       const res = await complaintApi.getAll({ page: 1, limit: 50, ...params });
       const data = res.data?.data || [];
+      
       // Normalize backend data to match frontend field expectations
       const normalized = data.map(c => ({
         ...c,
@@ -33,13 +35,23 @@ export function AppProvider({ children }) {
         urgencyReason: c.aiAnalysis?.explanation?.[1] || '',
         sourceChannel: 'App',
       }));
-      setComplaints(normalized);
-      setUsingMockData(false);
+
+      // If backend returns data, use live data
+      if (normalized.length > 0) {
+        setComplaints(normalized);
+        setUsingMockData(false);
+        setError(null);
+      } else {
+        // Fallback to demo complaints if backend DB is empty
+        setComplaints(fallbackComplaints);
+        setUsingMockData(true);
+        setError(null);
+      }
     } catch (err) {
-      console.error('Failed to fetch complaints:', err.message);
-      setComplaints([]);
-      setUsingMockData(false);
-      setError('Backend unavailable. Please check your connection.');
+      console.warn('Backend unavailable or waking up, activating resilient demo mode:', err.message);
+      setComplaints(fallbackComplaints);
+      setUsingMockData(true);
+      setError('Backend is waking up or offline. Operating in demo mode.');
     } finally {
       setLoading(false);
     }
@@ -59,6 +71,34 @@ export function AppProvider({ children }) {
     fetchComplaints();
     fetchNotifications();
   }, [fetchComplaints, fetchNotifications]);
+
+  // Auto-reconnect polling while using mock data (e.g. Render waking up)
+  useEffect(() => {
+    if (usingMockData) {
+      reconnectIntervalRef.current = setInterval(() => {
+        complaintApi.getAll({ page: 1, limit: 5 })
+          .then(res => {
+            if (res.data?.success && res.data?.data?.length > 0) {
+              console.log('✅ Live backend connected! Switching from demo to live data.');
+              fetchComplaints();
+              fetchNotifications();
+            }
+          })
+          .catch(() => {
+            // Still offline or spinning up, ignore
+          });
+      }, 7000);
+    } else if (reconnectIntervalRef.current) {
+      clearInterval(reconnectIntervalRef.current);
+    }
+
+    return () => {
+      if (reconnectIntervalRef.current) {
+        clearInterval(reconnectIntervalRef.current);
+      }
+    };
+  }, [usingMockData, fetchComplaints, fetchNotifications]);
+
 
   const updateComplaintStatus = async (id, newStatus, newUrgency, newCategory, newDepartment) => {
     try {

@@ -8,40 +8,31 @@ try {
   // Fallback to system DNS
 }
 
-const connectDB = async () => {
-  const uri = process.env.MONGODB_URI;
+const DEFAULT_ATLAS_URI = 'mongodb+srv://AmitSharma:Amitbth%408969%23AMAA%23123@cluster0.zrrzley.mongodb.net/city_complaint_triage?retryWrites=true&w=majority';
 
-  const isCloudOrProd = process.env.RENDER || process.env.NODE_ENV === 'production';
-  const connectionUri = uri || 'mongodb://127.0.0.1:27017/city_complaint_triage';
+const connectDB = async (retries = 5, delay = 3000) => {
+  const uri = process.env.MONGODB_URI || DEFAULT_ATLAS_URI;
 
-  if (isCloudOrProd && (!uri || connectionUri.includes('127.0.0.1') || connectionUri.includes('localhost'))) {
-    console.error('================================================================');
-    console.error('❌ [MONGODB CONFIGURATION ERROR ON RENDER]');
-    console.error('Reason: The app attempted to connect to local MongoDB (127.0.0.1:27017).');
-    console.error('Render runs in cloud containers and does NOT have a local MongoDB server.');
-    console.error('');
-    console.error('👉 HOW TO FIX:');
-    console.error('1. Set up a free MongoDB database on MongoDB Atlas (https://www.mongodb.com/cloud/atlas)');
-    console.error('2. Under "Network Access" in Atlas, allow access from anywhere: 0.0.0.0/0');
-    console.error('3. Under "Database Access", create a user with a password (avoid special characters or URL-encode them)');
-    console.error('4. Copy the connection string (format: mongodb+srv://<user>:<password>@cluster0.xxx.mongodb.net/city_complaint_triage?retryWrites=true&w=majority)');
-    console.error('5. Go to Render Dashboard -> Select your Web Service -> "Environment" tab');
-    console.error('6. Add/Update environment variable:');
-    console.error('   Key:   MONGODB_URI');
-    console.error('   Value: mongodb+srv://<user>:<password>@cluster0.xxx.mongodb.net/city_complaint_triage?retryWrites=true&w=majority');
-    console.error('7. Click "Save changes" (Render will automatically redeploy)');
-    console.error('================================================================');
-    throw new Error('Missing or invalid MONGODB_URI for cloud deployment. Please configure MONGODB_URI in Render dashboard.');
-  }
-
-  try {
-    const conn = await mongoose.connect(connectionUri);
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`❌ MongoDB connection failed: ${error.message}`);
-    throw error;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      console.log(`📡 Connecting to MongoDB (Attempt ${attempt}/${retries})...`);
+      const conn = await mongoose.connect(uri, {
+        serverSelectionTimeoutMS: 8000,
+        connectTimeoutMS: 10000,
+      });
+      console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+      return conn;
+    } catch (error) {
+      console.error(`⚠️ MongoDB connection attempt ${attempt} failed: ${error.message}`);
+      if (attempt === retries) {
+        console.error('❌ All MongoDB connection attempts exhausted. Continuing in resilient mode.');
+        throw error;
+      }
+      await new Promise(res => setTimeout(res, delay));
+    }
   }
 };
 
 module.exports = connectDB;
+
 

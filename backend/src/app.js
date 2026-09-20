@@ -4,18 +4,33 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
 
+const path = require('path');
+const fs = require('fs');
+
 const app = express();
 
-// Security Middlewares
+// Trust proxy for Render / Cloud reverse proxies
+app.set('trust proxy', 1);
+
+// Security Middlewares & CORS
 const allowedOrigins = process.env.CORS_ORIGIN 
-  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim()) 
-  : '*';
+  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim().replace(/\/$/, '')) 
+  : ['*'];
+
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || process.env.NODE_ENV !== 'production') {
       return callback(null, true);
     }
-    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+    const cleanOrigin = origin.replace(/\/$/, '');
+    if (
+      allowedOrigins.includes('*') || 
+      allowedOrigins.includes(cleanOrigin) ||
+      cleanOrigin.endsWith('.onrender.com') ||
+      cleanOrigin.endsWith('.vercel.app') ||
+      cleanOrigin.includes('localhost') ||
+      cleanOrigin.includes('127.0.0.1')
+    ) {
       return callback(null, true);
     }
     return callback(new Error('Blocked by CORS'));
@@ -26,7 +41,8 @@ app.use(cors({
 // Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100
+  max: 1000,
+  skip: (req) => req.path === '/api/health'
 });
 app.use('/api', limiter);
 
@@ -61,8 +77,26 @@ app.use('/api/import', require('./routes/importRoutes'));
 app.use('/api/activities', require('./routes/activityRoutes'));
 app.use('/api/activity', require('./routes/activityRoutes'));
 
-// 404 handler
+// Serve frontend build (dist) if present
+const possibleDistPaths = [
+  path.resolve(__dirname, '../../dist'),
+  path.resolve(process.cwd(), 'dist'),
+  path.resolve(__dirname, '../dist')
+];
+const distPath = possibleDistPaths.find(p => fs.existsSync(p));
+
+if (distPath) {
+  app.use(express.static(distPath));
+}
+
+// 404 & SPA fallback handler (Express 5 compatible)
 app.use((req, res) => {
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'API route not found' } });
+  }
+  if (distPath && req.method === 'GET') {
+    return res.sendFile(path.join(distPath, 'index.html'));
+  }
   res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Route not found' } });
 });
 

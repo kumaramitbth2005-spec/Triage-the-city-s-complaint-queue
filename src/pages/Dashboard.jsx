@@ -10,7 +10,7 @@ import { clusterApi } from '../api/clusterApi';
 
 export function Dashboard() {
   // All hooks must be called at top level
-  const { complaints, loading, error, fetchComplaints, deleteComplaint } = useAppContext();
+  const { complaints, loading, error, fetchComplaints, deleteComplaint, usingMockData } = useAppContext();
   const navigate = useNavigate();
 
   const [complaintToDelete, setComplaintToDelete] = React.useState(null);
@@ -46,17 +46,12 @@ export function Dashboard() {
     }).catch(() => {});
   }, []);
 
-  if (loading) return (
+  if (loading && !complaints.length) return (
     <div className="flex items-center justify-center h-64">
       <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
     </div>
   );
-  if (error && !complaints.length) return (
-    <div className="flex flex-col items-center justify-center h-64 gap-4 text-center">
-      <p className="text-slate-500 text-sm">{error}</p>
-      <button onClick={fetchComplaints} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Retry</button>
-    </div>
-  );
+
 
 
   const total = complaints.length;
@@ -93,6 +88,27 @@ export function Dashboard() {
               </Button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Resilient Cloud Status Banner */}
+      {usingMockData && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 bg-amber-50/90 border border-amber-200/80 rounded-xl text-amber-900 text-sm shadow-sm backdrop-blur-sm">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex h-2.5 w-2.5 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+            </span>
+            <span className="text-xs sm:text-sm font-medium">
+              Operating in resilient demo mode while backend connects. Reconnecting automatically...
+            </span>
+          </div>
+          <button
+            onClick={() => fetchComplaints()}
+            className="px-3.5 py-1.5 bg-amber-200/80 hover:bg-amber-300 text-amber-950 rounded-lg text-xs font-semibold transition-all shadow-xs active:scale-95 shrink-0 self-end sm:self-auto"
+          >
+            Reconnect Now
+          </button>
         </div>
       )}
 

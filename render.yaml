@@ -1,0 +1,20 @@
+services:
+  # Primary Unified Full-Stack Service (Frontend + Backend in one service)
+  - type: web
+    name: complaint-triage-app
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build && cd backend && npm install
+    startCommand: node backend/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: "*"
