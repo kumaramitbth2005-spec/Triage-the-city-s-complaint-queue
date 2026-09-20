@@ -48,10 +48,11 @@ export function GlobalSearch() {
     }
 
     const delayDebounceFn = setTimeout(async () => {
-      if (!state.search.suggest) return; // Respect suggestion preference
+      if (state?.search?.suggest === false) return; // Respect suggestion preference
       setIsLoading(true);
       try {
-        const res = await searchService.search(query, state.search.defaultScope);
+        const scope = state?.search?.defaultScope || 'all';
+        const res = await searchService.search(query, scope);
         setResults(res);
       } catch (error) {
         console.error("Search failed", error);
@@ -61,26 +62,41 @@ export function GlobalSearch() {
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [query, state.search.defaultScope, state.search.suggest]);
+  }, [query, state?.search?.defaultScope, state?.search?.suggest]);
 
   const handleSelect = (item) => {
     // Add to recent searches
-    if (state.search.recent) {
+    if (state?.search?.recent !== false) {
       dispatch({ type: 'ADD_RECENT_SEARCH', payload: { query: item.title, id: item.id, route: item.route } });
     }
     setIsOpen(false);
     setQuery('');
-    const targetRoute = item.route.startsWith('/dashboard') 
+    const targetRoute = item.route.startsWith('/') 
       ? item.route 
-      : (item.route.startsWith('/') ? `/dashboard${item.route}` : `/dashboard/${item.route}`);
+      : `/dashboard/${item.route}`;
     navigate(targetRoute);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (hasResults && isOpen) {
+      const firstCategory = Object.keys(results)[0];
+      if (results[firstCategory] && results[firstCategory].length > 0) {
+        handleSelect(results[firstCategory][0]);
+        return;
+      }
+    }
+    if (query.trim()) {
+      setIsOpen(false);
+      navigate(`/dashboard/complaints?q=${encodeURIComponent(query.trim())}`);
+    }
   };
 
   const hasResults = Object.keys(results).length > 0;
 
   return (
     <div className="relative w-full" ref={containerRef}>
-      <div className="relative w-full flex items-center">
+      <form onSubmit={handleSearchSubmit} className="relative w-full flex items-center">
         <Search className="absolute left-3 text-gray-400" size={18} />
         <input 
           ref={inputRef}
@@ -93,35 +109,25 @@ export function GlobalSearch() {
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault();
-              if (hasResults && isOpen) {
-                const firstCategory = Object.keys(results)[0];
-                if (results[firstCategory] && results[firstCategory].length > 0) {
-                  handleSelect(results[firstCategory][0]);
-                  return;
-                }
-              }
-              if (query.trim()) {
-                setIsOpen(false);
-                navigate(`/dashboard/complaints?q=${encodeURIComponent(query.trim())}`);
-              }
+              handleSearchSubmit(e);
             } else if (e.key === 'Escape') {
               setIsOpen(false);
             }
           }}
           onFocus={() => setIsOpen(true)}
-          placeholder="Search complaints, wards... (Ctrl+K)" 
+          placeholder="Search complaints, wards, settings... (Ctrl+K)" 
           className="w-full h-10 pl-10 pr-12 rounded-lg bg-gray-100 border border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm transition-all"
         />
         <div className="absolute right-3 flex items-center gap-1">
           {isLoading && <Loader2 className="animate-spin text-gray-400" size={16} />}
           {!isLoading && query && (
-            <button onClick={() => setQuery('')} className="text-gray-400 hover:text-gray-600">
+            <button type="button" onClick={() => setQuery('')} className="text-gray-400 hover:text-gray-600">
               <X size={16} />
             </button>
           )}
           {!query && <span className="text-[10px] text-gray-400 font-semibold border border-gray-200 rounded px-1.5 py-0.5">Ctrl K</span>}
         </div>
-      </div>
+      </form>
 
       {/* Dropdown */}
       {isOpen && (query.trim().length >= 2 || (state.search.recent && state.recentSearches.length > 0)) && (

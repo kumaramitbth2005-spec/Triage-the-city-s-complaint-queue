@@ -13,9 +13,12 @@ const app = express();
 app.set('trust proxy', 1);
 
 // Security Middlewares & CORS
-const allowedOrigins = process.env.CORS_ORIGIN 
-  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim().replace(/\/$/, '')) 
-  : ['*'];
+const configuredOrigins = [
+  ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : []),
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : [])
+].map(o => o.trim().replace(/\/$/, '')).filter(Boolean);
+
+const allowedOrigins = configuredOrigins.length > 0 ? configuredOrigins : ['*'];
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -42,7 +45,7 @@ app.use(cors({
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 1000,
-  skip: (req) => req.path === '/api/health'
+  skip: (req) => req.path === '/api/health' || req.path === '/health'
 });
 app.use('/api', limiter);
 
@@ -50,12 +53,13 @@ app.use('/api', limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health Check
-app.get('/api/health', (req, res) => {
+// Health Checks
+app.get(['/health', '/api/health'], (req, res) => {
   const dbState = mongoose.connection.readyState;
   const dbStatus = dbState === 1 ? 'connected' : dbState === 2 ? 'connecting' : 'disconnected';
   res.json({
     status: 'ok',
+    service: 'triage-backend',
     database: dbStatus,
     aiService: process.env.AI_SERVICE_URL || 'http://localhost:8000',
     timestamp: new Date().toISOString()

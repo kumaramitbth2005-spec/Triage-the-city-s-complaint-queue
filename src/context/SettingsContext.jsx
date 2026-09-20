@@ -34,6 +34,11 @@ export const defaultPreferences = {
     highContrast: false,
     focusIndicators: true,
   },
+  search: {
+    suggest: true,
+    recent: true,
+    defaultScope: 'all',
+  },
   profile: {
     name: 'Operator',
     username: 'operator_1',
@@ -66,6 +71,8 @@ function settingsReducer(state, action) {
       return { ...state, privacy: { ...state.privacy, ...action.payload } };
     case 'UPDATE_ACCESSIBILITY':
       return { ...state, accessibility: { ...state.accessibility, ...action.payload } };
+    case 'UPDATE_SEARCH_PREFS':
+      return { ...state, search: { ...state.search, ...action.payload } };
     case 'UPDATE_PROFILE':
       return { ...state, profile: { ...state.profile, ...action.payload } };
     case 'ADD_RECENT_SEARCH': {
@@ -82,6 +89,7 @@ function settingsReducer(state, action) {
         notifications: { ...state.notifications, ...(action.payload.notifications || {}) },
         privacy: { ...state.privacy, ...(action.payload.privacy || {}) },
         accessibility: { ...state.accessibility, ...(action.payload.accessibility || {}) },
+        search: { ...state.search, ...(action.payload.search || {}) },
       };
     case 'RESET_ALL':
       return defaultPreferences;
@@ -105,6 +113,7 @@ export function SettingsProvider({ children }) {
           notifications: { ...init.notifications, ...(parsed.notifications || {}) },
           privacy: { ...init.privacy, ...(parsed.privacy || {}) },
           accessibility: { ...init.accessibility, ...(parsed.accessibility || {}) },
+          search: { ...init.search, ...(parsed.search || {}) },
           profile: { ...init.profile, ...(parsed.profile || {}) },
           recentSearches: parsed.recentSearches || init.recentSearches,
         };
@@ -233,6 +242,8 @@ export function SettingsProvider({ children }) {
         await settingsApi.updatePrivacy({ ...state.privacy, ...action.payload });
       } else if (action.type === 'UPDATE_ACCESSIBILITY') {
         await settingsApi.updateAccessibility({ ...state.accessibility, ...action.payload });
+      } else if (action.type === 'UPDATE_SEARCH_PREFS') {
+        await settingsApi.update({ search: { ...state.search, ...action.payload } });
       } else if (action.type === 'UPDATE_PROFILE') {
         await profileApi.update(action.payload);
       }

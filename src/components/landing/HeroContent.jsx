@@ -52,18 +52,24 @@ export function HeroContent() {
       </motion.p>
       
       {/* CTA Buttons */}
-      <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-5">
+      <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-4">
         <Link 
           to="/dashboard"
-          className="group flex items-center justify-center gap-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white px-10 py-5 rounded-full font-semibold text-lg transition-all active:scale-95 shadow-2xl shadow-indigo-200 hover:shadow-indigo-300"
+          className="group flex items-center justify-center gap-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white px-8 py-4 rounded-full font-semibold text-base sm:text-lg transition-all active:scale-95 shadow-xl shadow-indigo-200 hover:shadow-indigo-300"
         >
-          Visit Page <ArrowRight size={20} className="group-hover:translate-x-1.5 transition-transform" />
+          Launch Dashboard <ArrowRight size={20} className="group-hover:translate-x-1.5 transition-transform" />
         </Link>
         <Link 
-          to="#about"
-          className="flex items-center justify-center bg-white/70 backdrop-blur-md hover:bg-white text-stone-700 border border-stone-200 px-10 py-5 rounded-full font-semibold text-lg transition-all active:scale-95 shadow-sm hover:shadow-md"
+          to="/report"
+          className="flex items-center justify-center bg-white/80 backdrop-blur-md hover:bg-white text-stone-700 border border-stone-200 px-8 py-4 rounded-full font-semibold text-base sm:text-lg transition-all active:scale-95 shadow-xs hover:shadow-md"
         >
-          Learn More
+          Report an Issue
+        </Link>
+        <Link 
+          to="/track"
+          className="flex items-center justify-center text-indigo-600 hover:text-indigo-700 font-semibold text-sm sm:text-base px-4 py-2 transition-colors"
+        >
+          Track Grievance →
         </Link>
       </motion.div>
 
