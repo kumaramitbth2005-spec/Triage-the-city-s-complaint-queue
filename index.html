@@ -17,10 +17,18 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
+      // Clear legacy service worker caches so updates appear immediately
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js');
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (var registration of registrations) {
+            registration.unregister();
+          }
         });
+        if ('caches' in window) {
+          caches.keys().then(function(keys) {
+            keys.forEach(function(key) { caches.delete(key); });
+          });
+        }
       }
     </script>
   </body>

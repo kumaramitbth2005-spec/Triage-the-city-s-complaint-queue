@@ -1,27 +1,19 @@
-const CACHE_NAME = 'nexus-ai-cache-v1';
-const URLS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json'
-];
-
+// Self-clearing service worker to flush legacy caches
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        return cache.addAll(URLS_TO_CACHE);
-      })
+    caches.keys().then((keys) => {
+      return Promise.all(keys.map((key) => caches.delete(key)));
+    }).then(() => {
+      return self.clients.claim();
+    })
   );
 });
 
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      })
-  );
+  // Always network-first, no stale asset trapping
+  event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
 });
