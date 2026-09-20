@@ -20,13 +20,15 @@ import { UserManagement } from './pages/UserManagement';
 import { CitizenPortal } from './pages/CitizenPortal';
 import { TrackComplaint } from './pages/TrackComplaint';
 import { LanguageProvider } from './context/LanguageContext';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
 export default function App() {
   return (
-    <SettingsProvider>
-      <LanguageProvider>
-        <AppProvider>
-          <BrowserRouter>
+    <ErrorBoundary>
+      <SettingsProvider>
+        <LanguageProvider>
+          <AppProvider>
+            <BrowserRouter>
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/report" element={<CitizenPortal />} />
@@ -65,5 +67,6 @@ export default function App() {
       </AppProvider>
     </LanguageProvider>
   </SettingsProvider>
+</ErrorBoundary>
   );
 }
