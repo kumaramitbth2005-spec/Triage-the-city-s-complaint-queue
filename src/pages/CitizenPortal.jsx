@@ -105,22 +105,22 @@ export function CitizenPortal() {
   const selectedCategory = CATEGORIES.find(c => c.id === form.category);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-violet-50">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-violet-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/40 text-slate-800 dark:text-slate-100 transition-colors duration-300">
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 py-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between bg-white/80 backdrop-blur-xl rounded-2xl px-5 py-3 shadow-sm border border-white/80">
+        <div className="max-w-5xl mx-auto flex items-center justify-between bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl px-5 py-3 shadow-sm border border-white/80 dark:border-slate-800">
           <Link to="/" className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-lg flex items-center justify-center shadow-sm">
               <Layers className="text-white" size={16} strokeWidth={2.5} />
             </div>
-            <span className="font-bold text-slate-900 text-sm">Nexus AI</span>
+            <span className="font-bold text-slate-900 dark:text-white text-sm">Nexus AI</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link to="/track" className="text-sm text-slate-500 hover:text-indigo-600 transition-colors hidden sm:block">
+            <Link to="/track" className="text-sm text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors hidden sm:block">
               Track Complaint
             </Link>
             <Link to="/dashboard" className="text-xs bg-indigo-600 text-white px-4 py-2 rounded-full font-medium hover:bg-indigo-700 transition-colors">
-              Admin Portal
+              Operator Portal
             </Link>
           </div>
         </div>
@@ -136,10 +136,10 @@ export function CitizenPortal() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center mb-8"
             >
-              <h1 className="text-3xl sm:text-4xl font-black text-slate-900 mb-2">
+              <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mb-2">
                 Report a Civic Issue
               </h1>
-              <p className="text-slate-500 text-base">
+              <p className="text-slate-500 dark:text-slate-400 text-base">
                 Your complaint will be AI-triaged and forwarded to the right department within minutes.
               </p>
             </motion.div>
@@ -151,17 +151,17 @@ export function CitizenPortal() {
           <div className="flex items-center gap-2 mb-8">
             {STEPS.slice(0, 3).map((s, i) => (
               <React.Fragment key={s.id}>
-                <div className={`flex items-center gap-2 ${s.id <= step ? 'text-indigo-600' : 'text-slate-300'}`}>
+                <div className={`flex items-center gap-2 ${s.id <= step ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-300 dark:text-slate-600'}`}>
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-colors ${
                     s.id < step ? 'bg-indigo-600 border-indigo-600 text-white' :
-                    s.id === step ? 'border-indigo-600 text-indigo-600' :
-                    'border-gray-200 text-slate-300'
+                    s.id === step ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400' :
+                    'border-gray-200 dark:border-slate-700 text-slate-300 dark:text-slate-600'
                   }`}>
                     {s.id < step ? <CheckCircle2 size={14} /> : s.id}
                   </div>
                   <span className="text-xs font-medium hidden sm:block">{s.label}</span>
                 </div>
-                {i < 2 && <div className={`flex-1 h-px ${s.id < step ? 'bg-indigo-300' : 'bg-gray-200'}`} />}
+                {i < 2 && <div className={`flex-1 h-px ${s.id < step ? 'bg-indigo-300 dark:bg-indigo-700' : 'bg-gray-200 dark:bg-slate-700'}`} />}
               </React.Fragment>
             ))}
           </div>
@@ -171,8 +171,8 @@ export function CitizenPortal() {
           {/* Step 1: Complaint Details */}
           {step === 1 && (
             <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                <label className="block text-sm font-bold text-slate-700 mb-3">What type of issue is it?</label>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">What type of issue is it?</label>
                 <div className="grid grid-cols-2 gap-2.5">
                   {CATEGORIES.map(cat => (
                     <button
@@ -180,8 +180,8 @@ export function CitizenPortal() {
                       onClick={() => handleChange('category', cat.id)}
                       className={`p-3 rounded-xl text-left text-sm font-medium transition-all border ${
                         form.category === cat.id
-                          ? 'bg-indigo-50 border-indigo-300 text-indigo-700'
-                          : 'bg-gray-50 border-gray-100 text-slate-600 hover:bg-indigo-50/50 hover:border-indigo-200'
+                          ? 'bg-indigo-50 dark:bg-indigo-950/70 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300'
+                          : 'bg-gray-50 dark:bg-slate-800 border-gray-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-indigo-50/50 dark:hover:bg-slate-700/80 hover:border-indigo-200'
                       }`}
                     >
                       {cat.label}
@@ -190,8 +190,8 @@ export function CitizenPortal() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                <label className="block text-sm font-bold text-slate-700 mb-2" htmlFor="description">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2" htmlFor="description">
                   Describe the problem
                 </label>
                 <textarea
@@ -200,10 +200,10 @@ export function CitizenPortal() {
                   onChange={e => handleChange('description', e.target.value)}
                   placeholder='E.g. "The water pipe near Arera Colony park has been leaking for 3 days. It is flooding the road."'
                   rows={4}
-                  className="w-full resize-none rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none p-4 text-sm text-slate-700 leading-relaxed placeholder:text-gray-400"
+                  className="w-full resize-none rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/40 outline-none p-4 text-sm text-slate-700 dark:text-slate-200 leading-relaxed placeholder:text-gray-400 dark:placeholder:text-slate-500"
                 />
                 <div className="flex justify-between mt-1">
-                  <span className="text-xs text-gray-400">{form.description.length} characters</span>
+                  <span className="text-xs text-gray-400 dark:text-slate-500">{form.description.length} characters</span>
                   {form.description.length >= 10 && (
                     <span className="text-xs text-emerald-500 flex items-center gap-1">
                       <CheckCircle2 size={12} /> Good detail
@@ -212,8 +212,8 @@ export function CitizenPortal() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                <label className="block text-sm font-bold text-slate-700 mb-3">How urgent is this?</label>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">How urgent is this?</label>
                 <div className="space-y-2">
                   {URGENCY_OPTIONS.map(opt => (
                     <button
@@ -221,8 +221,8 @@ export function CitizenPortal() {
                       onClick={() => handleChange('urgency', opt.id)}
                       className={`w-full p-3 rounded-xl text-left text-sm font-medium transition-all border flex items-center gap-3 ${
                         form.urgency === opt.id
-                          ? `bg-${opt.color}-50 border-${opt.color}-300 text-${opt.color}-700`
-                          : 'bg-gray-50 border-gray-100 text-slate-600 hover:bg-gray-100'
+                          ? 'bg-indigo-50 dark:bg-indigo-950/70 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300'
+                          : 'bg-gray-50 dark:bg-slate-800 border-gray-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700'
                       }`}
                     >
                       <span className={`w-3 h-3 rounded-full shrink-0 ${
@@ -241,8 +241,8 @@ export function CitizenPortal() {
           {/* Step 2: Location */}
           {step === 2 && (
             <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                <label className="block text-sm font-bold text-slate-700 mb-2" htmlFor="locality">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2" htmlFor="locality">
                   <MapPin size={14} className="inline mr-1 text-indigo-500" /> Your Locality / Area
                 </label>
                 <input
@@ -250,47 +250,47 @@ export function CitizenPortal() {
                   value={form.locality}
                   onChange={e => handleChange('locality', e.target.value)}
                   placeholder="e.g. Arera Colony, MP Nagar, Kolar Road..."
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/40 outline-none text-sm"
                 />
               </div>
 
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                <label className="block text-sm font-bold text-slate-700 mb-2" htmlFor="ward">
-                  Ward Number <span className="text-slate-400 font-normal">(optional)</span>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2" htmlFor="ward">
+                  Ward Number <span className="text-slate-400 dark:text-slate-500 font-normal">(optional)</span>
                 </label>
                 <input
                   id="ward"
                   value={form.ward}
                   onChange={e => handleChange('ward', e.target.value)}
                   placeholder="e.g. 42"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/40 outline-none text-sm"
                 />
               </div>
 
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                <label className="block text-sm font-bold text-slate-700 mb-3">
-                  Your Contact <span className="text-slate-400 font-normal">(optional — for updates)</span>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">
+                  Your Contact <span className="text-slate-400 dark:text-slate-500 font-normal">(optional — for updates)</span>
                 </label>
                 <div className="space-y-3">
                   <input
                     value={form.name}
                     onChange={e => handleChange('name', e.target.value)}
                     placeholder="Your name"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-sm"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/40 outline-none text-sm"
                   />
                   <input
                     value={form.phone}
                     onChange={e => handleChange('phone', e.target.value)}
                     placeholder="Phone number"
                     type="tel"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-sm"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/40 outline-none text-sm"
                   />
                 </div>
               </div>
 
-              <div className="bg-indigo-50 rounded-2xl border border-indigo-100 p-4 flex items-start gap-3">
+              <div className="bg-indigo-50 dark:bg-indigo-950/50 rounded-2xl border border-indigo-100 dark:border-indigo-900/60 p-4 flex items-start gap-3">
                 <Shield size={18} className="text-indigo-500 shrink-0 mt-0.5" />
-                <p className="text-sm text-indigo-700">
+                <p className="text-sm text-indigo-700 dark:text-indigo-300">
                   Your contact details are optional and only used to send you status updates on your complaint.
                 </p>
               </div>
@@ -300,9 +300,9 @@ export function CitizenPortal() {
           {/* Step 3: Review */}
           {step === 3 && (
             <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="p-5 border-b border-gray-50">
-                  <h3 className="font-bold text-slate-800 flex items-center gap-2">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-gray-50 dark:border-slate-800">
+                  <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <Sparkles size={16} className="text-indigo-500" /> Review Your Complaint
                   </h3>
                 </div>
@@ -315,20 +315,20 @@ export function CitizenPortal() {
                     { label: 'Contact', value: form.name || form.phone || 'Anonymous' },
                   ].map((item, i) => (
                     <div key={i} className="flex gap-4">
-                      <span className="text-sm text-slate-400 w-24 shrink-0">{item.label}</span>
-                      <span className="text-sm font-medium text-slate-800">{item.value}</span>
+                      <span className="text-sm text-slate-400 dark:text-slate-500 w-24 shrink-0">{item.label}</span>
+                      <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{item.value}</span>
                     </div>
                   ))}
-                  <div className="pt-2 border-t border-gray-50">
-                    <span className="text-sm text-slate-400 block mb-1">Description</span>
-                    <p className="text-sm text-slate-700 bg-gray-50 p-3 rounded-xl leading-relaxed">"{form.description}"</p>
+                  <div className="pt-2 border-t border-gray-50 dark:border-slate-800">
+                    <span className="text-sm text-slate-400 dark:text-slate-500 block mb-1">Description</span>
+                    <p className="text-sm text-slate-700 dark:text-slate-300 bg-gray-50 dark:bg-slate-800 p-3 rounded-xl leading-relaxed">"{form.description}"</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-amber-50 rounded-xl border border-amber-100 p-4 flex items-start gap-3">
+              <div className="bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-100 dark:border-amber-900/60 p-4 flex items-start gap-3">
                 <Sparkles size={16} className="text-amber-500 shrink-0 mt-0.5" />
-                <p className="text-sm text-amber-700">
+                <p className="text-sm text-amber-700 dark:text-amber-300">
                   Our AI will instantly classify and route your complaint to the{' '}
                   <strong>{selectedCategory?.dept || 'appropriate'} Department</strong>.
                   You'll receive a tracking ID after submission.
@@ -345,23 +345,23 @@ export function CitizenPortal() {
               animate={{ opacity: 1, scale: 1 }}
               className="text-center py-8"
             >
-              <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5">
+              <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/60 rounded-full flex items-center justify-center mx-auto mb-5">
                 <CheckCircle2 size={40} className="text-emerald-500" />
               </div>
-              <h2 className="text-3xl font-black text-slate-900 mb-2">Complaint Submitted!</h2>
-              <p className="text-slate-500 mb-6">Your complaint has been received and is being processed.</p>
+              <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2">Complaint Submitted!</h2>
+              <p className="text-slate-500 dark:text-slate-400 mb-6">Your complaint has been received and is being processed.</p>
 
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6 max-w-sm mx-auto">
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">Tracking ID</p>
-                <div className="text-3xl font-black font-mono text-indigo-600 mb-1">{trackId}</div>
-                <p className="text-xs text-slate-400">Save this ID to track your complaint status</p>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-6 mb-6 max-w-sm mx-auto">
+                <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Tracking ID</p>
+                <div className="text-3xl font-black font-mono text-indigo-600 dark:text-indigo-400 mb-1">{trackId}</div>
+                <p className="text-xs text-slate-400 dark:text-slate-500">Save this ID to track your complaint status</p>
               </div>
 
               <div className="grid grid-cols-3 gap-3 mb-8 max-w-sm mx-auto">
                 {[
-                  { icon: Sparkles, label: 'AI Triaged', color: 'text-violet-500 bg-violet-50' },
-                  { icon: ChevronRight, label: 'Dept Notified', color: 'text-blue-500 bg-blue-50' },
-                  { icon: Clock, label: 'Est. 24h', color: 'text-amber-500 bg-amber-50' },
+                  { icon: Sparkles, label: 'AI Triaged', color: 'text-violet-500 bg-violet-50 dark:bg-violet-950/50' },
+                  { icon: ChevronRight, label: 'Dept Notified', color: 'text-blue-500 bg-blue-50 dark:bg-blue-950/50' },
+                  { icon: Clock, label: 'Est. 24h', color: 'text-amber-500 bg-amber-50 dark:bg-amber-950/50' },
                 ].map((s, i) => (
                   <div key={i} className={`p-3 rounded-xl text-center ${s.color}`}>
                     <s.icon size={18} className="mx-auto mb-1" />
@@ -379,7 +379,7 @@ export function CitizenPortal() {
                 </Link>
                 <button
                   onClick={() => { setStep(1); setForm({ category: '', description: '', urgency: 'MEDIUM', locality: '', ward: '', phone: '', name: '' }); setTrackId(''); }}
-                  className="flex items-center justify-center gap-2 bg-white border border-gray-200 text-slate-600 px-6 py-3 rounded-full font-semibold text-sm hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-slate-600 dark:text-slate-200 px-6 py-3 rounded-full font-semibold text-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   Submit Another
                 </button>
@@ -394,7 +394,7 @@ export function CitizenPortal() {
             {step > 1 && (
               <button
                 onClick={() => setStep(s => s - 1)}
-                className="flex items-center gap-2 px-5 py-3 rounded-full border border-gray-200 text-slate-600 font-medium text-sm hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 px-5 py-3 rounded-full border border-gray-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-medium text-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
               >
                 <ArrowLeft size={16} /> Back
               </button>
@@ -425,7 +425,7 @@ export function CitizenPortal() {
       </div>
 
       {/* Footer */}
-      <div className="text-center text-xs text-slate-400 pb-8">
+      <div className="text-center text-xs text-slate-400 dark:text-slate-500 pb-8">
         <div className="flex items-center justify-center gap-4 mb-2">
           <span className="flex items-center gap-1"><Star size={10} fill="currentColor" /> 98.5% Accuracy</span>
           <span className="flex items-center gap-1"><Shield size={10} /> Secure & Anonymous</span>
@@ -435,4 +435,5 @@ export function CitizenPortal() {
       </div>
     </div>
   );
+
 }

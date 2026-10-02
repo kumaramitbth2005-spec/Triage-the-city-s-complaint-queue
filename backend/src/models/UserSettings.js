@@ -14,7 +14,7 @@ const userSettingsSchema = new mongoose.Schema({
   },
   language: { 
     type: String, 
-    enum: ['en', 'hi', 'hinglish'], 
+    enum: ['en', 'hi', 'hinglish', 'mr', 'bn', 'ta', 'te', 'gu', 'pa'], 
     default: 'en' 
   },
   compactMode: { 

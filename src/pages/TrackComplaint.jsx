@@ -138,22 +138,22 @@ export function TrackComplaint() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/40 text-slate-800 dark:text-slate-100 transition-colors duration-300">
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between bg-white/80 backdrop-blur-xl rounded-2xl px-5 py-3 shadow-sm border border-white/80">
+        <div className="max-w-3xl mx-auto flex items-center justify-between bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl px-5 py-3 shadow-sm border border-white/80 dark:border-slate-800">
           <Link to="/" className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-lg flex items-center justify-center shadow-sm">
               <Layers className="text-white" size={16} strokeWidth={2.5} />
             </div>
-            <span className="font-bold text-slate-900 text-sm">Nexus AI</span>
+            <span className="font-bold text-slate-900 dark:text-white text-sm">Nexus AI</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link to="/report" className="text-sm text-slate-500 hover:text-indigo-600 transition-colors hidden sm:block">
+            <Link to="/report" className="text-sm text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors hidden sm:block">
               Report Issue
             </Link>
             <Link to="/dashboard" className="text-xs bg-indigo-600 text-white px-4 py-2 rounded-full font-medium hover:bg-indigo-700 transition-colors">
-              Admin
+              Operator Desk
             </Link>
           </div>
         </div>
@@ -165,8 +165,8 @@ export function TrackComplaint() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 mb-2">Track Your Complaint</h1>
-          <p className="text-slate-500">Enter your complaint tracking ID to see real-time status.</p>
+          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mb-2">Track Your Complaint</h1>
+          <p className="text-slate-500 dark:text-slate-400">Enter your complaint tracking ID to see real-time status.</p>
         </motion.div>
 
         {/* Search box */}
@@ -174,16 +174,16 @@ export function TrackComplaint() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6"
+          className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5 mb-6"
         >
-          <label className="block text-sm font-bold text-slate-700 mb-3">Enter Tracking ID</label>
+          <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">Enter Tracking ID</label>
           <div className="flex gap-3">
             <input
               value={query}
               onChange={e => setQuery(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
               placeholder="e.g. CMP-2026-100001"
-              className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-sm font-mono"
+              className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/40 outline-none text-sm font-mono"
             />
             <button
               onClick={() => handleSearch()}
@@ -200,13 +200,13 @@ export function TrackComplaint() {
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="text-xs text-slate-400">Quick test IDs:</span>
+            <span className="text-xs text-slate-400 dark:text-slate-500">Quick test IDs:</span>
             {['CMP-2026-100001', 'CMP-2026-100003', 'CMP-2026-100004', 'CMP-A1B2C3'].map(id => (
               <button
                 key={id}
                 type="button"
                 onClick={() => { setQuery(id); handleSearch(id); }}
-                className="text-xs bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 text-slate-600 px-2.5 py-1 rounded-md font-mono transition-colors"
+                className="text-xs bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-md font-mono transition-colors"
               >
                 {id}
               </button>
@@ -219,12 +219,12 @@ export function TrackComplaint() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="bg-red-50 rounded-2xl border border-red-100 p-5 flex items-start gap-3 mb-6"
+            className="bg-red-50 dark:bg-rose-950/40 rounded-2xl border border-red-100 dark:border-rose-900/60 p-5 flex items-start gap-3 mb-6"
           >
             <AlertCircle size={20} className="text-red-500 shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold text-red-800">Complaint Not Found</p>
-              <p className="text-sm text-red-600 mt-0.5">No complaint found with ID "{query}". Please check and try again.</p>
+              <p className="font-semibold text-red-800 dark:text-rose-200">Complaint Not Found</p>
+              <p className="text-sm text-red-600 dark:text-rose-300 mt-0.5">No complaint found with ID "{query}". Please check and try again.</p>
             </div>
           </motion.div>
         )}
@@ -233,43 +233,43 @@ export function TrackComplaint() {
         {result && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             {/* Status card */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="p-5 border-b border-gray-50">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div className="p-5 border-b border-gray-50 dark:border-slate-800">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="font-bold text-slate-800 text-lg">{result.category}</h3>
+                    <h3 className="font-bold text-slate-800 dark:text-white text-lg">{result.category}</h3>
                     <div className="flex items-center gap-2 mt-1">
                       <MapPin size={13} className="text-slate-400" />
-                      <span className="text-sm text-slate-500">{result.locality}, Ward {result.ward}</span>
+                      <span className="text-sm text-slate-500 dark:text-slate-400">{result.locality}, Ward {result.ward}</span>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
                       <Building2 size={13} className="text-slate-400" />
-                      <span className="text-sm text-slate-500">{result.dept}</span>
+                      <span className="text-sm text-slate-500 dark:text-slate-400">{result.dept}</span>
                     </div>
                   </div>
                   <div>
-                    <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${statusColors[result.status] || 'bg-gray-100 text-gray-700'}`}>
+                    <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${statusColors[result.status] || 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300'}`}>
                       {result.status}
                     </span>
-                    <div className="text-xs text-slate-400 mt-1.5 text-right">Submitted {result.submittedAt}</div>
+                    <div className="text-xs text-slate-400 dark:text-slate-500 mt-1.5 text-right">Submitted {result.submittedAt}</div>
                   </div>
                 </div>
               </div>
 
               {/* Timeline */}
               <div className="p-5">
-                <h4 className="text-sm font-bold text-slate-700 mb-4">Progress Timeline</h4>
+                <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4">Progress Timeline</h4>
                 <div className="space-y-3">
                   {result.timeline.map((t, i) => (
                     <div key={i} className="flex gap-3 items-start">
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                        t.done ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-400'
+                        t.done ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400' : 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500'
                       }`}>
                         {t.done ? <CheckCircle2 size={14} /> : <Clock size={14} />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-medium ${t.done ? 'text-slate-800' : 'text-slate-400'}`}>{t.event}</p>
-                        <p className="text-xs text-slate-400">{t.time}</p>
+                        <p className={`text-sm font-medium ${t.done ? 'text-slate-800 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>{t.event}</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500">{t.time}</p>
                       </div>
                     </div>
                   ))}
@@ -280,7 +280,7 @@ export function TrackComplaint() {
             <div className="flex gap-3">
               <Link
                 to="/report"
-                className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-200 text-slate-600 py-3 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 py-3 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
               >
                 Report Another
               </Link>
@@ -307,10 +307,10 @@ export function TrackComplaint() {
               { icon: Clock, label: 'Real-time', desc: 'Live updates' },
               { icon: CheckCircle2, label: '24h Target', desc: 'SLA guarantee' },
             ].map((f, i) => (
-              <div key={i} className="bg-white rounded-xl border border-gray-100 p-4">
+              <div key={i} className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4">
                 <f.icon size={20} className="text-indigo-500 mx-auto mb-1.5" />
-                <p className="text-xs font-bold text-slate-700">{f.label}</p>
-                <p className="text-xs text-slate-400">{f.desc}</p>
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-200">{f.label}</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">{f.desc}</p>
               </div>
             ))}
           </motion.div>
@@ -318,4 +318,5 @@ export function TrackComplaint() {
       </div>
     </div>
   );
+
 }

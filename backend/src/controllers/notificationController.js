@@ -19,6 +19,7 @@ exports.getNotifications = async (req, res, next) => {
 // PATCH /api/notifications/:id/read
 exports.markRead = async (req, res, next) => {
   try {
+    if (!req.user) return res.json({ success: true });
     await Notification.findOneAndUpdate(
       { _id: req.params.id, userId: req.user._id },
       { read: true }
@@ -32,6 +33,7 @@ exports.markRead = async (req, res, next) => {
 // PATCH /api/notifications/read-all
 exports.markAllRead = async (req, res, next) => {
   try {
+    if (!req.user) return res.json({ success: true });
     await Notification.updateMany({ userId: req.user._id, read: false }, { read: true });
     res.json({ success: true });
   } catch (err) {
@@ -42,8 +44,20 @@ exports.markAllRead = async (req, res, next) => {
 // DELETE /api/notifications/:id
 exports.deleteNotification = async (req, res, next) => {
   try {
+    if (!req.user) return res.json({ success: true });
     await Notification.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
     res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// DELETE /api/notifications (Clear all)
+exports.clearAllNotifications = async (req, res, next) => {
+  try {
+    if (!req.user) return res.json({ success: true, message: 'Cleared' });
+    await Notification.deleteMany({ userId: req.user._id });
+    res.json({ success: true, message: 'All notifications cleared successfully' });
   } catch (err) {
     next(err);
   }

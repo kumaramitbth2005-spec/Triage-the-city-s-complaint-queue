@@ -14,6 +14,7 @@ export const settingsApi = {
 export const profileApi = {
   get: () => apiClient.get('/profile'),
   update: (data) => apiClient.put('/profile', data),
+  deleteAvatar: () => apiClient.delete('/profile/avatar'),
 };
 
 export const activityApi = {
@@ -23,4 +24,9 @@ export const activityApi = {
 
 export const importApi = {
   importData: (records) => apiClient.post('/import', records),
+};
+
+export const authApi = {
+  changePassword: (currentPassword, newPassword) =>
+    apiClient.post('/auth/change-password', { currentPassword, newPassword }),
 };

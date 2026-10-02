@@ -2,27 +2,58 @@ import React from 'react';
 import { LandingNavbar } from '../components/landing/LandingNavbar';
 import { HeroContent } from '../components/landing/HeroContent';
 import { Background3D } from '../components/landing/Background3D';
+import { LiveActivityTicker } from '../components/landing/LiveActivityTicker';
+import { LandingFeatures } from '../components/landing/LandingFeatures';
+import { HowItWorks } from '../components/landing/HowItWorks';
+import { PortalShowcase } from '../components/landing/PortalShowcase';
+import { LandingFaq } from '../components/landing/LandingFaq';
+import { LandingFooter } from '../components/landing/LandingFooter';
 
 export function LandingPage() {
   return (
-    <div className="relative w-full min-h-screen overflow-x-hidden bg-stone-50 text-slate-900 font-sans selection:bg-indigo-100 flex flex-col justify-between">
-      {/* Background Graphic */}
+    <div className="relative w-full min-h-screen overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-300">
+      {/* Dynamic 3D / Ambient Background */}
       <Background3D />
 
       {/* Navigation Header */}
-      <div className="relative z-20 w-full">
+      <div className="relative z-50 w-full">
         <LandingNavbar />
       </div>
 
-      {/* Main Hero Section */}
-      <main className="relative z-10 flex-1 flex items-center justify-start max-w-7xl w-full mx-auto px-4 sm:px-8 lg:px-16 pt-24 pb-12">
+      {/* Main Hero & Live Triage Demo Section */}
+      <main className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-12">
         <HeroContent />
       </main>
 
-      {/* Bottom Footer Note */}
-      <footer className="relative z-10 w-full text-center py-4 text-xs text-stone-400 border-t border-stone-200/40">
-        Nexus AI · Civic Complaint Triage Platform
-      </footer>
+      {/* Live Real-Time Activity Marquee Ticker */}
+      <div className="relative z-20 w-full my-8 sm:my-12">
+        <LiveActivityTicker />
+      </div>
+
+      {/* 6 Key Architectural Features */}
+      <div className="relative z-10 w-full">
+        <LandingFeatures />
+      </div>
+
+      {/* 3-Step Interactive Civic Workflow */}
+      <div className="relative z-10 w-full">
+        <HowItWorks />
+      </div>
+
+      {/* Citizen vs Municipal Operator Dual-Portal Perspective */}
+      <div className="relative z-10 w-full">
+        <PortalShowcase />
+      </div>
+
+      {/* Interactive FAQ Section */}
+      <div className="relative z-10 w-full">
+        <LandingFaq />
+      </div>
+
+      {/* Conversion Banner & Comprehensive Dark Mode Footer */}
+      <div className="relative z-20 w-full mt-24">
+        <LandingFooter />
+      </div>
     </div>
   );
 }

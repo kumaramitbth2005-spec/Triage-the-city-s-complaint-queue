@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const UserSettings = require('../models/UserSettings');
 const Activity = require('../models/Activity');
+const { createNotification } = require('../services/notificationService');
 
 // GET /api/profile or /api/user/profile
 exports.getProfile = async (req, res, next) => {
@@ -31,7 +32,7 @@ exports.updateProfile = async (req, res, next) => {
     if (phone && phone.trim().length > 20) {
       return res.status(400).json({
         success: false,
-        error: { code: 'VALIDATION_ERROR', message: 'Phone number is too long' }
+        error: { code: 'VALIDATION_ERROR', message: 'Phone number cannot exceed 20 characters' }
       });
     }
 
@@ -40,6 +41,48 @@ exports.updateProfile = async (req, res, next) => {
         success: false,
         error: { code: 'VALIDATION_ERROR', message: 'Bio cannot exceed 500 characters' }
       });
+    }
+
+    // Avatar validation if provided
+    if (avatar !== undefined && avatar !== null && avatar !== '') {
+      if (typeof avatar === 'string') {
+        const isDataUri = avatar.startsWith('data:image/');
+        const isHttpUrl = avatar.startsWith('http://') || avatar.startsWith('https://');
+
+        if (isDataUri) {
+          // Check allowed formats
+          const allowedPrefixes = [
+            'data:image/jpeg;base64,',
+            'data:image/jpg;base64,',
+            'data:image/png;base64,',
+            'data:image/webp;base64,'
+          ];
+          const isValidPrefix = allowedPrefixes.some(prefix => avatar.startsWith(prefix));
+          if (!isValidPrefix) {
+            return res.status(400).json({
+              success: false,
+              error: { code: 'INVALID_IMAGE_FORMAT', message: 'Profile picture must be a JPG, PNG, or WEBP image' }
+            });
+          }
+          // Check size (approx 5MB base64 limit)
+          if (avatar.length > 7 * 1024 * 1024) {
+            return res.status(400).json({
+              success: false,
+              error: { code: 'FILE_TOO_LARGE', message: 'Profile picture size must not exceed 5MB' }
+            });
+          }
+        } else if (!isHttpUrl) {
+          return res.status(400).json({
+            success: false,
+            error: { code: 'INVALID_IMAGE_URL', message: 'Invalid profile image format or URL' }
+          });
+        }
+      } else {
+        return res.status(400).json({
+          success: false,
+          error: { code: 'INVALID_AVATAR', message: 'Invalid avatar data type' }
+        });
+      }
     }
 
     const updates = {};
@@ -56,16 +99,51 @@ exports.updateProfile = async (req, res, next) => {
     // Check privacy settings before logging activity
     const settings = await UserSettings.findOne({ userId: req.user._id });
     if (settings?.privacy?.activityHistory !== false) {
+      const isAvatarUpdate = avatar !== undefined && Object.keys(updates).length === 1;
       await Activity.create({
         userId: req.user._id,
-        action: 'PROFILE_UPDATED',
+        action: isAvatarUpdate ? 'AVATAR_UPDATED' : 'PROFILE_UPDATED',
         details: Object.keys(updates)
       });
     }
 
+    // In-app notification for profile update
+    await createNotification({
+      userId: req.user._id,
+      type: 'SYSTEM',
+      title: 'Profile Updated',
+      message: 'Your profile information has been updated successfully.',
+      route: '/dashboard/settings/profile'
+    });
+
     res.json({
       success: true,
       message: 'Profile updated successfully',
+      data: user
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// DELETE /api/profile/avatar
+exports.deleteAvatar = async (req, res, next) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { avatar: null },
+      { new: true }
+    ).select('-passwordHash');
+
+    await Activity.create({
+      userId: req.user._id,
+      action: 'AVATAR_UPDATED',
+      details: { action: 'removed' }
+    });
+
+    res.json({
+      success: true,
+      message: 'Profile picture removed successfully',
       data: user
     });
   } catch (err) {

@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { useSettings } from '../../context/SettingsContext';
+import { useTranslation } from '../../context/LanguageContext';
 import { activityApi } from '../../api/settingsApi';
-import { Download, Trash2, CheckCircle2, AlertTriangle, X, Loader2 } from 'lucide-react';
+import { Download, Trash2, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 
 export function PrivacySettings() {
   const { state, dispatch, saveStatus } = useSettings();
+  const { t } = useTranslation();
   const { complaints } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
@@ -83,15 +85,15 @@ export function PrivacySettings() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 relative">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Privacy & Data</h1>
-          <p className="text-gray-500 mt-1">Manage data sharing controls, telemetry preferences, and activity logs.</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('privacyTitle', 'Privacy & Data')}</h1>
+          <p className="text-gray-500 mt-1">{t('privacyDesc', 'Manage data sharing controls, telemetry preferences, and activity logs.')}</p>
         </div>
         {saveStatus === 'saving' && (
-          <span className="text-xs font-medium text-blue-600 animate-pulse">Saving...</span>
+          <span className="text-xs font-medium text-blue-600 animate-pulse">{t('saving', 'Saving...')}</span>
         )}
         {saveStatus === 'saved' && (
           <span className="text-xs font-medium text-emerald-600 flex items-center gap-1">
-            <CheckCircle2 size={14} /> Saved ✓
+            <CheckCircle2 size={14} /> {t('saved', 'Saved ✓')}
           </span>
         )}
       </div>
@@ -111,8 +113,8 @@ export function PrivacySettings() {
           {/* Profile Visibility */}
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <div>
-              <div className="font-medium text-gray-800">Profile Visibility</div>
-              <div className="text-xs text-gray-500">Control who can view your operator contact information</div>
+              <div className="font-medium text-gray-800 dark:text-white">Profile Visibility</div>
+              <div className="text-xs text-gray-500 dark:text-slate-400">Control who can view your operator contact information</div>
             </div>
             <select 
               value={privacy.profileVisibility || 'Internal Only'}
@@ -128,8 +130,8 @@ export function PrivacySettings() {
           {/* Activity History Toggle */}
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <div>
-              <div className="font-medium text-gray-800">Activity History Tracking</div>
-              <div className="text-xs text-gray-500">When enabled, audits and records logins, triage updates, and settings changes</div>
+              <div className="font-medium text-gray-800 dark:text-white">Activity History Tracking</div>
+              <div className="text-xs text-gray-500 dark:text-slate-400">When enabled, audits and records logins, triage updates, and settings changes</div>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input 
@@ -145,8 +147,8 @@ export function PrivacySettings() {
           {/* Data Collection */}
           <div className="flex items-center justify-between py-2 border-b border-gray-100">
             <div>
-              <div className="font-medium text-gray-800">Anonymous Usage Telemetry</div>
-              <div className="text-xs text-gray-500">Share anonymous performance telemetry to help optimize triage speeds</div>
+              <div className="font-medium text-gray-800 dark:text-white">Anonymous Usage Telemetry</div>
+              <div className="text-xs text-gray-500 dark:text-slate-400">Share anonymous performance telemetry to help optimize triage speeds</div>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input 
@@ -162,8 +164,8 @@ export function PrivacySettings() {
           {/* Personalization */}
           <div className="flex items-center justify-between py-2">
             <div>
-              <div className="font-medium text-gray-800">Smart Personalization</div>
-              <div className="text-xs text-gray-500">Remember your frequent search scopes and locality filters</div>
+              <div className="font-medium text-gray-800 dark:text-white">Smart Personalization</div>
+              <div className="text-xs text-gray-500 dark:text-slate-400">Remember your frequent search scopes and locality filters</div>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input 
@@ -186,8 +188,8 @@ export function PrivacySettings() {
         <CardContent className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2">
             <div>
-              <div className="font-medium text-gray-800">Download My Data</div>
-              <div className="text-xs text-gray-500">Export a complete JSON archive of your profile, preferences, and activity summaries</div>
+              <div className="font-medium text-gray-800 dark:text-white">Download My Data</div>
+              <div className="text-xs text-gray-500 dark:text-slate-400">Export a complete JSON archive of your profile, preferences, and activity summaries</div>
             </div>
             <Button variant="outline" onClick={handleDownloadData} className="gap-2 shrink-0">
               <Download size={15} /> Export JSON
@@ -196,8 +198,8 @@ export function PrivacySettings() {
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-gray-100">
             <div>
-              <div className="font-medium text-red-600">Clear Activity History</div>
-              <div className="text-xs text-gray-500">Permanently delete all activity and audit logs associated with your account</div>
+              <div className="font-medium text-red-600 dark:text-red-400">Clear Activity History</div>
+              <div className="text-xs text-gray-500 dark:text-slate-400">Permanently delete all activity and audit logs associated with your account</div>
             </div>
             <Button 
               variant="outline" 

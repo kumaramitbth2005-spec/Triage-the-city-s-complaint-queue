@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { useSettings, defaultPreferences } from '../../context/SettingsContext';
-import { CheckCircle2, RotateCcw, Save } from 'lucide-react';
+import { useTranslation } from '../../context/LanguageContext';
+import { CheckCircle2, RotateCcw } from 'lucide-react';
 
 export function GeneralSettings() {
   const { state, dispatch, saveStatus } = useSettings();
+  const { t } = useTranslation();
   const [localGeneral, setLocalGeneral] = useState(state.general || defaultPreferences.general);
 
   const handleGeneralChange = (key, value) => {
@@ -29,29 +31,29 @@ export function GeneralSettings() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">General Settings</h1>
-          <p className="text-gray-500 mt-1">Manage basic display preferences and system behaviors.</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('generalSettingsTitle', 'General Settings')}</h1>
+          <p className="text-gray-500 mt-1">{t('generalSettingsDesc', 'Manage basic display preferences and system behaviors.')}</p>
         </div>
         {saveStatus === 'saving' && (
-          <span className="text-xs font-medium text-blue-600 animate-pulse">Saving...</span>
+          <span className="text-xs font-medium text-blue-600 animate-pulse">{t('saving', 'Saving...')}</span>
         )}
         {saveStatus === 'saved' && (
           <span className="text-xs font-medium text-emerald-600 flex items-center gap-1">
-            <CheckCircle2 size={14} /> Saved ✓
+            <CheckCircle2 size={14} /> {t('saved', 'Saved ✓')}
           </span>
         )}
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>System & Layout Preferences</CardTitle>
+          <CardTitle>{t('systemLayoutPrefs', 'System & Layout Preferences')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Compact View Toggle */}
           <div className="flex items-center justify-between py-2">
             <div>
-              <div className="font-medium text-gray-800">Compact View</div>
-              <div className="text-xs text-gray-500">Reduce padding and spacing to fit more complaints and data on screen</div>
+              <div className="font-medium text-gray-800 dark:text-white">{t('compactView', 'Compact View')}</div>
+              <div className="text-xs text-gray-500 dark:text-slate-400">{t('compactViewDesc', 'Reduce padding and spacing to fit more complaints and data on screen')}</div>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input 
@@ -68,27 +70,27 @@ export function GeneralSettings() {
           {/* Default Landing Page */}
           <div className="flex items-center justify-between py-3 border-t border-gray-100">
             <div>
-              <div className="font-medium text-gray-800">Default View</div>
-              <div className="text-xs text-gray-500">Choose the landing section when entering the application</div>
+              <div className="font-medium text-gray-800 dark:text-white">{t('defaultView', 'Default View')}</div>
+              <div className="text-xs text-gray-500 dark:text-slate-400">Choose the landing section when entering the application</div>
             </div>
             <select 
               value={localGeneral.defaultView || 'Dashboard'}
               onChange={(e) => handleGeneralChange('defaultView', e.target.value)}
               className="form-select w-44 rounded-lg border-gray-300 shadow-xs focus:border-blue-500 focus:ring-blue-500 text-sm font-medium text-gray-700"
             >
-              <option value="Dashboard">Dashboard</option>
-              <option value="Complaints">Complaints Queue</option>
-              <option value="AI Triage">AI Triage</option>
-              <option value="Duplicate Clusters">Duplicate Clusters</option>
-              <option value="Reports">Reports</option>
+              <option value="Dashboard">{t('dashboard', 'Dashboard')}</option>
+              <option value="Complaints">{t('complaints', 'Complaints Queue')}</option>
+              <option value="AI Triage">{t('aiTriage', 'AI Triage')}</option>
+              <option value="Duplicate Clusters">{t('duplicateClusters', 'Duplicate Clusters')}</option>
+              <option value="Reports">{t('reports', 'Reports')}</option>
             </select>
           </div>
 
           {/* Items Per Page */}
           <div className="flex items-center justify-between py-3 border-t border-gray-100">
             <div>
-              <div className="font-medium text-gray-800">Items per page</div>
-              <div className="text-xs text-gray-500">Number of complaint records to display in tables</div>
+              <div className="font-medium text-gray-800 dark:text-white">{t('itemsPerPage', 'Items per page')}</div>
+              <div className="text-xs text-gray-500 dark:text-slate-400">Number of complaint records to display in tables</div>
             </div>
             <select 
               value={localGeneral.itemsPerPage || 25}
@@ -105,8 +107,8 @@ export function GeneralSettings() {
           {/* Auto Refresh */}
           <div className="flex items-center justify-between py-3 border-t border-gray-100">
             <div>
-              <div className="font-medium text-gray-800">Auto-refresh Live Feeds</div>
-              <div className="text-xs text-gray-500">Periodically poll new incoming ward complaints</div>
+              <div className="font-medium text-gray-800 dark:text-white">{t('autoRefresh', 'Auto-refresh Live Feeds')}</div>
+              <div className="text-xs text-gray-500 dark:text-slate-400">{t('autoRefreshDesc', 'Periodically poll new incoming ward complaints')}</div>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input 
@@ -123,8 +125,8 @@ export function GeneralSettings() {
           {/* Auto-save Triage Drafts */}
           <div className="flex items-center justify-between py-3 border-t border-gray-100">
             <div>
-              <div className="font-medium text-gray-800">Auto-save Decisions</div>
-              <div className="text-xs text-gray-500">Automatically save triage decision drafts as you review</div>
+              <div className="font-medium text-gray-800 dark:text-white">{t('autoSave', 'Auto-save Decisions')}</div>
+              <div className="text-xs text-gray-500 dark:text-slate-400">{t('autoSaveDesc', 'Automatically save triage decision drafts as you review')}</div>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input 
@@ -142,7 +144,7 @@ export function GeneralSettings() {
 
       <div className="flex justify-end gap-3 pt-2">
         <Button variant="outline" className="gap-2" onClick={handleReset}>
-          <RotateCcw size={15} /> Reset Defaults
+          <RotateCcw size={15} /> {t('resetDefaults', 'Reset Defaults')}
         </Button>
       </div>
     </div>

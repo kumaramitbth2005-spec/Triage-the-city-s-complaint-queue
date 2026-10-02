@@ -45,10 +45,12 @@ export default function App() {
               <Route path="import" element={<DataImport />} />
               <Route path="departments" element={<DepartmentManagement />} />
               <Route path="users" element={<UserManagement />} />
+              <Route path="profile" element={<Navigate to="/dashboard/settings/profile" replace />} />
               <Route path="settings/*" element={<SettingsLayout />} />
               <Route path="new-complaint" element={<NewComplaint />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Route>
+            <Route path="/profile" element={<Navigate to="/dashboard/settings/profile" replace />} />
             <Route path="/complaints" element={<Navigate to="/dashboard/complaints" replace />} />
             <Route path="/triage" element={<Navigate to="/dashboard/triage" replace />} />
             <Route path="/clusters" element={<Navigate to="/dashboard/clusters" replace />} />

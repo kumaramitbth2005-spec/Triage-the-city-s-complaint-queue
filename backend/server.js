@@ -5,7 +5,7 @@ const connectDB = require('./src/config/db');
 const PORT = process.env.PORT || 5000;
 
 // Bind HTTP port immediately so Render / cloud health checks pass
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT} (Environment: ${process.env.NODE_ENV || 'development'})`);
 });
 

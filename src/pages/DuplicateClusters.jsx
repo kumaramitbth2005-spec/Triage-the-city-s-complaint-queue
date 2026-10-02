@@ -4,11 +4,13 @@ import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Copy, MapPin, Calendar, ChevronRight } from 'lucide-react';
 import { clusterApi } from '../api/clusterApi';
+import { useTranslation } from '../context/LanguageContext';
 
 export function DuplicateClusters() {
   const [clusters, setClusters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { t } = useTranslation();
 
   const fetchClusters = async () => {
     setLoading(true);
@@ -38,19 +40,21 @@ export function DuplicateClusters() {
   if (error && !clusters.length) return (
     <div className="flex flex-col items-center justify-center h-64 gap-4">
       <p className="text-slate-500 text-sm">Unable to load clusters.</p>
-      <button onClick={fetchClusters} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Retry</button>
+      <button onClick={fetchClusters} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
+        {t('refresh', 'Retry')}
+      </button>
     </div>
   );
 
   return (
     <div className="space-y-4 sm:space-y-6 max-w-5xl mx-auto w-full">
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Duplicate Clusters</h2>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1">AI-detected similar complaints grouped by issue and location.</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-800">{t('clustersTitle', 'Duplicate Clusters')}</h2>
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('clustersSubtitle', 'AI-detected similar complaints grouped by issue and location.')}</p>
       </div>
 
       {clusters.length === 0 && (
-        <div className="text-center py-12 text-gray-500 text-sm">No clusters found.</div>
+        <div className="text-center py-12 text-gray-500 text-sm">{t('noRecords', 'No clusters found.')}</div>
       )}
 
       <div className="grid grid-cols-1 gap-4">
@@ -64,14 +68,14 @@ export function DuplicateClusters() {
                   <div>
                     <div className="flex flex-wrap items-center gap-2 mb-3 sm:mb-4">
                       <span className="font-mono text-xs sm:text-sm font-semibold text-slate-600">#{cluster.clusterId}</span>
-                      {cluster.isEmerging && <Badge variant="warning" className="text-[10px]">Emerging Cluster</Badge>}
+                      {cluster.isEmerging && <Badge variant="warning" className="text-[10px]">{t('emergingIssue', 'Emerging Cluster')}</Badge>}
                     </div>
                     <div className="text-3xl sm:text-4xl font-bold text-slate-800 mb-1">{cluster.complaintCount}</div>
-                    <div className="text-xs sm:text-sm font-medium text-slate-500 uppercase tracking-wider">Complaints Linked</div>
+                    <div className="text-xs sm:text-sm font-medium text-slate-500 uppercase tracking-wider">{t('complaints', 'Complaints Linked')}</div>
                   </div>
                   <div className="mt-4 sm:mt-6 flex items-center gap-2 text-xs sm:text-sm text-blue-600 font-semibold bg-blue-50 w-fit px-3 py-1.5 rounded-lg border border-blue-100">
                     <Copy size={14} className="shrink-0 sm:w-4 sm:h-4" />
-                    {cluster.averageSimilarity || 0}% Similarity
+                    {cluster.averageSimilarity || 0}% {t('confidence', 'Similarity')}
                   </div>
                 </div>
 
@@ -80,7 +84,7 @@ export function DuplicateClusters() {
                   <div className="space-y-3 sm:space-y-4">
                     <div className="min-w-0">
                       <h3 className="text-base sm:text-lg font-semibold text-slate-900 truncate">{cluster.category}</h3>
-                      <p className="text-xs sm:text-sm text-slate-500">{cluster.department} Department</p>
+                      <p className="text-xs sm:text-sm text-slate-500">{cluster.department}</p>
                     </div>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -88,7 +92,7 @@ export function DuplicateClusters() {
                         <MapPin size={14} className="text-gray-400 shrink-0 mt-0.5 sm:w-4 sm:h-4" />
                         <div className="min-w-0">
                           <span className="block font-medium text-slate-700 truncate">{cluster.locality}</span>
-                          <span className="text-gray-500">Ward {cluster.ward}</span>
+                          <span className="text-gray-500">{t('ward', 'Ward')} {cluster.ward}</span>
                         </div>
                       </div>
                       <div className="flex items-start gap-2 text-xs sm:text-sm">
@@ -103,7 +107,7 @@ export function DuplicateClusters() {
                   
                   <div className="mt-4 sm:mt-6 flex justify-end">
                     <Button className="w-full sm:w-auto text-xs sm:text-sm h-9 sm:h-10">
-                      View Cluster Details <ChevronRight size={14} className="ml-1 shrink-0 sm:w-4 sm:h-4" />
+                      {t('details', 'View Cluster Details')} <ChevronRight size={14} className="ml-1 shrink-0 sm:w-4 sm:h-4" />
                     </Button>
                   </div>
                 </div>

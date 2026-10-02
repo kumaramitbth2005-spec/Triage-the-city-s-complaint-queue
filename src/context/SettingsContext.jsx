@@ -170,60 +170,72 @@ export function SettingsProvider({ children }) {
     localStorage.setItem('settings', JSON.stringify(state));
   }, [state]);
 
-  // Fetch from backend API on initial mount
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const [settingsRes, profileRes] = await Promise.all([
-          settingsApi.get().catch(() => null),
-          profileApi.get().catch(() => null)
-        ]);
+  // Fetch from backend API on initial mount or on demand
+  const loadSettings = useCallback(async () => {
+    if (!localStorage.getItem('auth_token')) return;
+    try {
+      const [settingsRes, profileRes] = await Promise.all([
+        settingsApi.get().catch(() => null),
+        profileApi.get().catch(() => null)
+      ]);
 
-        if (settingsRes?.data?.data) {
-          const s = settingsRes.data.data;
-          dispatch({
-            type: 'LOAD_SERVER_SETTINGS',
-            payload: {
-              theme: s.theme || state.theme,
-              language: s.language || state.language,
-              compactMode: s.compactMode !== undefined ? s.compactMode : state.compactMode,
-              general: s.general || state.general,
-              notifications: s.notifications || s.notificationPreferences || state.notifications,
-              privacy: s.privacy || state.privacy,
-              accessibility: s.accessibility || s.accessibilityPreferences || state.accessibility,
-            }
-          });
-        }
-
-        if (profileRes?.data?.data) {
-          const p = profileRes.data.data;
-          dispatch({
-            type: 'UPDATE_PROFILE',
-            payload: {
-              name: p.name || state.profile.name,
-              username: p.username || state.profile.username,
-              email: p.email || state.profile.email,
-              phone: p.phone || state.profile.phone,
-              bio: p.bio || state.profile.bio,
-              avatar: p.avatar !== undefined ? p.avatar : state.profile.avatar,
-              role: p.role || state.profile.role,
-              zone: p.zone || state.profile.zone,
-              department: p.department || state.profile.department,
-            }
-          });
-        }
-      } catch (err) {
-        console.warn('Backend unavailable, operating seamlessly on local cached preferences.');
+      if (settingsRes?.data?.data) {
+        const s = settingsRes.data.data;
+        dispatch({
+          type: 'LOAD_SERVER_SETTINGS',
+          payload: {
+            theme: s.theme || state.theme,
+            language: s.language || state.language,
+            compactMode: s.compactMode !== undefined ? s.compactMode : state.compactMode,
+            general: s.general || state.general,
+            notifications: s.notifications || s.notificationPreferences || state.notifications,
+            privacy: s.privacy || state.privacy,
+            accessibility: s.accessibility || s.accessibilityPreferences || state.accessibility,
+          }
+        });
       }
-    };
 
-    if (localStorage.getItem('auth_token')) {
-      loadSettings();
+      if (profileRes?.data?.data) {
+        const p = profileRes.data.data;
+        dispatch({
+          type: 'UPDATE_PROFILE',
+          payload: {
+            _id: p._id || p.id,
+            id: p.id || p._id,
+            name: p.name || state.profile.name,
+            username: p.username || state.profile.username,
+            email: p.email || state.profile.email,
+            phone: p.phone !== undefined ? p.phone : state.profile.phone,
+            bio: p.bio !== undefined ? p.bio : state.profile.bio,
+            avatar: p.avatar !== undefined ? p.avatar : state.profile.avatar,
+            role: p.role || state.profile.role,
+            zone: p.zone || state.profile.zone,
+            department: p.department || state.profile.department,
+            createdAt: p.createdAt || null,
+            lastLogin: p.lastLogin || null,
+            language: p.language || state.language,
+            theme: p.theme || state.theme,
+            notificationPreferences: p.notificationPreferences || state.notifications,
+          }
+        });
+      }
+    } catch (err) {
+      console.warn('Backend unavailable, operating seamlessly on local cached preferences.');
     }
+  }, [state.theme, state.language, state.compactMode, state.general, state.notifications, state.privacy, state.accessibility, state.profile]);
+
+  useEffect(() => {
+    loadSettings();
   }, []);
 
   // Update Setting action dispatcher that syncs to backend with saving feedback
   const updateSetting = useCallback(async (action) => {
+    if (action.type === 'RESET_ALL') {
+      localStorage.removeItem('settings');
+      dispatch({ type: 'RESET_ALL' });
+      return;
+    }
+
     dispatch(action);
     setSaveStatus('saving');
 
@@ -246,6 +258,9 @@ export function SettingsProvider({ children }) {
         await settingsApi.update({ search: { ...state.search, ...action.payload } });
       } else if (action.type === 'UPDATE_PROFILE') {
         await profileApi.update(action.payload);
+      } else if (action.type === 'DELETE_AVATAR') {
+        await profileApi.deleteAvatar();
+        dispatch({ type: 'UPDATE_PROFILE', payload: { avatar: null } });
       }
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
@@ -260,7 +275,8 @@ export function SettingsProvider({ children }) {
       state, 
       dispatch: updateSetting, 
       saveStatus,
-      setSaveStatus
+      setSaveStatus,
+      refreshProfile: loadSettings
     }}>
       {children}
     </SettingsContext.Provider>

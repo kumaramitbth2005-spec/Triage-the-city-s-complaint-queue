@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '../components/ui/Card';
 import { Badge, UrgencyBadge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { useAppContext } from '../context/AppContext';
+import { useTranslation } from '../context/LanguageContext';
 import { Search, Filter, Mic, Image as ImageIcon, FileText, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 export function Complaints() {
   const [complaintToDelete, setComplaintToDelete] = useState(null);
@@ -12,14 +13,63 @@ export function Complaints() {
   const [deleteError, setDeleteError] = useState(null);
   
   const { complaints, deleteComplaint } = useAppContext();
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const qParam = searchParams.get('q') || '';
+  
+  const [searchTerm, setSearchTerm] = useState(qParam);
+  const [selectedUrgencyFilter, setSelectedUrgencyFilter] = useState('ALL');
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState('ALL');
   const [showFilters, setShowFilters] = useState(false);
 
-  const filtered = complaints.filter(c => 
-    c.originalText.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (c.id && c.id.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  useEffect(() => {
+    if (qParam !== searchTerm) {
+      setSearchTerm(qParam);
+    }
+  }, [qParam]);
+
+  const handleSearchChange = (val) => {
+    setSearchTerm(val);
+    if (val.trim()) {
+      setSearchParams({ q: val.trim() });
+    } else {
+      setSearchParams({});
+    }
+  };
+
+  const filtered = complaints.filter(c => {
+    // Search keyword filter
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase().trim();
+      const matchText = (c.originalText && c.originalText.toLowerCase().includes(term)) ||
+        (c.normalizedText && c.normalizedText.toLowerCase().includes(term));
+      const matchId = (c.id && c.id.toLowerCase().includes(term)) ||
+        (c.complaintId && c.complaintId.toLowerCase().includes(term));
+      const matchDept = c.department && c.department.toLowerCase().includes(term);
+      const matchCat = c.category && c.category.toLowerCase().includes(term);
+      const matchLoc = c.normalizedLocality && c.normalizedLocality.toLowerCase().includes(term);
+      const matchWard = c.ward && String(c.ward).toLowerCase().includes(term);
+      const matchStatus = c.status && c.status.toLowerCase().includes(term);
+      const matchUrgency = c.urgency && c.urgency.toLowerCase().includes(term);
+
+      if (!matchText && !matchId && !matchDept && !matchCat && !matchLoc && !matchWard && !matchStatus && !matchUrgency) {
+        return false;
+      }
+    }
+
+    // Urgency filter
+    if (selectedUrgencyFilter === 'HIGH') {
+      if (c.urgency !== 'HIGH' && c.urgency !== 'CRITICAL') return false;
+    }
+
+    // Status filter
+    if (selectedStatusFilter === 'NEEDS_REVIEW') {
+      if (!['Needs Review', 'RECEIVED', 'AI_TRIAGED', 'AWAITING_REVIEW'].includes(c.status)) return false;
+    }
+
+    return true;
+  });
 
   const getIconForType = (type) => {
     if (type === 'Voice') return <Mic size={14} className="text-purple-500 shrink-0" />;
@@ -50,48 +100,78 @@ export function Complaints() {
   return (
     <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full relative">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Complaint Queue</h2>
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800">{t('complaints', 'Complaint Queue')}</h2>
+          <p className="text-xs text-gray-500 mt-0.5">Manage, triage, and review city complaints</p>
+        </div>
+
         <div className="flex items-center gap-2 w-full md:w-auto">
-          <div className="relative flex-1 md:w-64">
+          <div className="relative flex-1 md:w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input 
               type="text" 
-              placeholder="Search by ID or keyword..." 
+              placeholder="Search by ID, ward, department, text..." 
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full h-10 pl-9 pr-4 rounded-lg bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm transition-all shadow-sm"
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full h-10 pl-9 pr-8 rounded-lg bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm transition-all shadow-xs"
             />
+            {searchTerm && (
+              <button 
+                onClick={() => handleSearchChange('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
-          <Button variant="outline" className="shrink-0 hidden md:flex">
-            <Filter size={16} className="mr-2" />
-            Filters
-          </Button>
-          <Button variant="outline" className="shrink-0 md:hidden px-3" onClick={() => setShowFilters(true)}>
-            <Filter size={18} />
+          <Button 
+            variant={showFilters ? "primary" : "outline"} 
+            className="shrink-0 flex items-center gap-1.5"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter size={16} />
+            <span className="hidden sm:inline">Filters</span>
           </Button>
         </div>
       </div>
 
-      {/* Mobile Filter Modal */}
+      {/* Filter Options Bar */}
       {showFilters && (
-        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-end sm:items-center justify-center p-4 md:hidden">
-          <div className="bg-white w-full max-w-sm rounded-t-xl sm:rounded-xl p-4 shadow-xl max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold text-slate-800">Filters</h3>
-              <button onClick={() => setShowFilters(false)} className="text-slate-500 p-1"><X size={20}/></button>
+        <div className="p-4 bg-white border border-gray-200 rounded-xl shadow-xs flex flex-wrap items-center justify-between gap-3 animate-in fade-in">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 text-xs">
+              <span className="font-semibold text-gray-600">Urgency:</span>
+              <select 
+                value={selectedUrgencyFilter}
+                onChange={(e) => setSelectedUrgencyFilter(e.target.value)}
+                className="rounded-lg border-gray-200 text-xs py-1.5 px-2.5 bg-gray-50 font-medium"
+              >
+                <option value="ALL">All Urgencies</option>
+                <option value="HIGH">High & Critical Only</option>
+              </select>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-medium text-slate-500 mb-1 block">Urgency</label>
-                <select className="w-full border-gray-200 rounded-lg text-sm"><option>All</option><option>High/Critical</option></select>
-              </div>
-              <div>
-                <label className="text-xs font-medium text-slate-500 mb-1 block">Status</label>
-                <select className="w-full border-gray-200 rounded-lg text-sm"><option>All</option><option>Needs Review</option></select>
-              </div>
-              <Button className="w-full mt-4" onClick={() => setShowFilters(false)}>Apply Filters</Button>
+
+            <div className="flex items-center gap-2 text-xs">
+              <span className="font-semibold text-gray-600">Status:</span>
+              <select 
+                value={selectedStatusFilter}
+                onChange={(e) => setSelectedStatusFilter(e.target.value)}
+                className="rounded-lg border-gray-200 text-xs py-1.5 px-2.5 bg-gray-50 font-medium"
+              >
+                <option value="ALL">All Statuses</option>
+                <option value="NEEDS_REVIEW">Needs Review / Triage</option>
+              </select>
             </div>
           </div>
+
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => { setSelectedUrgencyFilter('ALL'); setSelectedStatusFilter('ALL'); handleSearchChange(''); }}
+            className="text-xs text-gray-500 hover:text-red-600"
+          >
+            Reset Filters
+          </Button>
         </div>
       )}
 
@@ -108,33 +188,53 @@ export function Complaints() {
             )}
             <div className="flex gap-3 justify-end">
               <Button variant="outline" onClick={() => setComplaintToDelete(null)} disabled={isDeleting}>
-                Cancel
+                {t('cancel', 'Cancel')}
               </Button>
               <Button variant="danger" onClick={confirmDelete} disabled={isDeleting}>
-                {isDeleting ? 'Deleting...' : 'Delete'}
+                {isDeleting ? 'Deleting...' : t('delete', 'Delete')}
               </Button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Quick Filter Badges */}
       <div className="flex flex-wrap gap-2 mb-4 overflow-x-auto pb-1 hide-scrollbar">
-        <Badge variant="outline" className="bg-white border-blue-200 text-blue-700 cursor-pointer whitespace-nowrap">All ({complaints.length})</Badge>
-        <Badge variant="outline" className="bg-white cursor-pointer hover:bg-gray-50 whitespace-nowrap">High Urgency ({complaints.filter(c=>c.urgency==='HIGH' || c.urgency==='CRITICAL').length})</Badge>
-        <Badge variant="outline" className="bg-white cursor-pointer hover:bg-gray-50 whitespace-nowrap">Needs Review ({complaints.filter(c=>c.status==='Needs Review').length})</Badge>
+        <Badge 
+          variant={selectedUrgencyFilter === 'ALL' && selectedStatusFilter === 'ALL' ? 'default' : 'outline'}
+          onClick={() => { setSelectedUrgencyFilter('ALL'); setSelectedStatusFilter('ALL'); }}
+          className="cursor-pointer whitespace-nowrap"
+        >
+          All ({complaints.length})
+        </Badge>
+        <Badge 
+          variant={selectedUrgencyFilter === 'HIGH' ? 'danger' : 'outline'} 
+          onClick={() => setSelectedUrgencyFilter(selectedUrgencyFilter === 'HIGH' ? 'ALL' : 'HIGH')}
+          className="cursor-pointer whitespace-nowrap"
+        >
+          High Urgency ({complaints.filter(c => c.urgency === 'HIGH' || c.urgency === 'CRITICAL').length})
+        </Badge>
+        <Badge 
+          variant={selectedStatusFilter === 'NEEDS_REVIEW' ? 'warning' : 'outline'}
+          onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'NEEDS_REVIEW' ? 'ALL' : 'NEEDS_REVIEW')}
+          className="cursor-pointer whitespace-nowrap"
+        >
+          Needs Review ({complaints.filter(c => ['Needs Review', 'RECEIVED', 'AI_TRIAGED', 'AWAITING_REVIEW'].includes(c.status)).length})
+        </Badge>
       </div>
 
+      {/* Complaints List */}
       <div className="grid grid-cols-1 gap-4">
         {filtered.map(c => (
-          <Card key={c.id} className="hover:shadow-md transition-shadow min-w-0 cursor-pointer" onClick={() => navigate(`/dashboard/complaints/${c.id}`)}>
+          <Card key={c.id || c.complaintId} className="hover:shadow-md transition-shadow min-w-0 cursor-pointer" onClick={() => navigate(`/dashboard/complaints/${c.id || c.complaintId}`)}>
             <CardContent className="p-4 sm:p-5 flex flex-col md:flex-row gap-4 sm:gap-6">
               
               <div className="flex-1 space-y-3 min-w-0">
                 <div className="flex flex-wrap items-center justify-between gap-y-2 gap-x-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-semibold text-slate-900 text-sm sm:text-base">{c.id}</span>
+                    <span className="font-semibold text-slate-900 text-sm sm:text-base">{c.id || c.complaintId}</span>
                     <Badge className="text-[10px] sm:text-xs py-0 sm:py-0.5">{c.status}</Badge>
-                    {c.duplicateStatus === 'Possible' && (
+                    {(c.duplicateStatus === 'Possible' || (c.duplicateCandidates && c.duplicateCandidates.length > 0)) && (
                       <Badge variant="warning" className="text-[10px] sm:text-xs py-0 sm:py-0.5">Possible Duplicate</Badge>
                     )}
                   </div>
@@ -148,13 +248,13 @@ export function Complaints() {
                 </div>
 
                 <p className="text-slate-700 text-sm sm:text-base leading-relaxed break-words line-clamp-3 sm:line-clamp-none">
-                  "{c.originalText}"
+                  "{c.originalText || c.description}"
                 </p>
 
                 <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-y-1 gap-x-6 text-[11px] sm:text-sm">
                   <div className="flex items-start sm:items-center gap-1.5">
                     <span className="text-gray-500 shrink-0">Location:</span>
-                    <span className="font-medium text-slate-800 break-words">{c.normalizedLocality}, Ward {c.ward}</span>
+                    <span className="font-medium text-slate-800 break-words">{c.normalizedLocality || c.location?.locality || 'Bhopal'}, Ward {c.ward || c.location?.ward || '1'}</span>
                   </div>
                   <div className="flex items-start sm:items-center gap-1.5">
                     <span className="text-gray-500 shrink-0">Routing:</span>
@@ -167,15 +267,15 @@ export function Complaints() {
                 <div className="flex flex-col items-start md:items-end gap-1">
                   <UrgencyBadge level={c.urgency} />
                   <div className="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
-                    Confidence: <span className="font-semibold text-blue-600">{c.confidence}%</span>
+                    Confidence: <span className="font-semibold text-blue-600">{c.confidence || c.aiAnalysis?.overallConfidence || 85}%</span>
                   </div>
                 </div>
                 <div className="flex gap-2 w-auto md:w-full">
                   <Button className="flex-1 text-xs sm:text-sm px-3 py-1.5 sm:py-2 h-8 sm:h-10" onClick={(e) => { e.stopPropagation(); navigate('/dashboard/triage'); }}>
-                    Review
+                    {t('edit', 'Review')}
                   </Button>
-                  <Button variant="danger" className="flex-1 text-xs sm:text-sm px-3 py-1.5 sm:py-2 h-8 sm:h-10" onClick={(e) => handleDeleteClick(e, c.id)}>
-                    Delete
+                  <Button variant="danger" className="flex-1 text-xs sm:text-sm px-3 py-1.5 sm:py-2 h-8 sm:h-10" onClick={(e) => handleDeleteClick(e, c.id || c.complaintId)}>
+                    {t('delete', 'Delete')}
                   </Button>
                 </div>
               </div>
@@ -184,8 +284,8 @@ export function Complaints() {
           </Card>
         ))}
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-gray-500 text-sm sm:text-base">
-            No complaints match your filters.
+          <div className="text-center py-12 text-gray-500 text-sm sm:text-base bg-white rounded-xl border border-gray-200">
+            {t('noRecords', 'No complaints match your filters or search term.')}
           </div>
         )}
       </div>

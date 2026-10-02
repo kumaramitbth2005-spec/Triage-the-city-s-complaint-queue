@@ -28,6 +28,7 @@
     max-width: 100%;
     min-height: 100vh;
     min-height: 100dvh;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   #root {
@@ -125,53 +126,897 @@ html.compact-mode .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.6
 html.compact-mode .gap-6 { gap: 0.75rem !important; }
 html.compact-mode .gap-4 { gap: 0.5rem !important; }
 
-/* Global Dark Mode Support */
+/* ==========================================================================
+   Global Dark Mode & System Theme System (High Contrast & High Readability)
+   ========================================================================== */
+
 html.dark body {
-  background-color: #0f172a !important;
+  background-color: #0b1120 !important;
   color: #f1f5f9 !important;
 }
+
+html.dark #root {
+  background-color: #0b1120 !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark main {
+  background-color: #0b1120 !important;
+}
+
+/* Backgrounds & Surfaces */
 html.dark .bg-white {
+  background-color: #162032 !important;
+  color: #f8fafc !important;
+}
+
+html.dark .bg-slate-50, 
+html.dark .bg-gray-50,
+html.dark [class*="bg-slate-50"],
+html.dark [class*="bg-gray-50"] {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+html.dark .bg-gray-100,
+html.dark .bg-slate-100,
+html.dark [class*="bg-slate-100"],
+html.dark [class*="bg-gray-100"] {
   background-color: #1e293b !important;
   color: #f1f5f9 !important;
 }
-html.dark .bg-slate-50, html.dark .bg-gray-50 {
-  background-color: #0f172a !important;
-  color: #f1f5f9 !important;
-}
-html.dark .bg-gray-100 {
+
+html.dark .bg-gray-200,
+html.dark .bg-slate-200,
+html.dark [class*="bg-slate-200"],
+html.dark [class*="bg-gray-200"] {
   background-color: #334155 !important;
-}
-html.dark .border-gray-200, html.dark .border-gray-100, html.dark .border-slate-200 {
-  border-color: #334155 !important;
-}
-html.dark .text-gray-900, html.dark .text-slate-800, html.dark .text-slate-900 {
   color: #f8fafc !important;
 }
-html.dark .text-gray-700, html.dark .text-slate-700 {
+
+/* Gradients in dark mode */
+html.dark [class*="to-white"] {
+  --tw-gradient-to: #0f172a var(--tw-gradient-to-position) !important;
+}
+
+html.dark [class*="via-slate-50"],
+html.dark [class*="via-gray-50"] {
+  --tw-gradient-stops: var(--tw-gradient-from), #162032 var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
+}
+
+html.dark [class*="from-blue-50"] {
+  --tw-gradient-from: rgba(30, 58, 138, 0.4) var(--tw-gradient-from-position) !important;
+}
+
+html.dark [class*="via-indigo-50"] {
+  --tw-gradient-stops: var(--tw-gradient-from), rgba(49, 46, 129, 0.35) var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
+}
+
+/* Tinted Card Backgrounds */
+html.dark .bg-blue-50,
+html.dark [class*="bg-blue-50"] {
+  background-color: rgba(30, 58, 138, 0.35) !important;
+  color: #93c5fd !important;
+}
+
+html.dark .bg-emerald-50,
+html.dark .bg-green-50,
+html.dark [class*="bg-emerald-50"],
+html.dark [class*="bg-green-50"] {
+  background-color: rgba(6, 78, 59, 0.35) !important;
+  color: #86efac !important;
+}
+
+html.dark .bg-amber-50,
+html.dark .bg-yellow-50,
+html.dark [class*="bg-amber-50"],
+html.dark [class*="bg-yellow-50"] {
+  background-color: rgba(120, 53, 15, 0.35) !important;
+  color: #fde047 !important;
+}
+
+html.dark .bg-rose-50,
+html.dark .bg-red-50,
+html.dark [class*="bg-rose-50"],
+html.dark [class*="bg-red-50"] {
+  background-color: rgba(136, 19, 55, 0.35) !important;
+  color: #fca5a5 !important;
+}
+
+html.dark .bg-purple-50,
+html.dark [class*="bg-purple-50"] {
+  background-color: rgba(88, 28, 135, 0.35) !important;
+  color: #d8b4fe !important;
+}
+
+html.dark .bg-indigo-50,
+html.dark [class*="bg-indigo-50"] {
+  background-color: rgba(49, 46, 129, 0.35) !important;
+  color: #c7d2fe !important;
+}
+
+/* Borders */
+html.dark .border-gray-100,
+html.dark .border-gray-200,
+html.dark .border-gray-300,
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-slate-300 {
+  border-color: #243048 !important;
+}
+
+html.dark .border-blue-100,
+html.dark .border-blue-200,
+html.dark .border-blue-300 {
+  border-color: rgba(59, 130, 246, 0.45) !important;
+}
+
+html.dark .border-amber-100,
+html.dark .border-amber-200,
+html.dark .border-amber-300 {
+  border-color: rgba(245, 158, 11, 0.45) !important;
+}
+
+html.dark .border-emerald-100,
+html.dark .border-emerald-200,
+html.dark .border-emerald-300 {
+  border-color: rgba(16, 185, 129, 0.45) !important;
+}
+
+html.dark .border-rose-100,
+html.dark .border-rose-200,
+html.dark .border-rose-300,
+html.dark .border-red-100,
+html.dark .border-red-200 {
+  border-color: rgba(239, 68, 68, 0.45) !important;
+}
+
+/* ==========================================================================
+   Typography & Font Colors (Ultra-Readable & Attractive Contrast)
+   ========================================================================== */
+
+/* Main Headings & Titles */
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark .text-gray-900,
+html.dark .text-slate-900,
+html.dark .text-slate-800,
+html.dark .text-gray-800 {
+  color: #ffffff !important;
+}
+
+/* Primary Body & Standard Text */
+html.dark .text-gray-700,
+html.dark .text-slate-700 {
+  color: #e2e8f0 !important;
+}
+
+/* Secondary & Supporting Text */
+html.dark .text-gray-600,
+html.dark .text-slate-600 {
   color: #cbd5e1 !important;
 }
-html.dark .text-gray-600, html.dark .text-gray-500, html.dark .text-slate-500 {
+
+/* Muted & Meta Text */
+html.dark .text-gray-500,
+html.dark .text-slate-500 {
   color: #94a3b8 !important;
 }
-html.dark input, html.dark select, html.dark textarea {
+
+html.dark .text-gray-400,
+html.dark .text-slate-400 {
+  color: #818cf8 !important;
+}
+
+/* Specific Highlight Colors in Dark Mode */
+html.dark .text-blue-600,
+html.dark .text-blue-700,
+html.dark .text-blue-800,
+html.dark .text-blue-900,
+html.dark .text-blue-950 {
+  color: #60a5fa !important;
+}
+
+html.dark .text-emerald-600,
+html.dark .text-emerald-700,
+html.dark .text-emerald-800,
+html.dark .text-emerald-900 {
+  color: #4ade80 !important;
+}
+
+html.dark .text-amber-600,
+html.dark .text-amber-700,
+html.dark .text-amber-800,
+html.dark .text-amber-900,
+html.dark .text-amber-950 {
+  color: #fbbf24 !important;
+}
+
+html.dark .text-rose-600,
+html.dark .text-rose-700,
+html.dark .text-rose-800,
+html.dark .text-rose-900,
+html.dark .text-red-600,
+html.dark .text-red-700,
+html.dark .text-red-800,
+html.dark .text-red-900 {
+  color: #f87171 !important;
+}
+
+html.dark .text-purple-600,
+html.dark .text-purple-700,
+html.dark .text-purple-800,
+html.dark .text-purple-900 {
+  color: #c084fc !important;
+}
+
+html.dark .text-indigo-600,
+html.dark .text-indigo-700,
+html.dark .text-indigo-800,
+html.dark .text-indigo-900 {
+  color: #a5b4fc !important;
+}
+
+/* ==========================================================================
+   Form Controls, Inputs, and Selects
+   ========================================================================== */
+
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #334155 !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: #60a5fa !important;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.35) !important;
+}
+
+html.dark input:disabled,
+html.dark select:disabled,
+html.dark textarea:disabled {
   background-color: #1e293b !important;
-  color: #f8fafc !important;
+  color: #94a3b8 !important;
+  border-color: #334155 !important;
+}
+
+html.dark select option {
+  background-color: #162032 !important;
+  color: #ffffff !important;
+}
+
+/* ==========================================================================
+   Tables, Lists, and Cards
+   ========================================================================== */
+
+html.dark table thead {
+  background-color: #0f172a !important;
+  color: #94a3b8 !important;
+}
+
+html.dark table thead th {
+  color: #cbd5e1 !important;
+  border-bottom-color: #243048 !important;
+}
+
+html.dark table tbody tr {
+  border-color: #1e293b !important;
+}
+
+html.dark table tbody tr:hover {
+  background-color: rgba(51, 65, 85, 0.4) !important;
+}
+
+html.dark table tbody td {
+  color: #e2e8f0 !important;
+}
+
+/* Dropdown menus & Modals */
+html.dark .shadow-xl,
+html.dark .shadow-2xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.8), 0 8px 10px -6px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Hover effects */
+html.dark .hover\:bg-gray-100:hover,
+html.dark .hover\:bg-slate-100:hover,
+html.dark .hover\:bg-gray-50:hover,
+html.dark .hover\:bg-slate-50:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Primary buttons */
+html.dark .bg-blue-600 {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+html.dark .bg-blue-600:hover {
+  background-color: #1d4ed8 !important;
+}
+
+/* ==========================================================================
+   Toggle Switches (Unchecked State) — Visible Track in Dark Mode
+   ========================================================================== */
+
+html.dark .bg-gray-200,
+html.dark [class*="bg-gray-200"] {
+  background-color: #334155 !important;
+}
+
+html.dark .peer-checked\:bg-blue-600:is(:where(.peer:checked) ~ *) {
+  background-color: #2563eb !important;
+}
+
+/* Toggle switch border in dark */
+html.dark .after\:border-gray-300::after {
   border-color: #475569 !important;
 }
-html.dark input:disabled, html.dark select:disabled {
+
+/* ==========================================================================
+   Modals & Overlay Dialogs in Dark Mode
+   ========================================================================== */
+
+html.dark [role="dialog"] > div,
+html.dark .fixed .bg-white.rounded-xl,
+html.dark .fixed .bg-white.rounded-2xl {
+  background-color: #162032 !important;
+  color: #f1f5f9 !important;
+  border-color: #243048 !important;
+}
+
+html.dark [role="dialog"] h3,
+html.dark .fixed .bg-white h3 {
+  color: #ffffff !important;
+}
+
+html.dark [role="dialog"] p,
+html.dark .fixed .bg-white p {
+  color: #cbd5e1 !important;
+}
+
+/* ==========================================================================
+   Notification Items in Dark Mode
+   ========================================================================== */
+
+html.dark .bg-blue-50\/40,
+html.dark [class*="bg-blue-50/40"] {
+  background-color: rgba(30, 58, 138, 0.25) !important;
+}
+
+html.dark .bg-blue-50\/70,
+html.dark [class*="bg-blue-50/70"] {
+  background-color: rgba(30, 58, 138, 0.35) !important;
+}
+
+html.dark .bg-white.hover\:bg-slate-50:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+html.dark .text-blue-950 {
+  color: #93c5fd !important;
+}
+
+/* ==========================================================================
+   Info / Alert / Requirement Boxes in Dark Mode
+   ========================================================================== */
+
+html.dark .bg-blue-50\/70 {
+  background-color: rgba(30, 58, 138, 0.3) !important;
+}
+
+html.dark .text-blue-900 {
+  color: #93c5fd !important;
+}
+
+html.dark .text-blue-800 {
+  color: #93c5fd !important;
+}
+
+html.dark .text-blue-300 {
+  color: #475569 !important;
+}
+
+html.dark .text-emerald-700 {
+  color: #4ade80 !important;
+}
+
+html.dark .text-emerald-800 {
+  color: #86efac !important;
+}
+
+html.dark .text-amber-800 {
+  color: #fde68a !important;
+}
+
+html.dark .text-amber-900 {
+  color: #fcd34d !important;
+}
+
+html.dark .text-amber-950 {
+  color: #fef3c7 !important;
+}
+
+html.dark .text-red-800 {
+  color: #fca5a5 !important;
+}
+
+html.dark .text-rose-800 {
+  color: #fca5a5 !important;
+}
+
+/* ==========================================================================
+   Form Labels & Descriptions in Dark Mode
+   ========================================================================== */
+
+html.dark label {
+  color: #e2e8f0 !important;
+}
+
+html.dark .text-xs.font-semibold.text-gray-700,
+html.dark .text-xs.font-bold.text-slate-700,
+html.dark .text-xs.font-bold.text-gray-700 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .font-medium.text-gray-800,
+html.dark .font-medium.text-sm.text-gray-800 {
+  color: #ffffff !important;
+}
+
+/* ==========================================================================
+   Profile Hero Gradient Section in Dark Mode
+   ========================================================================== */
+
+html.dark [class*="from-blue-50"] {
+  --tw-gradient-from: rgba(30, 58, 138, 0.25) var(--tw-gradient-from-position) !important;
+}
+
+html.dark [class*="to-indigo-50"] {
+  --tw-gradient-to: rgba(49, 46, 129, 0.2) var(--tw-gradient-to-position) !important;
+}
+
+html.dark .bg-gradient-to-r[class*="from-blue-50"] {
+  background: linear-gradient(to right, rgba(30, 58, 138, 0.25), rgba(15, 23, 42, 0.5), rgba(49, 46, 129, 0.2)) !important;
+}
+
+/* Profile role badge in dark */
+html.dark .bg-blue-100 {
+  background-color: rgba(30, 58, 138, 0.5) !important;
+  color: #93c5fd !important;
+}
+
+html.dark .text-blue-800.border-blue-200 {
+  color: #93c5fd !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Profile info cards */
+html.dark .bg-slate-50\/80 {
+  background-color: #1e293b !important;
+}
+
+html.dark .bg-slate-50\/60 {
+  background-color: #1a2332 !important;
+}
+
+html.dark .bg-slate-50\/70 {
+  background-color: #1a2332 !important;
+}
+
+/* ==========================================================================
+   Select Dropdowns & Form-Select in Dark Mode
+   ========================================================================== */
+
+html.dark .form-select,
+html.dark select.rounded-lg {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+html.dark .form-select:focus,
+html.dark select.rounded-lg:focus {
+  border-color: #60a5fa !important;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.35) !important;
+}
+
+/* ==========================================================================
+   Recharts / Chart Tooltips in Dark Mode
+   ========================================================================== */
+
+html.dark .recharts-default-tooltip {
+  background-color: #162032 !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+html.dark .recharts-tooltip-label {
+  color: #f8fafc !important;
+}
+
+html.dark .recharts-cartesian-axis-tick-value {
+  fill: #94a3b8 !important;
+}
+
+/* ==========================================================================
+   Password Strength Bar Track (Unmet) in Dark Mode
+   ========================================================================== */
+
+html.dark .bg-gray-200.rounded-full {
   background-color: #334155 !important;
+}
+
+/* ==========================================================================
+   Notification Channel Icon Backgrounds in Dark Mode
+   ========================================================================== */
+
+html.dark .bg-pink-50,
+html.dark [class*="bg-pink-50"] {
+  background-color: rgba(131, 24, 67, 0.35) !important;
+  color: #f9a8d4 !important;
+}
+
+html.dark .bg-slate-100.border-slate-200\/60 {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* ==========================================================================
+   Semantic Alert Banners in Dark Mode
+   ========================================================================== */
+
+html.dark .bg-emerald-50.border-emerald-200,
+html.dark .bg-emerald-50 {
+  background-color: rgba(6, 78, 59, 0.35) !important;
+  color: #86efac !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+html.dark .bg-rose-50.border-rose-200 {
+  background-color: rgba(136, 19, 55, 0.35) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+}
+
+html.dark .bg-red-50.border-red-200 {
+  background-color: rgba(136, 19, 55, 0.35) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+}
+
+html.dark .bg-amber-50.border-amber-200 {
+  background-color: rgba(120, 53, 15, 0.35) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+html.dark .text-amber-900.bg-amber-50\/90 {
+  color: #fde68a !important;
+}
+
+/* ==========================================================================
+   Dividers & Borders in Dark Mode
+   ========================================================================== */
+
+html.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #1e293b !important;
+}
+
+html.dark .border-t.border-gray-100,
+html.dark .border-b.border-gray-100 {
+  border-color: #1e293b !important;
+}
+
+html.dark .border-t.border-slate-100,
+html.dark .border-b.border-slate-100 {
+  border-color: #1e293b !important;
+}
+
+html.dark .border-slate-200 {
+  border-color: #243048 !important;
+}
+
+html.dark .border-slate-200\/80,
+html.dark .border-slate-200\/70 {
+  border-color: rgba(36, 48, 72, 0.8) !important;
+}
+
+/* ==========================================================================
+   Dashboard Table Row Hover in Dark Mode
+   ========================================================================== */
+
+html.dark .hover\:bg-blue-50\/50:hover {
+  background-color: rgba(30, 58, 138, 0.2) !important;
+}
+
+/* ==========================================================================
+   Badge Outline Variant in Dark Mode
+   ========================================================================== */
+
+html.dark .bg-gray-100.text-gray-600 {
+  background-color: #1e293b !important;
   color: #94a3b8 !important;
 }
-html.dark table thead {
+
+/* ==========================================================================
+   Complaint Type Badge (Input Type) in Dark Mode
+   ========================================================================== */
+
+html.dark .bg-gray-100.text-gray-600.rounded-md {
+  background-color: rgba(51, 65, 85, 0.6) !important;
+  color: #cbd5e1 !important;
+}
+
+/* ==========================================================================
+   Empty State & No Results Box in Dark Mode
+   ========================================================================== */
+
+html.dark .bg-white.rounded-xl.border-gray-200 {
+  background-color: #162032 !important;
+  color: #94a3b8 !important;
+  border-color: #243048 !important;
+}
+
+/* ==========================================================================
+   Amber / Warning Banner Text in Dark Mode
+   ========================================================================== */
+
+html.dark .text-amber-700 {
+  color: #fcd34d !important;
+}
+
+html.dark .text-amber-600 {
+  color: #fbbf24 !important;
+}
+
+html.dark .bg-amber-100 {
+  background-color: rgba(120, 53, 15, 0.5) !important;
+}
+
+html.dark .bg-amber-200\/80 {
+  background-color: rgba(245, 158, 11, 0.3) !important;
+  color: #fef3c7 !important;
+}
+
+html.dark .bg-red-100 {
+  background-color: rgba(136, 19, 55, 0.4) !important;
+}
+
+html.dark .bg-rose-100 {
+  background-color: rgba(136, 19, 55, 0.4) !important;
+}
+
+/* ==========================================================================
+   Miscellaneous Text Color Overrides for Full Dark Mode Coverage
+   ========================================================================== */
+
+html.dark .text-slate-900 {
+  color: #ffffff !important;
+}
+
+html.dark .text-slate-800 {
+  color: #f1f5f9 !important;
+}
+
+html.dark .text-gray-900 {
+  color: #ffffff !important;
+}
+
+html.dark .text-gray-800 {
+  color: #f1f5f9 !important;
+}
+
+html.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-gray-600 {
+  color: #cbd5e1 !important;
+}
+
+html.dark p {
+  color: inherit;
+}
+
+/* Peer focus ring fix for toggles */
+html.dark .peer-focus\:ring-blue-300 {
+  --tw-ring-color: rgba(96, 165, 250, 0.25) !important;
+}
+
+/* ==========================================================================
+   Button Component Dark Mode (Outline & Ghost variants)
+   ========================================================================== */
+
+html.dark .border-gray-300.bg-white {
+  background-color: #162032 !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+html.dark .border-gray-300.bg-white:hover {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+}
+
+html.dark .hover\:bg-gray-100 {
+  color: #e2e8f0 !important;
+}
+
+html.dark .hover\:bg-gray-100:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Outline button border in dark */
+html.dark .border.border-gray-300 {
+  border-color: #334155 !important;
+}
+
+/* Ghost button dark mode */
+html.dark .hover\:bg-gray-100.text-slate-700 {
+  color: #e2e8f0 !important;
+}
+
+/* Danger outline buttons */
+html.dark .text-red-600.border-red-200 {
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  color: #f87171 !important;
+}
+
+html.dark .text-red-600.border-red-200:hover {
+  background-color: rgba(136, 19, 55, 0.25) !important;
+}
+
+html.dark .text-rose-600.border-rose-200 {
+  border-color: rgba(244, 63, 94, 0.4) !important;
+  color: #fb7185 !important;
+}
+
+html.dark .text-rose-600.border-rose-200:hover {
+  background-color: rgba(136, 19, 55, 0.25) !important;
+}
+
+/* ==========================================================================
+   Scrollbar Styling for Dark Mode
+   ========================================================================== */
+
+html.dark ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 999px;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* ==========================================================================
+   Analytics Date Range Picker in Dark Mode
+   ========================================================================== */
+
+html.dark .border-gray-200.bg-white.shadow-sm {
+  background-color: #162032 !important;
+  border-color: #334155 !important;
+}
+
+html.dark .text-slate-600.hover\:bg-gray-50:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #e2e8f0 !important;
+}
+
+/* ==========================================================================
+   Violet / Purple Tinted Backgrounds in Dark Mode
+   ========================================================================== */
+
+html.dark .bg-violet-50,
+html.dark [class*="bg-violet-50"] {
+  background-color: rgba(91, 33, 182, 0.3) !important;
+  color: #c4b5fd !important;
+}
+
+html.dark .text-violet-600 {
+  color: #a78bfa !important;
+}
+
+/* ==========================================================================
+   Teal / Cyan Tinted Backgrounds in Dark Mode
+   ========================================================================== */
+
+html.dark .bg-cyan-50,
+html.dark .bg-teal-50,
+html.dark [class*="bg-cyan-50"],
+html.dark [class*="bg-teal-50"] {
+  background-color: rgba(6, 95, 70, 0.3) !important;
+  color: #5eead4 !important;
+}
+
+/* ==========================================================================
+   Global Tooltip and Popover Dark Mode
+   ========================================================================== */
+
+html.dark [data-tooltip],
+html.dark .tooltip-content {
+  background-color: #162032 !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+/* ==========================================================================
+   Link Colors in Dark Mode
+   ========================================================================== */
+
+html.dark a.text-slate-600:hover,
+html.dark a.text-gray-600:hover {
+  color: #60a5fa !important;
+}
+
+/* ==========================================================================
+   Badge / Chip Backgrounds (Misc) in Dark Mode
+   ========================================================================== */
+
+html.dark .bg-gray-50.font-medium {
   background-color: #1e293b !important;
   color: #cbd5e1 !important;
 }
-html.dark table tbody tr {
-  border-color: #334155 !important;
+
+/* Ring colors in dark mode */
+html.dark .focus\:ring-blue-200:focus,
+html.dark .focus\:ring-blue-100:focus {
+  --tw-ring-color: rgba(96, 165, 250, 0.2) !important;
 }
-html.dark table tbody tr:hover {
-  background-color: #334155/50 !important;
+
+/* ==========================================================================
+   Activity History Table Row Hover in Dark Mode
+   ========================================================================== */
+
+html.dark .hover\:bg-gray-50\/70:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
 }
-html.dark .shadow-sm, html.dark .shadow-md, html.dark .shadow-xl {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4) !important;
+
+/* Border color for filter sections in complaints page */
+html.dark .border-gray-200.rounded-xl {
+  border-color: #243048 !important;
 }
+
+/* Smooth transition for theme switching */
+html.dark * {
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: inline-flex;
+  animation: marquee 32s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+

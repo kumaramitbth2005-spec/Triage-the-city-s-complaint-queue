@@ -164,6 +164,18 @@ async function createComplaint(data, userId) {
     }
   }
 
+  // 6b. User-specific notification for creator
+  if (userId) {
+    await createNotification({
+      userId,
+      type: 'NEW_COMPLAINT',
+      title: 'Complaint Submitted Successfully',
+      message: `Your complaint #${complaintId} has been submitted and is undergoing triage.`,
+      route: `/dashboard/complaints/${complaintId}`,
+      complaintId: complaint._id
+    });
+  }
+
   // 7. Log activity
   if (userId) {
     await Activity.create({ userId, action: 'COMPLAINT_CREATED', entityId: complaint._id, details: { complaintId } });

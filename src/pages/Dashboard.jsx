@@ -3,14 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Badge, UrgencyBadge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { useAppContext } from '../context/AppContext';
+import { useTranslation } from '../context/LanguageContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { AlertTriangle, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { clusterApi } from '../api/clusterApi';
 
 export function Dashboard() {
-  // All hooks must be called at top level
-  const { complaints, loading, error, fetchComplaints, deleteComplaint, usingMockData } = useAppContext();
+  const { complaints, loading, fetchComplaints, deleteComplaint, usingMockData } = useAppContext();
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [complaintToDelete, setComplaintToDelete] = React.useState(null);
@@ -52,8 +53,6 @@ export function Dashboard() {
     </div>
   );
 
-
-
   const total = complaints.length;
   const pendingTriage = complaints.filter(c => ['Needs Review', 'New', 'RECEIVED', 'AI_TRIAGED', 'AWAITING_REVIEW'].includes(c.status)).length;
   const highUrgency = complaints.filter(c => c.urgency === 'HIGH' || c.urgency === 'CRITICAL').length;
@@ -72,8 +71,8 @@ export function Dashboard() {
       {complaintToDelete && (
         <div className="fixed inset-0 bg-slate-900/50 z-[100] flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-sm rounded-xl p-6 shadow-xl">
-            <h3 className="font-semibold text-slate-800 text-lg mb-2">Delete Complaint?</h3>
-            <p className="text-sm text-slate-600 mb-4">Are you sure you want to permanently delete this complaint?</p>
+            <h3 className="font-semibold text-slate-800 text-lg mb-2">{t('deleteComplaintTitle', 'Delete Complaint?')}</h3>
+            <p className="text-sm text-slate-600 mb-4">{t('deleteComplaintConfirm', 'Are you sure you want to permanently delete this complaint?')}</p>
             {deleteError && (
               <div className="mb-4 p-2 bg-red-50 text-red-600 text-xs rounded border border-red-100">
                 {deleteError}
@@ -81,10 +80,10 @@ export function Dashboard() {
             )}
             <div className="flex gap-3 justify-end">
               <Button variant="outline" onClick={() => setComplaintToDelete(null)} disabled={isDeleting}>
-                Cancel
+                {t('cancel', 'Cancel')}
               </Button>
               <Button variant="danger" onClick={confirmDelete} disabled={isDeleting}>
-                {isDeleting ? 'Deleting...' : 'Delete'}
+                {isDeleting ? t('loading', 'Deleting...') : t('delete', 'Delete')}
               </Button>
             </div>
           </div>
@@ -107,7 +106,7 @@ export function Dashboard() {
             onClick={() => fetchComplaints()}
             className="px-3.5 py-1.5 bg-amber-200/80 hover:bg-amber-300 text-amber-950 rounded-lg text-xs font-semibold transition-all shadow-xs active:scale-95 shrink-0 self-end sm:self-auto"
           >
-            Reconnect Now
+            {t('refresh', 'Reconnect Now')}
           </button>
         </div>
       )}
@@ -115,10 +114,10 @@ export function Dashboard() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Complaints", value: total, desc: "All time recorded" },
-          { label: "Pending Triage", value: pendingTriage, desc: "Needs operator action" },
-          { label: "High Urgency", value: highUrgency, desc: "Critical/High priority" },
-          { label: "Potential Duplicates", value: potentialDuplicates, desc: "AI detected clusters" },
+          { label: t('totalComplaints', 'Total Complaints'), value: total, desc: "All time recorded" },
+          { label: t('pendingTriage', 'Pending Triage'), value: pendingTriage, desc: "Needs operator action" },
+          { label: t('high', 'High Urgency'), value: highUrgency, desc: "Critical/High priority" },
+          { label: t('duplicateClusters', 'Potential Duplicates'), value: potentialDuplicates, desc: "AI detected clusters" },
         ].map((kpi, i) => (
           <Card key={i} className="min-w-0">
             <CardContent className="p-4 sm:p-5 flex flex-col justify-center h-full">
@@ -141,7 +140,7 @@ export function Dashboard() {
               <div className="flex items-center gap-2 mb-1 sm:mb-0">
                 <AlertTriangle size={18} className="text-amber-600 sm:hidden shrink-0" />
                 <h4 className="text-amber-800 font-semibold flex items-center gap-2 text-sm sm:text-base">
-                  Emerging Issue
+                  {t('emergingIssue', 'Emerging Issue')}
                   <Badge variant="warning" className="text-[10px] py-0 hidden sm:inline-flex">NEW</Badge>
                 </h4>
               </div>
@@ -150,7 +149,7 @@ export function Dashboard() {
               </p>
             </div>
             <Button variant="outline" className="w-full sm:w-auto mt-2 sm:mt-0 border-amber-300 text-amber-700 hover:bg-amber-100 shrink-0 text-xs sm:text-sm py-1.5 sm:py-2" onClick={() => navigate('/dashboard/clusters')}>
-              View Cluster
+              {t('duplicateClusters', 'View Cluster')}
             </Button>
           </CardContent>
         </Card>
@@ -160,10 +159,10 @@ export function Dashboard() {
         {/* Recent Complaints */}
         <Card className="xl:col-span-2 flex flex-col min-w-0 overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6 pb-4 border-b border-gray-100">
-            <CardTitle className="text-lg sm:text-xl">Recent Complaints</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">{t('recentComplaints', 'Recent Complaints')}</CardTitle>
             <Button variant="ghost" size="sm" className="text-blue-600 px-2 sm:px-4 text-xs sm:text-sm" onClick={() => navigate('/dashboard/complaints')}>
-              <span className="hidden sm:inline">View all</span>
-              <span className="sm:hidden">All</span> 
+              <span className="hidden sm:inline">{t('viewAll', 'View all')}</span>
+              <span className="sm:hidden">{t('all', 'All')}</span> 
               <ArrowRight size={16} className="ml-1 shrink-0"/>
             </Button>
           </CardHeader>
@@ -172,10 +171,10 @@ export function Dashboard() {
               <thead className="bg-gray-50 text-gray-500 font-medium text-xs sm:text-sm border-b border-gray-200">
                 <tr>
                   <th className="px-4 sm:px-6 py-3 font-semibold">ID</th>
-                  <th className="px-4 sm:px-6 py-3 font-semibold">Department</th>
-                  <th className="px-4 sm:px-6 py-3 font-semibold">Locality</th>
-                  <th className="px-4 sm:px-6 py-3 font-semibold">Urgency</th>
-                  <th className="px-4 sm:px-6 py-3 font-semibold">Status</th>
+                  <th className="px-4 sm:px-6 py-3 font-semibold">{t('department', 'Department')}</th>
+                  <th className="px-4 sm:px-6 py-3 font-semibold">{t('locality', 'Locality')}</th>
+                  <th className="px-4 sm:px-6 py-3 font-semibold">{t('urgency', 'Urgency')}</th>
+                  <th className="px-4 sm:px-6 py-3 font-semibold">{t('status', 'Status')}</th>
                   <th className="px-4 sm:px-6 py-3"></th>
                 </tr>
               </thead>
@@ -200,10 +199,10 @@ export function Dashboard() {
                     <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
                       <div className="flex justify-end gap-2">
                         <Button variant="outline" size="sm" className="opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap" onClick={(e) => { e.stopPropagation(); navigate('/dashboard/triage'); }}>
-                          Review
+                          {t('review', 'Review')}
                         </Button>
                         <Button variant="danger" size="sm" className="opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap" onClick={(e) => handleDeleteClick(e, c.id)}>
-                          Delete
+                          {t('delete', 'Delete')}
                         </Button>
                       </div>
                     </td>
@@ -217,7 +216,7 @@ export function Dashboard() {
         {/* Chart */}
         <Card className="flex flex-col min-w-0">
           <CardHeader className="p-4 sm:p-6 pb-4">
-            <CardTitle className="text-lg sm:text-xl">Distribution</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">{t('distribution', 'Distribution')}</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 min-h-[300px] sm:min-h-[350px] p-4 sm:p-6 pt-0">
             <div className="h-full w-full">

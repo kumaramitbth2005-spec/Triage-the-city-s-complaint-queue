@@ -3,9 +3,11 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Ca
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { activityApi } from '../../api/settingsApi';
-import { Loader2, Trash2, AlertTriangle, RotateCcw, Clock, ShieldCheck } from 'lucide-react';
+import { useTranslation } from '../../context/LanguageContext';
+import { Loader2, Trash2, AlertTriangle, RotateCcw, Clock } from 'lucide-react';
 
 export function ActivityHistory() {
+  const { t } = useTranslation();
   const [filter, setFilter] = useState('All');
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -66,7 +68,7 @@ export function ActivityHistory() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Activity History</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('activityHistory', 'Activity History')}</h1>
           <p className="text-gray-500 mt-1">Review authenticated actions, logins, and settings changes on your account.</p>
         </div>
         <div className="flex items-center gap-3">
@@ -75,11 +77,11 @@ export function ActivityHistory() {
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           >
-            <option value="All">All Activity</option>
+            <option value="All">{t('all', 'All Activity')}</option>
             <option value="LOGIN">Logins</option>
             <option value="UPDATED">Updates</option>
             <option value="THEME">Theme Changes</option>
-            <option value="SETTINGS">Settings</option>
+            <option value="SETTINGS">{t('settings', 'Settings')}</option>
           </select>
           {activities.length > 0 && (
             <Button 
@@ -87,83 +89,87 @@ export function ActivityHistory() {
               onClick={() => setIsModalOpen(true)}
               className="text-red-600 border-red-200 hover:bg-red-50 text-xs py-2 px-3 gap-1.5 shrink-0"
             >
-              <Trash2 size={14} /> Clear
+              <Trash2 size={14} /> {t('clearHistory', 'Clear')}
             </Button>
           )}
         </div>
       </div>
 
       <Card>
-        <div className="overflow-x-auto">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Audit Log</CardTitle>
+          <Button variant="ghost" size="sm" onClick={fetchActivities} disabled={loading} className="gap-1.5 text-xs text-blue-600">
+            <RotateCcw size={14} className={loading ? "animate-spin" : ""} /> {t('refresh', 'Refresh')}
+          </Button>
+        </CardHeader>
+        <CardContent>
           {loading ? (
-            <div className="flex items-center justify-center py-16 text-gray-500 gap-2.5">
-              <Loader2 className="animate-spin text-blue-600" size={20} />
-              <span className="text-sm font-medium">Loading activity audit log...</span>
+            <div className="py-12 flex justify-center items-center gap-2 text-slate-500 text-sm">
+              <Loader2 size={18} className="animate-spin text-blue-600" />
+              <span>{t('loading', 'Loading activity log...')}</span>
             </div>
           ) : filteredHistory.length === 0 ? (
-            <div className="py-16 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto">
-                <Clock size={24} />
-              </div>
-              <p className="text-sm font-medium text-gray-700">No activity records found</p>
-              <p className="text-xs text-gray-400">Actions you perform will be logged here in real-time.</p>
+            <div className="py-12 text-center text-slate-400 text-sm">
+              {t('noRecords', 'No activities recorded yet.')}
             </div>
           ) : (
-            <table className="w-full text-sm text-left">
-              <thead className="text-[11px] text-gray-500 uppercase tracking-wider bg-gray-50/80 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 font-semibold">Date & Time</th>
-                  <th className="px-6 py-3 font-semibold">Action</th>
-                  <th className="px-6 py-3 font-semibold">Target / Details</th>
-                  <th className="px-6 py-3 font-semibold">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredHistory.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50/70 transition-colors">
-                    <td className="px-6 py-3.5 whitespace-nowrap text-xs text-gray-500">{item.date}</td>
-                    <td className="px-6 py-3.5 font-semibold text-xs text-gray-900 capitalize flex items-center gap-2">
-                      <ShieldCheck size={14} className="text-blue-500 shrink-0" />
-                      {item.action}
-                    </td>
-                    <td className="px-6 py-3.5 text-xs text-gray-600">{item.target}</td>
-                    <td className="px-6 py-3.5">
-                      <Badge variant={item.status === 'Success' ? 'success' : 'danger'} className="text-[10px]">
-                        {item.status}
-                      </Badge>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                    <th className="py-3 px-4">Date & Time</th>
+                    <th className="py-3 px-4">Action</th>
+                    <th className="py-3 px-4">Target / Resource</th>
+                    <th className="py-3 px-4">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {filteredHistory.map((item) => (
+                    <tr key={item.id} className="hover:bg-gray-50/70 transition-colors">
+                      <td className="py-3.5 px-4 text-xs font-medium text-gray-500 whitespace-nowrap flex items-center gap-2">
+                        <Clock size={13} className="text-gray-400 shrink-0" />
+                        {item.date}
+                      </td>
+                      <td className="py-3.5 px-4 font-semibold text-gray-800 text-xs capitalize">
+                        {item.action}
+                      </td>
+                      <td className="py-3.5 px-4 text-xs text-gray-600 font-mono">
+                        {item.target}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <Badge variant={item.status === 'Success' ? 'success' : 'warning'} className="text-[10px] capitalize">
+                          {item.status}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
-        </div>
+        </CardContent>
       </Card>
 
       {/* Confirmation Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in" role="dialog" aria-modal="true">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-gray-200">
-            <div className="flex items-center gap-3 text-red-600">
-              <div className="p-2.5 bg-red-100 rounded-full">
-                <AlertTriangle size={24} />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900">Clear Activity Logs?</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl space-y-4 border border-gray-100">
+            <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
+              <AlertTriangle size={20} />
             </div>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              Are you sure you want to delete all historical activity logs for your account? This action cannot be reversed.
-            </p>
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => setIsModalOpen(false)} disabled={isClearing}>
-                Cancel
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Clear Activity History?</h3>
+              <p className="text-xs text-gray-500 mt-1">
+                This will permanently delete all audit logs and sign-in records. This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" size="sm" onClick={() => setIsModalOpen(false)} disabled={isClearing}>
+                {t('cancel', 'Cancel')}
               </Button>
-              <Button 
-                onClick={handleClearHistory} 
-                disabled={isClearing}
-                className="bg-red-600 hover:bg-red-700 text-white gap-2"
-              >
-                {isClearing && <Loader2 size={15} className="animate-spin" />}
-                Yes, Clear All
+              <Button variant="danger" size="sm" onClick={handleClearHistory} disabled={isClearing} className="gap-1.5">
+                {isClearing && <Loader2 size={14} className="animate-spin" />}
+                {isClearing ? t('loading', 'Clearing...') : t('clearHistory', 'Clear All Logs')}
               </Button>
             </div>
           </div>

@@ -42,22 +42,22 @@ export function ThemeSettings() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Theme</h1>
-          <p className="text-gray-500 mt-1">Customize the visual theme and appearance of the application.</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('themeTitle', 'Theme')}</h1>
+          <p className="text-gray-500 mt-1">{t('themeDesc', 'Customize the visual theme and appearance of the application.')}</p>
         </div>
         {saveStatus === 'saving' && (
-          <span className="text-xs font-medium text-blue-600 animate-pulse">Saving...</span>
+          <span className="text-xs font-medium text-blue-600 animate-pulse">{t('saving', 'Saving...')}</span>
         )}
         {saveStatus === 'saved' && (
           <span className="text-xs font-medium text-emerald-600 flex items-center gap-1">
-            <CheckCircle2 size={14} /> Saved ✓
+            <CheckCircle2 size={14} /> {t('saved', 'Saved ✓')}
           </span>
         )}
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Theme Mode</CardTitle>
+          <CardTitle>{t('themeMode', 'Theme Mode')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -72,8 +72,8 @@ export function ThemeSettings() {
                   onClick={() => dispatch({ type: 'SET_THEME', payload: themeOption.id })}
                   className={`p-5 rounded-xl border-2 text-left transition-all duration-200 flex flex-col justify-between relative group focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     isSelected
-                      ? 'border-blue-600 bg-blue-50/50 shadow-md ring-1 ring-blue-600'
-                      : 'border-gray-200 hover:border-blue-300 hover:shadow-sm bg-white'
+                      ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 shadow-md ring-1 ring-blue-600'
+                      : 'border-gray-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-sm bg-white dark:bg-slate-900'
                   }`}
                   aria-pressed={isSelected}
                 >
@@ -84,7 +84,7 @@ export function ThemeSettings() {
                       <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
                     </div>
                     <div className={`p-2 rounded-md ${themeOption.previewCard} border text-[10px] font-medium shadow-xs flex items-center justify-between`}>
-                      <span>Dashboard</span>
+                      <span>{t('dashboard', 'Dashboard')}</span>
                       <span className="w-2 h-2 rounded-full bg-emerald-500" />
                     </div>
                   </div>
@@ -93,7 +93,7 @@ export function ThemeSettings() {
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <Icon size={18} className={isSelected ? 'text-blue-600' : 'text-gray-500'} />
-                        <span className={`font-semibold text-base ${isSelected ? 'text-blue-700' : 'text-gray-800'}`}>
+                        <span className={`font-semibold text-base ${isSelected ? 'text-blue-700 dark:text-blue-400' : 'text-gray-800 dark:text-slate-200'}`}>
                           {themeOption.name}
                         </span>
                       </div>
@@ -101,7 +101,7 @@ export function ThemeSettings() {
                         <CheckCircle2 size={18} className="text-blue-600 fill-blue-50" />
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 leading-relaxed">
+                    <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed">
                       {themeOption.description}
                     </p>
                   </div>
@@ -112,9 +112,9 @@ export function ThemeSettings() {
         </CardContent>
       </Card>
 
-      <div className="p-4 bg-blue-50/70 border border-blue-100 rounded-xl flex items-start gap-3">
-        <Monitor className="text-blue-600 shrink-0 mt-0.5" size={18} />
-        <div className="text-xs text-blue-900 leading-relaxed">
+      <div className="p-4 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-800/50 rounded-xl flex items-start gap-3">
+        <Monitor className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" size={18} />
+        <div className="text-xs text-blue-900 dark:text-blue-200 leading-relaxed">
           <strong>Instant Synchronization:</strong> Theme changes apply across all layouts, modals, topbars, sidebars, and cards immediately. "System" mode automatically responds whenever your device switches between daylight and night themes.
         </div>
       </div>

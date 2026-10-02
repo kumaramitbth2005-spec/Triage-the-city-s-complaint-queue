@@ -22,15 +22,15 @@ export function KpiCard({ title, value, trend, trendLabel, className, ...props }
   return (
     <div
       className={cn(
-        'rounded-xl border border-gray-200 bg-white p-5 shadow-sm flex flex-col justify-between',
+        'rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm flex flex-col justify-between',
         className
       )}
       {...props}
     >
-      <h3 className="text-sm font-medium text-slate-600">{title}</h3>
-      <p className="mt-2 text-2xl font-semibold text-slate-800">{value}</p>
+      <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400">{title}</h3>
+      <p className="mt-2 text-2xl font-semibold text-slate-800 dark:text-white">{value}</p>
       {trend && (
-        <div className="mt-2 flex items-center space-x-1 text-xs text-slate-500">
+        <div className="mt-2 flex items-center space-x-1 text-xs text-slate-500 dark:text-slate-400">
           {trendIcon}
           <span>{trendLabel}</span>
         </div>

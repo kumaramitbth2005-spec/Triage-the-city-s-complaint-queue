@@ -26,7 +26,15 @@ const userSchema = new mongoose.Schema({
     accuracy: { type: Number },
     updatedAt: { type: Date }
   },
-  lastLogin: { type: Date }
+  lastLogin: { type: Date },
+
+  // Email Verification
+  emailVerified: { type: Boolean, default: false },
+  emailVerifiedAt: { type: Date },
+  verificationOtpHash: { type: String },       // bcrypt hash of OTP
+  verificationOtpExpiresAt: { type: Date },     // when OTP expires (10 min)
+  verificationOtpAttempts: { type: Number, default: 0 }, // brute-force counter
+  verificationLastSentAt: { type: Date }        // cooldown for resend
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

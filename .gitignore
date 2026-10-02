@@ -38,4 +38,6 @@ Pipfile.lock
 *.sln
 *.sw?
 *.local
+scratch/
+
 

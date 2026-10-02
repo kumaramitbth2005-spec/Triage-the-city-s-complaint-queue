@@ -1,85 +1,100 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
-import { Landmark, Shield, FileText, HelpCircle, Mail, Globe, Sparkles } from 'lucide-react';
+import { useTranslation } from '../../context/LanguageContext';
+import { Mail, User, Code2, BrainCircuit } from 'lucide-react';
 
 export function AboutSettings() {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">About</h1>
-        <p className="text-gray-500 mt-1">Application architecture, technical specifications, and legal notices.</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('aboutTitle', 'About')}</h1>
+        <p className="text-gray-500 dark:text-slate-400 mt-1">{t('aboutDesc', 'Information about the developer and technical details of the civic triage platform.')}</p>
       </div>
 
-      <Card>
-        <CardContent className="p-6 sm:p-8">
-          <div className="mx-auto w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mb-4 shadow-md shadow-blue-500/20">
-            <Landmark size={32} />
+      {/* SECTION 1: ABOUT ME */}
+      <Card className="border-blue-100 dark:border-slate-700 shadow-sm overflow-hidden bg-white dark:bg-slate-900">
+        <CardHeader className="bg-gradient-to-r from-blue-50/90 via-indigo-50/60 to-white dark:from-slate-800/90 dark:via-slate-800/60 dark:to-slate-900 border-b border-gray-100 dark:border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center shadow-xs">
+              <User size={20} />
+            </div>
+            <div>
+              <CardTitle className="text-lg text-gray-900 dark:text-white font-bold">About Me</CardTitle>
+              <p className="text-xs text-gray-500 dark:text-slate-400">Developer & Project Creator</p>
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 text-center">Nexus AI</h2>
-          <p className="text-sm font-medium text-gray-500 mt-1 text-center">City Complaint Triage & Resolution Platform</p>
-          <div className="text-center mt-3">
-            <span className="inline-block px-3 py-1 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold rounded-full">
-              Version 1.2.0 (Production)
+        </CardHeader>
+        <CardContent className="p-6 space-y-5 text-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-slate-800">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Amit Kumar</h3>
+              <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mt-0.5">Lead Full-Stack & Civic AI Developer</p>
+              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400 mt-1.5">
+                <Mail size={13} className="text-gray-400 dark:text-slate-500" />
+                <a href="mailto:kumaramitbth2005@gmail.com" className="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors font-medium">
+                  kumaramitbth2005@gmail.com
+                </a>
+              </div>
+            </div>
+            <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-800/60 text-blue-700 dark:text-blue-300 text-xs font-semibold rounded-full shrink-0 shadow-xs">
+              Project Creator
             </span>
           </div>
-          
-          <div className="mt-8 space-y-6 text-sm text-gray-600">
-            <section className="bg-slate-50/70 p-5 rounded-xl border border-gray-100">
-              <h3 className="text-base font-semibold text-gray-900 mb-2.5 flex items-center gap-2">
-                <Sparkles size={18} className="text-blue-600" />
-                <span>About the Project</span>
-              </h3>
-              <p className="leading-relaxed mb-3">
-                Nexus AI is an intelligent civic triage application developed for municipal corporations to streamline citizen grievance intake, automatic department categorization, urgency prioritization, and duplicate cluster detection.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-2">
-                <div>• <strong>Multi-channel Intake:</strong> Text, Image, Voice recording with audio transcription.</div>
-                <div>• <strong>AI-Assisted Triage:</strong> Automated department and SLA categorization.</div>
-                <div>• <strong>Duplicate Detection:</strong> Semantic clustering of overlapping ward complaints.</div>
-                <div>• <strong>User Isolation:</strong> Secure role-based data governance and privacy.</div>
-              </div>
-            </section>
 
-            <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 bg-white border border-gray-200 rounded-xl space-y-2">
-                <div className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
-                  <Shield size={18} className="text-emerald-600" />
-                  <span>Privacy Policy</span>
+          <div className="space-y-3 leading-relaxed text-xs sm:text-sm text-gray-700 dark:text-slate-200">
+            <p>
+              I am a passionate software engineer specializing in <strong className="text-gray-900 dark:text-white font-semibold">full-stack web applications, AI-assisted automation, and civic technology systems</strong>. My focus is building robust, highly responsive platforms that solve real-world community and municipal governance challenges.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-gray-100 dark:border-slate-700/80 shadow-xs">
+                <div className="font-semibold text-gray-900 dark:text-white text-xs flex items-center gap-1.5 mb-1.5">
+                  <Code2 size={15} className="text-indigo-600 dark:text-indigo-400" /> 
+                  <span>Technical Skills</span>
                 </div>
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  Citizen data, uploaded voice clips, and location coordinates are processed strictly for civic resolution and municipal governance under municipal privacy regulations.
+                <p className="text-xs text-gray-600 dark:text-slate-300 leading-relaxed">
+                  React 19, JavaScript/Node.js, Express, MongoDB, RESTful APIs, TailwindCSS, Web Speech API.
                 </p>
               </div>
-
-              <div className="p-4 bg-white border border-gray-200 rounded-xl space-y-2">
-                <div className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
-                  <FileText size={18} className="text-indigo-600" />
-                  <span>Terms of Service</span>
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-gray-100 dark:border-slate-700/80 shadow-xs">
+                <div className="font-semibold text-gray-900 dark:text-white text-xs flex items-center gap-1.5 mb-1.5">
+                  <BrainCircuit size={15} className="text-blue-600 dark:text-blue-400" /> 
+                  <span>Project Contributions</span>
                 </div>
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  Authorized for municipal operators, zone heads, field officers, and registered citizens for public utility reporting.
+                <p className="text-xs text-gray-600 dark:text-slate-300 leading-relaxed">
+                  End-to-end architecture, multi-user isolation, real-time AI triage engine, and multi-language internationalization.
                 </p>
               </div>
-            </section>
-
-            <section className="p-4 bg-white border border-gray-200 rounded-xl space-y-2">
-              <div className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
-                <HelpCircle size={18} className="text-blue-600" />
-                <span>Support & Contact</span>
-              </div>
-              <p className="text-xs text-gray-500">
-                For administrative assistance, department configuration requests, or bug reports:
-              </p>
-              <div className="flex items-center gap-2 text-xs font-medium text-blue-600 pt-1">
-                <Mail size={14} />
-                <a href="mailto:support@municipal.gov" className="hover:underline">support@municipal.gov</a>
-              </div>
-            </section>
+            </div>
           </div>
+        </CardContent>
+      </Card>
 
-          <div className="mt-8 pt-6 border-t border-gray-100 text-center text-xs text-gray-400">
-            © 2026 Municipal Administration & Civic Technology Group. All rights reserved.
-          </div>
+      {/* SECTION 2: PLATFORM DETAILS */}
+      <Card className="border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+        <CardHeader className="bg-slate-50/70 dark:bg-slate-800/60 border-b border-gray-100 dark:border-slate-800">
+          <CardTitle className="text-gray-900 dark:text-white font-bold">Platform Specifications</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-xs sm:text-sm">
+            <div>
+              <dt className="text-gray-500 dark:text-slate-400 font-medium">Application Name</dt>
+              <dd className="font-semibold text-gray-900 dark:text-white mt-0.5">City Complaint Triage & Dispatch Platform</dd>
+            </div>
+            <div>
+              <dt className="text-gray-500 dark:text-slate-400 font-medium">Version</dt>
+              <dd className="font-semibold text-gray-900 dark:text-white mt-0.5">v2.4.0 (Enterprise Civic Edition)</dd>
+            </div>
+            <div>
+              <dt className="text-gray-500 dark:text-slate-400 font-medium">Core Capabilities</dt>
+              <dd className="font-semibold text-gray-900 dark:text-white mt-0.5">Multimodal Citizen Intake (Voice, Text, Photo), AI Ward Routing, Duplicate Deduplication</dd>
+            </div>
+            <div>
+              <dt className="text-gray-500 dark:text-slate-400 font-medium">Supported Languages</dt>
+              <dd className="font-semibold text-gray-900 dark:text-white mt-0.5">10 Indian Regional Languages (Hindi, Bengali, Tamil, Telugu, Marathi, Gujarati, Kannada, Malayalam, Punjabi, English)</dd>
+            </div>
+          </dl>
         </CardContent>
       </Card>
     </div>

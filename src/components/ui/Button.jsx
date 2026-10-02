@@ -7,8 +7,8 @@ export function Button({ className, variant = 'primary', size = 'default', child
   const variants = {
     primary: "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
     secondary: "bg-slate-800 text-white hover:bg-slate-900 shadow-sm",
-    outline: "border border-gray-300 bg-white hover:bg-gray-50 text-slate-700",
-    ghost: "hover:bg-gray-100 text-slate-700",
+    outline: "border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200",
+    ghost: "hover:bg-gray-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200",
     danger: "bg-red-600 text-white hover:bg-red-700 shadow-sm"
   };
 

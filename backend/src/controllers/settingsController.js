@@ -126,6 +126,16 @@ exports.updateNotifications = async (req, res, next) => {
       { new: true, upsert: true }
     );
 
+    await User.findByIdAndUpdate(req.user._id, { notificationPreferences: notifications });
+
+    if (settings.privacy?.activityHistory !== false) {
+      await Activity.create({
+        userId: req.user._id,
+        action: 'NOTIFICATIONS_UPDATED',
+        details: notifications
+      });
+    }
+
     res.json({ success: true, message: 'Notification preferences updated', data: settings.notifications });
   } catch (err) {
     next(err);
