@@ -12,33 +12,33 @@ export function Topbar({ toggleSidebar }) {
   const { t } = useTranslation();
 
   return (
-    <header className="h-16 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between px-4 sm:px-6 flex-shrink-0 sticky top-0 z-30 transition-colors duration-200">
+    <header className="h-16 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between px-3 sm:px-6 flex-shrink-0 sticky top-0 z-30 transition-colors duration-200 w-full max-w-full">
       
       {/* Mobile Search Overlay */}
       {isMobileSearchOpen ? (
-        <div className="flex-1 flex items-center gap-2 animate-in fade-in duration-150">
+        <div className="flex-1 flex items-center gap-2 animate-in fade-in duration-150 w-full min-w-0">
           <button
             type="button"
             onClick={() => setIsMobileSearchOpen(false)}
-            className="p-2 -ml-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer"
+            className="p-2 -ml-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer shrink-0"
             aria-label="Close search"
           >
             <ArrowLeft size={20} />
           </button>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <GlobalSearch isMobileExpanded={true} onCloseMobile={() => setIsMobileSearchOpen(false)} />
           </div>
         </div>
       ) : (
         <>
           {/* Left Brand / Sidebar Toggle */}
-          <div className="flex items-center gap-3 w-1/3 sm:w-auto">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
             <button 
-              className="p-2 -ml-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer"
+              className="p-2 -ml-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer shrink-0"
               onClick={toggleSidebar}
               aria-label="Toggle menu"
             >
-              <Menu size={24} />
+              <Menu size={22} className="sm:w-6 sm:h-6" />
             </button>
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-sm shrink-0">
               <Landmark size={18} className="sm:w-[22px] sm:h-[22px]" />
@@ -54,18 +54,18 @@ export function Topbar({ toggleSidebar }) {
           </div>
 
           {/* Center Search Bar (Desktop / Tablet) */}
-          <div className="flex-1 flex justify-center px-4 max-w-lg hidden sm:flex lg:ml-8 lg:mr-8">
+          <div className="flex-1 flex justify-center px-4 max-w-lg hidden sm:flex lg:ml-8 lg:mr-8 min-w-0">
             <GlobalSearch />
           </div>
 
           {/* Right Action Icons */}
-          <div className="flex items-center gap-1.5 sm:gap-3 w-auto justify-end">
+          <div className="flex items-center gap-1 sm:gap-2.5 shrink-0 justify-end">
             <button 
               onClick={() => setIsMobileSearchOpen(true)}
               className="sm:hidden p-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer" 
               aria-label="Open search bar"
             >
-              <Search size={20} />
+              <Search size={19} />
             </button>
 
             <button 
@@ -74,7 +74,7 @@ export function Topbar({ toggleSidebar }) {
               title={t('settings', 'Settings')}
               className="p-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
-              <Settings size={20} />
+              <Settings size={19} />
             </button>
             
             <NotificationCenter />

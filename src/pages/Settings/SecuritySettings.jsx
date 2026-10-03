@@ -270,35 +270,35 @@ export function SecuritySettings() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 border-b border-gray-100">
             <div>
               <div className="font-medium text-gray-800 dark:text-white text-sm">Current Session</div>
               <div className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">This browser session is authenticated with a JWT token (1-day expiry).</div>
             </div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-400 text-xs font-semibold self-start sm:self-auto shrink-0">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               Active
             </span>
           </div>
 
-          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 border-b border-gray-100">
             <div>
               <div className="font-medium text-gray-800 dark:text-white text-sm">Authentication Method</div>
               <div className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Standard email and password with bcrypt hashing (10 salt rounds)</div>
             </div>
-            <span className="text-xs font-semibold text-gray-600 dark:text-slate-300 bg-gray-100 dark:bg-slate-800 px-3 py-1 rounded-full border border-gray-200 dark:border-slate-700">
+            <span className="text-xs font-semibold text-gray-600 dark:text-slate-300 bg-gray-100 dark:bg-slate-800 px-3 py-1 rounded-full border border-gray-200 dark:border-slate-700 self-start sm:self-auto shrink-0">
               JWT · bcrypt
             </span>
           </div>
 
-          <div className="flex items-center justify-between py-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2">
             <div>
               <div className="font-medium text-red-600 dark:text-red-400 text-sm">Sign Out All Sessions</div>
               <div className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Log out from this device and invalidate all active sessions</div>
             </div>
             <Button
               variant="outline"
-              className="gap-2 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 text-xs"
+              className="gap-2 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 text-xs self-start sm:self-auto shrink-0"
               onClick={() => {
                 localStorage.removeItem('auth_token');
                 window.location.href = '/';

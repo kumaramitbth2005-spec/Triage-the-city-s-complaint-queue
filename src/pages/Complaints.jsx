@@ -263,18 +263,18 @@ export function Complaints() {
                 </div>
               </div>
 
-              <div className="flex flex-row md:flex-col items-center justify-between md:justify-center md:items-end gap-3 min-w-[140px] pl-0 md:pl-6 pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-gray-100">
-                <div className="flex flex-col items-start md:items-end gap-1">
+              <div className="flex flex-col sm:flex-row md:flex-col justify-between sm:items-center md:items-end gap-3 md:min-w-[150px] shrink-0 pl-0 md:pl-6 pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-gray-100">
+                <div className="flex items-center sm:items-start md:items-end justify-between sm:justify-start gap-2 w-full sm:w-auto">
                   <UrgencyBadge level={c.urgency} />
-                  <div className="text-[10px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
+                  <div className="text-[11px] sm:text-xs text-slate-500">
                     Confidence: <span className="font-semibold text-blue-600">{c.confidence || c.aiAnalysis?.overallConfidence || 85}%</span>
                   </div>
                 </div>
-                <div className="flex gap-2 w-auto md:w-full">
-                  <Button className="flex-1 text-xs sm:text-sm px-3 py-1.5 sm:py-2 h-8 sm:h-10" onClick={(e) => { e.stopPropagation(); navigate('/dashboard/triage'); }}>
-                    {t('edit', 'Review')}
+                <div className="flex items-center gap-2 w-full sm:w-auto md:w-full">
+                  <Button className="flex-1 sm:flex-initial md:flex-1 text-xs sm:text-sm px-3 py-1.5 sm:py-2 h-8 sm:h-9" onClick={(e) => { e.stopPropagation(); navigate('/dashboard/triage'); }}>
+                    {t('edit', 'Edit')}
                   </Button>
-                  <Button variant="danger" className="flex-1 text-xs sm:text-sm px-3 py-1.5 sm:py-2 h-8 sm:h-10" onClick={(e) => handleDeleteClick(e, c.id || c.complaintId)}>
+                  <Button variant="danger" className="flex-1 sm:flex-initial md:flex-1 text-xs sm:text-sm px-3 py-1.5 sm:py-2 h-8 sm:h-9" onClick={(e) => handleDeleteClick(e, c.id || c.complaintId)}>
                     {t('delete', 'Delete')}
                   </Button>
                 </div>

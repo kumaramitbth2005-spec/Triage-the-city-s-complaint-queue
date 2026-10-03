@@ -38,7 +38,9 @@ exports.globalSearch = async (req, res, next) => {
       return res.json({ success: true, data: { complaints: [], clusters: [], setting: [], feature: [], navigation: [] } });
     }
 
-    const regex = new RegExp(q, 'i');
+    // Escape regex special characters to prevent ReDoS / NoSQL injection
+    const escapedQ = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escapedQ, 'i');
 
     // Search complaints
     const complaints = await Complaint.find({

@@ -57,7 +57,7 @@ export const settingsSubItems = [
   { key: 'about', name: 'About', path: '/dashboard/settings/about', icon: Info },
 ];
 
-export function Sidebar({ isOpen, setIsOpen }) {
+function SidebarNav({ isMobile, onClose }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
@@ -65,7 +65,6 @@ export function Sidebar({ isOpen, setIsOpen }) {
   const isSettingsActive = location.pathname.startsWith('/dashboard/settings') || location.pathname === '/dashboard/profile';
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(isSettingsActive);
 
-  // Synchronize expansion with active route
   useEffect(() => {
     if (isSettingsActive) {
       setIsSettingsExpanded(true);
@@ -84,55 +83,63 @@ export function Sidebar({ isOpen, setIsOpen }) {
   };
 
   return (
-    <>
-      {/* Mobile Backdrop */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 md:hidden transition-opacity" 
-          onClick={() => setIsOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Sticky Sidebar Container */}
-      <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 flex flex-col h-screen sticky top-0 transition-all duration-300 ease-in-out md:relative shadow-xl md:shadow-none border-r border-gray-200 dark:border-slate-800 shrink-0",
-        isOpen ? "translate-x-0 md:ml-0" : "-translate-x-full md:translate-x-0 md:-ml-64"
-      )}>
-        {/* Header / Menu label */}
-        <div className="p-5 pb-3 flex items-center justify-between shrink-0">
-          <div className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">{t('menu', 'Menu')}</div>
+    <div className="flex flex-col h-full w-full">
+      {/* Header / Menu label */}
+      <div className="p-4 sm:p-5 pb-3 flex items-center justify-between shrink-0">
+        <div className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">{t('menu', 'Menu')}</div>
+        {isMobile && (
           <button 
-            className="md:hidden p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-            onClick={() => setIsOpen(false)}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+            onClick={onClose}
             aria-label="Close menu"
           >
             <X size={20} />
           </button>
-        </div>
+        )}
+      </div>
 
-        {/* Report Complaint CTA */}
-        <div className="px-4 pb-3 shrink-0">
-          <button
-            onClick={() => { navigate('/dashboard/new-complaint'); setIsOpen(false); }}
-            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-colors cursor-pointer"
-            aria-label="Report a new complaint"
+      {/* Report Complaint CTA */}
+      <div className="px-4 pb-3 shrink-0">
+        <button
+          onClick={() => { navigate('/dashboard/new-complaint'); onClose(); }}
+          className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-colors cursor-pointer"
+          aria-label="Report a new complaint"
+        >
+          <PlusCircle size={17} /> {t('reportComplaint', 'Report Complaint')}
+        </button>
+      </div>
+
+      {/* Navigation Area */}
+      <nav className="flex-1 overflow-y-auto px-4 space-y-1 pb-16">
+        {/* Main Navigation Items */}
+        {navItems.map((item) => (
+          <NavLink
+            key={item.name}
+            to={item.path}
+            end={item.path === '/dashboard'}
+            onClick={onClose}
+            className={({ isActive }) => cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors duration-150 ease-in-out",
+              isActive 
+                ? "text-blue-600 dark:text-blue-400 font-semibold bg-blue-50/70 dark:bg-blue-900/30" 
+                : "text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400"
+            )}
           >
-            <PlusCircle size={17} /> {t('reportComplaint', 'Report Complaint')}
-          </button>
-        </div>
+            <item.icon size={18} className="shrink-0" />
+            <span className="truncate">{t(item.key, item.name)}</span>
+          </NavLink>
+        ))}
 
-        {/* Single Smoothly Scrollable Navigation Area with generous bottom space */}
-        <nav className="flex-1 overflow-y-auto px-4 space-y-1 pb-16">
-          {/* Main Navigation Items */}
-          {navItems.map((item) => (
+        {/* Administration Section */}
+        <div className="pt-4 pb-1">
+          <div className="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider px-3 mb-1.5">{t('admin', 'Admin')}</div>
+          {adminNavItems.map((item) => (
             <NavLink
               key={item.name}
               to={item.path}
-              end={item.path === '/dashboard'}
-              onClick={() => setIsOpen(false)}
+              onClick={onClose}
               className={({ isActive }) => cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors duration-150 ease-in-out",
+                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors duration-150 ease-in-out",
                 isActive 
                   ? "text-blue-600 dark:text-blue-400 font-semibold bg-blue-50/70 dark:bg-blue-900/30" 
                   : "text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400"
@@ -142,91 +149,109 @@ export function Sidebar({ isOpen, setIsOpen }) {
               <span className="truncate">{t(item.key, item.name)}</span>
             </NavLink>
           ))}
+        </div>
 
-          {/* Administration Section */}
-          <div className="pt-4 pb-1">
-            <div className="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider px-3 mb-1.5">{t('admin', 'Admin')}</div>
-            {adminNavItems.map((item) => (
-              <NavLink
-                key={item.name}
-                to={item.path}
-                onClick={() => setIsOpen(false)}
-                className={({ isActive }) => cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors duration-150 ease-in-out",
-                  isActive 
-                    ? "text-blue-600 dark:text-blue-400 font-semibold bg-blue-50/70 dark:bg-blue-900/30" 
-                    : "text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400"
-                )}
-              >
-                <item.icon size={18} className="shrink-0" />
-                <span className="truncate">{t(item.key, item.name)}</span>
-              </NavLink>
-            ))}
-          </div>
-
-          {/* Expandable Settings Section - Parallel & Inline in Sidebar */}
-          <div className="pt-4 pb-2">
-            <div className="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider px-3 mb-1.5">{t('preferences', 'Preferences')}</div>
-            
-            <button
-              type="button"
-              onClick={handleSettingsClick}
+        {/* Expandable Settings Section */}
+        <div className="pt-4 pb-2">
+          <div className="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider px-3 mb-1.5">{t('preferences', 'Preferences')}</div>
+          
+          <button
+            type="button"
+            onClick={handleSettingsClick}
+            className={cn(
+              "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors duration-150 ease-in-out cursor-pointer group",
+              isSettingsActive 
+                ? "text-blue-600 dark:text-blue-400 font-semibold bg-blue-50/70 dark:bg-blue-900/30" 
+                : "text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400"
+            )}
+            aria-expanded={isSettingsExpanded}
+          >
+            <div className="flex items-center gap-3 truncate">
+              <SettingsIcon size={18} className="shrink-0 transition-transform group-hover:rotate-45" />
+              <span className="truncate">{t('settings', 'Settings')}</span>
+            </div>
+            <ChevronDown 
+              size={16} 
               className={cn(
-                "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors duration-150 ease-in-out cursor-pointer group",
-                isSettingsActive 
-                  ? "text-blue-600 dark:text-blue-400 font-semibold bg-blue-50/70 dark:bg-blue-900/30" 
-                  : "text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400"
-              )}
-              aria-expanded={isSettingsExpanded}
-            >
-              <div className="flex items-center gap-3 truncate">
-                <SettingsIcon size={18} className="shrink-0 transition-transform group-hover:rotate-45" />
-                <span className="truncate">{t('settings', 'Settings')}</span>
-              </div>
-              <ChevronDown 
-                size={16} 
-                className={cn(
-                  "shrink-0 transition-transform duration-200 text-gray-400 dark:text-slate-500",
-                  isSettingsExpanded && "rotate-180 text-blue-600 dark:text-blue-400"
-                )} 
-              />
-            </button>
+                "shrink-0 transition-transform duration-200 text-gray-400 dark:text-slate-500",
+                isSettingsExpanded && "rotate-180 text-blue-600 dark:text-blue-400"
+              )} 
+            />
+          </button>
 
-            {/* Expandable 10 Sub-features (Inline) */}
-            <div className={cn(
-              "grid transition-all duration-300 ease-in-out overflow-hidden",
-              isSettingsExpanded ? "grid-rows-[1fr] opacity-100 mt-1" : "grid-rows-[0fr] opacity-0 mt-0 pointer-events-none"
-            )}>
-              <div className="min-h-0 pl-3 pr-1 py-1 space-y-1 border-l-2 border-slate-200 dark:border-slate-700 ml-4">
-                {settingsSubItems.map((subItem) => {
-                  const SubIcon = subItem.icon;
-                  const isSubActive = location.pathname === subItem.path || (subItem.key === 'general' && (location.pathname === '/dashboard/settings' || location.pathname === '/dashboard/settings/'));
+          {/* Expandable 10 Sub-features */}
+          <div className={cn(
+            "grid transition-all duration-300 ease-in-out overflow-hidden",
+            isSettingsExpanded ? "grid-rows-[1fr] opacity-100 mt-1" : "grid-rows-[0fr] opacity-0 mt-0 pointer-events-none"
+          )}>
+            <div className="min-h-0 pl-3 pr-1 py-1 space-y-1 border-l-2 border-slate-200 dark:border-slate-700 ml-4">
+              {settingsSubItems.map((subItem) => {
+                const SubIcon = subItem.icon;
+                const isSubActive = location.pathname === subItem.path || (subItem.key === 'general' && (location.pathname === '/dashboard/settings' || location.pathname === '/dashboard/settings/'));
 
-                  return (
-                    <NavLink
-                      key={subItem.key}
-                      to={subItem.path}
-                      onClick={() => setIsOpen(false)}
-                      className={cn(
-                        "flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs transition-colors duration-150",
-                        isSubActive 
-                          ? "text-blue-600 dark:text-blue-400 font-semibold bg-blue-50/80 dark:bg-blue-900/40 shadow-xs" 
-                          : "text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400"
-                      )}
-                    >
-                      <SubIcon size={15} className="shrink-0" />
-                      <span className="truncate">{t(subItem.key, subItem.name)}</span>
-                    </NavLink>
-                  );
-                })}
-              </div>
+                return (
+                  <NavLink
+                    key={subItem.key}
+                    to={subItem.path}
+                    onClick={onClose}
+                    className={cn(
+                      "flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs transition-colors duration-150",
+                      isSubActive 
+                        ? "text-blue-600 dark:text-blue-400 font-semibold bg-blue-50/80 dark:bg-blue-900/40 shadow-xs" 
+                        : "text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400"
+                    )}
+                  >
+                    <SubIcon size={15} className="shrink-0" />
+                    <span className="truncate">{t(subItem.key, subItem.name)}</span>
+                  </NavLink>
+                );
+              })}
             </div>
           </div>
+        </div>
 
-          {/* Generous bottom padding buffer */}
-          <div className="h-8" aria-hidden="true" />
-        </nav>
+        <div className="h-8" aria-hidden="true" />
+      </nav>
+    </div>
+  );
+}
+
+export function Sidebar({ isOpen, setIsOpen }) {
+  return (
+    <>
+      {/* 1. Desktop Static Sidebar: completely hidden on mobile (< md) */}
+      <aside className="hidden md:flex flex-col w-64 h-full shrink-0 border-r border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-20">
+        <SidebarNav isMobile={false} onClose={() => {}} />
       </aside>
+
+      {/* 2. Mobile Off-Canvas Drawer: fixed overlay only, 0 footprint in layout */}
+      <div 
+        className={cn(
+          "fixed inset-0 z-50 md:hidden transition-all duration-300",
+          isOpen ? "visible opacity-100" : "invisible opacity-0 pointer-events-none"
+        )}
+      >
+        {/* Backdrop */}
+        <div 
+          className={cn(
+            "fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity duration-300",
+            isOpen ? "opacity-100" : "opacity-0"
+          )} 
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+
+        {/* Drawer Panel */}
+        <aside 
+          className={cn(
+            "fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 flex flex-col h-full shadow-2xl transition-transform duration-300 ease-in-out z-50 border-r border-gray-200 dark:border-slate-800",
+            isOpen ? "translate-x-0" : "-translate-x-full"
+          )}
+          aria-label="Mobile Navigation"
+        >
+          <SidebarNav isMobile={true} onClose={() => setIsOpen(false)} />
+        </aside>
+      </div>
     </>
   );
 }

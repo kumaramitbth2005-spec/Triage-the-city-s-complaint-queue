@@ -24,10 +24,10 @@ exports.getComplaints = async (req, res, next) => {
       filter.createdBy = req.user._id;
     }
     if (req.query.status) filter.status = req.query.status;
-    if (req.query.department) filter.department = new RegExp(req.query.department, 'i');
+    if (req.query.department) filter.department = new RegExp(req.query.department.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
     if (req.query.urgency) filter.urgency = req.query.urgency;
     if (req.query.ward) filter['location.ward'] = req.query.ward;
-    if (req.query.locality) filter['location.locality'] = new RegExp(req.query.locality, 'i');
+    if (req.query.locality) filter['location.locality'] = new RegExp(req.query.locality.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
 
     const [data, total] = await Promise.all([
       Complaint.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
@@ -74,6 +74,14 @@ exports.getComplaintById = async (req, res, next) => {
 // PATCH /api/complaints/:id/triage
 exports.triageComplaint = async (req, res, next) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required to triage complaints' } });
+    }
+
+    if (req.user.role === 'citizen') {
+      return res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'Citizens are not authorized to triage complaints' } });
+    }
+
     const { department, category, urgency, status, operatorNotes } = req.body;
 
     const complaint = await Complaint.findOne({
@@ -144,6 +152,10 @@ exports.getTriageQueue = async (req, res, next) => {
 // DELETE /api/complaints/:id
 exports.deleteComplaint = async (req, res, next) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required to delete complaints' } });
+    }
+
     const query = {
       $or: [
         { _id: req.params.id.match(/^[0-9a-fA-F]{24}$/) ? req.params.id : null },
@@ -151,19 +163,17 @@ exports.deleteComplaint = async (req, res, next) => {
       ]
     };
 
-    if (req.user && req.user.role === 'citizen') {
+    if (req.user.role === 'citizen') {
       query.createdBy = req.user._id;
     }
 
     const complaint = await Complaint.findOneAndDelete(query);
 
     if (!complaint) {
-      return res.status(404).json({ success: false, message: 'Complaint not found or unauthorized' });
+      return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Complaint not found or unauthorized' } });
     }
 
-    if (req.user) {
-      await Activity.create({ userId: req.user._id, action: 'COMPLAINT_DELETED', entityId: complaint._id });
-    }
+    await Activity.create({ userId: req.user._id, action: 'COMPLAINT_DELETED', entityId: complaint._id });
 
     res.json({ success: true, message: 'Complaint deleted successfully', complaintId: complaint.complaintId });
   } catch (err) {

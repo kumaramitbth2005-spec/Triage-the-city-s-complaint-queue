@@ -17,7 +17,7 @@ const protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecretjwtkey_change_in_production');
-    req.user = await User.findById(decoded.id).select('-passwordHash');
+    req.user = await User.findById(decoded.id).select('-passwordHash -verificationOtpHash');
     next();
   } catch (_error) {
     return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Token is invalid or expired' } });
@@ -37,7 +37,7 @@ const optionalProtect = async (req, res, next) => {
   if (token) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecretjwtkey_change_in_production');
-      req.user = await User.findById(decoded.id).select('-passwordHash');
+      req.user = await User.findById(decoded.id).select('-passwordHash -verificationOtpHash');
     } catch (_error) {
       // Invalid token — continue as anonymous
     }

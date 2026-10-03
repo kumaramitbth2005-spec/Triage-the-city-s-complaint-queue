@@ -151,7 +151,7 @@ export function UserManagement() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {[
           { label: 'Total Users', value: users.length, icon: Users, color: 'text-blue-600 bg-blue-50' },
           { label: 'Active Now', value: users.filter(u => u.active).length, icon: CheckCircle, color: 'text-emerald-600 bg-emerald-50' },
@@ -183,7 +183,7 @@ export function UserManagement() {
             className="w-full pl-9 pr-4 h-10 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 bg-white"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {['all', 'admin', 'operator', 'viewer'].map(role => (
             <button
               key={role}
@@ -198,8 +198,69 @@ export function UserManagement() {
         </div>
       </div>
 
-      {/* Users table */}
-      <Card className="overflow-hidden">
+      {/* Users List / Table */}
+      {/* Mobile Card View (< md) */}
+      <div className="block md:hidden space-y-3">
+        {filtered.map((user, idx) => {
+          const RoleInfo = ROLES[user.role];
+          return (
+            <Card key={user.id} className="overflow-hidden">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0 ${AVATAR_COLORS[idx % AVATAR_COLORS.length]}`}>
+                      {user.avatar}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-slate-800 text-sm">{user.name}</div>
+                      <div className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                        <Mail size={11} /> {user.email}
+                      </div>
+                    </div>
+                  </div>
+                  <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border text-[11px] font-medium shrink-0 ${RoleInfo.color}`}>
+                    <RoleInfo.icon size={11} /> {RoleInfo.label}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-gray-100">
+                  <span>{user.dept}</span>
+                  <div className="flex items-center gap-1">
+                    <Clock size={11} /> {user.lastLogin}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                    user.active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${user.active ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+                    {user.active ? 'Active' : 'Inactive'}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => { setEditingUser(user); setShowModal(true); }}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+                      <Edit2 size={14} />
+                    </button>
+                    <button onClick={() => toggleActive(user.id)}
+                      className={`p-1.5 rounded-lg transition-colors ${user.active ? 'text-slate-400 hover:text-amber-600 hover:bg-amber-50' : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'}`}>
+                      {user.active ? <Lock size={14} /> : <CheckCircle size={14} />}
+                    </button>
+                    <button onClick={() => setDeleteId(user.id)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+        {filtered.length === 0 && (
+          <Card><CardContent className="text-center py-10 text-slate-400 text-sm">No users match your search.</CardContent></Card>
+        )}
+      </div>
+
+      {/* Desktop Table View (>= md) */}
+      <Card className="overflow-hidden hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[600px]">
             <thead className="bg-gray-50 border-b border-gray-100">

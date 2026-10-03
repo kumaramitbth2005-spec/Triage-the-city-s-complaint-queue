@@ -12,7 +12,7 @@ router.get('/:id', optionalProtect, getComplaintById);
 // Write routes: protect / optionalProtect
 router.post('/', optionalProtect, createComplaint);
 router.post('/transcribe', optionalProtect, transcribeAudio);
-router.patch('/:id/triage', optionalProtect, triageComplaint);
-router.delete('/:id', optionalProtect, deleteComplaint);
+router.patch('/:id/triage', protect, triageComplaint);
+router.delete('/:id', protect, deleteComplaint);
 
 module.exports = router;

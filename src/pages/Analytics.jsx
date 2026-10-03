@@ -144,7 +144,7 @@ export function Analytics() {
           <h2 className="text-2xl font-bold text-slate-800">Analytics & Insights</h2>
           <p className="text-sm text-slate-500 mt-0.5">Deep dive into complaint trends and performance metrics.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap self-start sm:self-auto">
           <div className="flex border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
             {['7d', '30d', '90d'].map(r => (
               <button

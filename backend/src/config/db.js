@@ -8,10 +8,12 @@ try {
   // Fallback to system DNS
 }
 
-const DEFAULT_ATLAS_URI = 'mongodb+srv://AmitSharma:Amitbth%408969%23AMAA%23123@cluster0.zrrzley.mongodb.net/city_complaint_triage?retryWrites=true&w=majority';
-
 const connectDB = async (retries = 5, delay = 3000) => {
-  const uri = process.env.MONGODB_URI || DEFAULT_ATLAS_URI;
+  const uri = process.env.MONGODB_URI;
+
+  if (!uri) {
+    throw new Error('MONGODB_URI environment variable is not set. Please configure it in your .env file.');
+  }
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {

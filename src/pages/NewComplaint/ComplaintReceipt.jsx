@@ -75,7 +75,7 @@ export function ComplaintReceipt({ complaint, onClose }) {
 
           {/* Data note */}
           <p className="text-[11px] text-slate-400">
-            Your complaint is logged locally (mock mode). In production, it would be transmitted to the Municipal server.
+            Your complaint has been logged and is undergoing AI-powered triage. You can track its status using the Complaint ID above.
           </p>
         </div>
       </div>

@@ -124,39 +124,42 @@ export function ComplaintDetail() {
   return (
     <div className="max-w-5xl mx-auto space-y-4 w-full">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => navigate('/dashboard/complaints')}
-          className="p-2 rounded-lg hover:bg-gray-100 text-slate-500 transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl font-bold text-slate-800 font-mono">{complaint.id}</h1>
-            <Badge>{complaint.status}</Badge>
-            <UrgencyBadge level={complaint.urgency} />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <button
+            onClick={() => navigate('/dashboard/complaints')}
+            className="p-2 rounded-lg hover:bg-gray-100 text-slate-500 transition-colors shrink-0"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-lg sm:text-xl font-bold text-slate-800 font-mono truncate">{complaint.id}</h1>
+              <Badge>{complaint.status}</Badge>
+              <UrgencyBadge level={complaint.urgency} />
+            </div>
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5 truncate">
+              {complaint.department} · {complaint.category} · Ward {complaint.ward}
+            </p>
           </div>
-          <p className="text-sm text-slate-500 mt-0.5">
-            {complaint.department} · {complaint.category} · Ward {complaint.ward}
-          </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
           <Button
             variant="outline"
             size="sm"
             onClick={() => navigator.clipboard?.writeText(complaint.id)}
-            className="hidden sm:flex"
+            className="text-xs"
           >
-            <Copy size={14} className="mr-1.5" /> Copy ID
+            <Copy size={13} className="mr-1.5" /> Copy ID
           </Button>
           <Button
             variant="danger"
             size="sm"
             onClick={handleDelete}
             disabled={deleting}
+            className="text-xs"
           >
-            <Trash2 size={14} className="mr-1.5" /> {deleting ? 'Deleting...' : 'Delete'}
+            <Trash2 size={13} className="mr-1.5" /> {deleting ? 'Deleting...' : 'Delete'}
           </Button>
         </div>
       </div>

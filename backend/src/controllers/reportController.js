@@ -4,7 +4,7 @@ const Activity = require('../models/Activity');
 // GET /api/reports/weekly
 exports.getWeeklyReport = async (req, res, next) => {
   try {
-    const deptFilter = req.params.department ? { department: new RegExp(req.params.department, 'i') } : {};
+    const deptFilter = req.params.department ? { department: new RegExp(req.params.department.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') } : {};
 
     const now = new Date();
     const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);

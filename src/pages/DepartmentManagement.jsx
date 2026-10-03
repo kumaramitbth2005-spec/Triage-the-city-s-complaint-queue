@@ -49,13 +49,13 @@ function DepartmentModal({ dept, onSave, onClose }) {
   const handleChange = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 z-[100] flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
-        <div className="p-6 border-b border-gray-100">
-          <h3 className="text-lg font-bold text-slate-800">{dept ? 'Edit Department' : 'Add Department'}</h3>
+    <div className="fixed inset-0 bg-slate-900/50 z-[100] flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg my-auto">
+        <div className="p-4 sm:p-6 border-b border-gray-100">
+          <h3 className="text-base sm:text-lg font-bold text-slate-800">{dept ? 'Edit Department' : 'Add Department'}</h3>
         </div>
-        <div className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Department Name</label>
               <input
@@ -75,7 +75,7 @@ function DepartmentModal({ dept, onSave, onClose }) {
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">Department Head</label>
               <input
@@ -94,7 +94,7 @@ function DepartmentModal({ dept, onSave, onClose }) {
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1">SLA Target (hours)</label>
               <input
@@ -130,12 +130,12 @@ function DepartmentModal({ dept, onSave, onClose }) {
               onChange={e => handleChange('active', e.target.checked)}
               className="w-4 h-4 rounded border-gray-300"
             />
-            <span className="text-sm font-medium text-slate-700">Active (receives complaints)</span>
+            <span className="text-xs sm:text-sm font-medium text-slate-700">Active (receives complaints)</span>
           </label>
         </div>
-        <div className="p-6 pt-0 flex justify-end gap-3">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => onSave(form)}>Save Department</Button>
+        <div className="p-4 sm:p-6 pt-0 flex justify-end gap-2 sm:gap-3">
+          <Button variant="outline" onClick={onClose} className="text-xs sm:text-sm">Cancel</Button>
+          <Button onClick={() => onSave(form)} className="text-xs sm:text-sm">Save Department</Button>
         </div>
       </div>
     </div>
@@ -265,15 +265,15 @@ export function DepartmentManagement() {
                 </div>
 
                 {/* Stats row */}
-                <div className="grid grid-cols-4 gap-3 mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4">
                   {[
                     { label: 'Received', value: dept.stats.received },
                     { label: 'Resolved', value: dept.stats.resolved },
                     { label: 'Avg Time', value: `${dept.stats.avgTime}h` },
                     { label: 'Breaches', value: dept.stats.slaBreaches },
                   ].map((s, i) => (
-                    <div key={i} className="text-center bg-gray-50 rounded-lg py-2">
-                      <div className="text-base font-bold text-slate-800">{s.value}</div>
+                    <div key={i} className="text-center bg-gray-50 rounded-lg py-1.5 sm:py-2 px-1">
+                      <div className="text-sm sm:text-base font-bold text-slate-800">{s.value}</div>
                       <div className="text-[10px] text-slate-400">{s.label}</div>
                     </div>
                   ))}

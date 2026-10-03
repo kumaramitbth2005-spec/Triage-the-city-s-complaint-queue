@@ -90,7 +90,7 @@ export function AITriage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 flex-1 min-h-0">
         
         {/* COLUMN 1 — ORIGINAL COMPLAINT */}
-        <Card className="flex flex-col overflow-hidden h-[500px] lg:h-full min-w-0">
+        <Card className="flex flex-col overflow-hidden h-auto min-h-[360px] lg:h-full min-w-0">
           <CardHeader className="bg-slate-50 p-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
               <div>
@@ -158,7 +158,7 @@ export function AITriage() {
         </Card>
 
         {/* COLUMN 2 — AI TRIAGE RESULT */}
-        <Card className="flex flex-col h-[500px] lg:h-full border-blue-200 shadow-sm relative overflow-hidden min-w-0">
+        <Card className="flex flex-col h-auto min-h-[360px] lg:h-full border-blue-200 shadow-sm relative overflow-hidden min-w-0">
           <div className="absolute top-0 right-0 p-3 sm:p-4">
             <div className="flex flex-col items-end">
               <span className="text-[9px] sm:text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-0.5 sm:mb-1 flex items-center">
@@ -221,7 +221,7 @@ export function AITriage() {
         </Card>
 
         {/* COLUMN 3 — OPERATOR ACTION */}
-        <Card className="flex flex-col h-[500px] lg:h-full bg-slate-50 min-w-0">
+        <Card className="flex flex-col h-auto min-h-[360px] lg:h-full bg-slate-50 min-w-0">
           <CardHeader className="p-4">
             <CardTitle className="text-sm sm:text-base">{t('actions', 'Operator Action')}</CardTitle>
           </CardHeader>

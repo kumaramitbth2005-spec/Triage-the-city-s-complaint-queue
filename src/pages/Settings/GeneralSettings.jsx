@@ -68,15 +68,15 @@ export function GeneralSettings() {
           </div>
 
           {/* Default Landing Page */}
-          <div className="flex items-center justify-between py-3 border-t border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-3 border-t border-gray-100">
             <div>
-              <div className="font-medium text-gray-800 dark:text-white">{t('defaultView', 'Default View')}</div>
+              <div className="font-medium text-gray-800 dark:text-white text-sm">{t('defaultView', 'Default View')}</div>
               <div className="text-xs text-gray-500 dark:text-slate-400">Choose the landing section when entering the application</div>
             </div>
             <select 
               value={localGeneral.defaultView || 'Dashboard'}
               onChange={(e) => handleGeneralChange('defaultView', e.target.value)}
-              className="form-select w-44 rounded-lg border-gray-300 shadow-xs focus:border-blue-500 focus:ring-blue-500 text-sm font-medium text-gray-700"
+              className="form-select w-full sm:w-44 rounded-lg border-gray-300 shadow-xs focus:border-blue-500 focus:ring-blue-500 text-sm font-medium text-gray-700 bg-white"
             >
               <option value="Dashboard">{t('dashboard', 'Dashboard')}</option>
               <option value="Complaints">{t('complaints', 'Complaints Queue')}</option>
@@ -87,15 +87,15 @@ export function GeneralSettings() {
           </div>
 
           {/* Items Per Page */}
-          <div className="flex items-center justify-between py-3 border-t border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-3 border-t border-gray-100">
             <div>
-              <div className="font-medium text-gray-800 dark:text-white">{t('itemsPerPage', 'Items per page')}</div>
+              <div className="font-medium text-gray-800 dark:text-white text-sm">{t('itemsPerPage', 'Items per page')}</div>
               <div className="text-xs text-gray-500 dark:text-slate-400">Number of complaint records to display in tables</div>
             </div>
             <select 
               value={localGeneral.itemsPerPage || 25}
               onChange={(e) => handleGeneralChange('itemsPerPage', parseInt(e.target.value))}
-              className="form-select w-44 rounded-lg border-gray-300 shadow-xs focus:border-blue-500 focus:ring-blue-500 text-sm font-medium text-gray-700"
+              className="form-select w-full sm:w-44 rounded-lg border-gray-300 shadow-xs focus:border-blue-500 focus:ring-blue-500 text-sm font-medium text-gray-700 bg-white"
             >
               <option value={10}>10 records</option>
               <option value={25}>25 records</option>

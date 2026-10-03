@@ -113,39 +113,61 @@ export function ActivityHistory() {
               {t('noRecords', 'No activities recorded yet.')}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200 text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                    <th className="py-3 px-4">Date & Time</th>
-                    <th className="py-3 px-4">Action</th>
-                    <th className="py-3 px-4">Target / Resource</th>
-                    <th className="py-3 px-4">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {filteredHistory.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50/70 transition-colors">
-                      <td className="py-3.5 px-4 text-xs font-medium text-gray-500 whitespace-nowrap flex items-center gap-2">
-                        <Clock size={13} className="text-gray-400 shrink-0" />
-                        {item.date}
-                      </td>
-                      <td className="py-3.5 px-4 font-semibold text-gray-800 text-xs capitalize">
-                        {item.action}
-                      </td>
-                      <td className="py-3.5 px-4 text-xs text-gray-600 font-mono">
-                        {item.target}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <Badge variant={item.status === 'Success' ? 'success' : 'warning'} className="text-[10px] capitalize">
-                          {item.status}
-                        </Badge>
-                      </td>
+            <>
+              {/* Mobile Card List (< sm) */}
+              <div className="block sm:hidden divide-y divide-gray-100">
+                {filteredHistory.map((item) => (
+                  <div key={item.id} className="py-3 px-1 space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-semibold text-gray-800 text-xs capitalize">{item.action}</span>
+                      <Badge variant={item.status === 'Success' ? 'success' : 'warning'} className="text-[10px] capitalize">
+                        {item.status}
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-gray-600 font-mono break-all">{item.target}</div>
+                    <div className="text-[11px] text-gray-400 flex items-center gap-1.5">
+                      <Clock size={11} className="shrink-0" />
+                      {item.date}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table (>= sm) */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200 text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                      <th className="py-3 px-4">Date & Time</th>
+                      <th className="py-3 px-4">Action</th>
+                      <th className="py-3 px-4">Target / Resource</th>
+                      <th className="py-3 px-4">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredHistory.map((item) => (
+                      <tr key={item.id} className="hover:bg-gray-50/70 transition-colors">
+                        <td className="py-3.5 px-4 text-xs font-medium text-gray-500 whitespace-nowrap flex items-center gap-2">
+                          <Clock size={13} className="text-gray-400 shrink-0" />
+                          {item.date}
+                        </td>
+                        <td className="py-3.5 px-4 font-semibold text-gray-800 text-xs capitalize">
+                          {item.action}
+                        </td>
+                        <td className="py-3.5 px-4 text-xs text-gray-600 font-mono">
+                          {item.target}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <Badge variant={item.status === 'Success' ? 'success' : 'warning'} className="text-[10px] capitalize">
+                            {item.status}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

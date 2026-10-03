@@ -166,7 +166,8 @@ export function Dashboard() {
               <ArrowRight size={16} className="ml-1 shrink-0"/>
             </Button>
           </CardHeader>
-          <div className="overflow-x-auto flex-1 max-w-full">
+          {/* Desktop Table View */}
+          <div className="hidden sm:block overflow-x-auto flex-1 max-w-full">
             <table className="w-full text-left whitespace-nowrap min-w-[700px]">
               <thead className="bg-gray-50 text-gray-500 font-medium text-xs sm:text-sm border-b border-gray-200">
                 <tr>
@@ -210,6 +211,37 @@ export function Dashboard() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card List View */}
+          <div className="sm:hidden divide-y divide-gray-100 p-3 space-y-3">
+            {complaints.slice(0,5).map(c => (
+              <div
+                key={c.id}
+                onClick={() => navigate(`/dashboard/complaints/${c.id}`)}
+                className="pt-3 first:pt-0 space-y-2 cursor-pointer"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-bold text-slate-800 text-xs font-mono">{c.id}</span>
+                  <div className="flex items-center gap-1.5">
+                    <UrgencyBadge level={c.urgency} />
+                    <Badge className="text-[10px] py-0">{c.status}</Badge>
+                  </div>
+                </div>
+                <div className="text-xs text-slate-700">
+                  <div className="font-semibold text-slate-900">{c.department} &bull; {c.category}</div>
+                  <div className="text-slate-500 text-[11px] mt-0.5">{c.normalizedLocality || 'Bhopal'} (Ward {c.ward || '1'})</div>
+                </div>
+                <div className="flex justify-end gap-2 pt-1">
+                  <Button variant="outline" size="sm" className="text-xs h-7 px-2.5" onClick={(e) => { e.stopPropagation(); navigate('/dashboard/triage'); }}>
+                    {t('review', 'Review')}
+                  </Button>
+                  <Button variant="danger" size="sm" className="text-xs h-7 px-2.5" onClick={(e) => handleDeleteClick(e, c.id)}>
+                    {t('delete', 'Delete')}
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
         </Card>
 

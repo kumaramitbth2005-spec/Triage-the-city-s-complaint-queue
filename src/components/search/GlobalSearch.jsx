@@ -163,7 +163,10 @@ export function GlobalSearch({ isMobileExpanded = false, onCloseMobile }) {
 
       {/* Results Dropdown */}
       {isOpen && (query.trim().length >= 2 || (state.search?.recent && state.recentSearches?.length > 0)) && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-200/90 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150 max-h-[75vh] flex flex-col">
+        <div className={isMobileExpanded
+          ? "fixed left-3 right-3 top-16 mt-1 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200/90 dark:border-slate-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150 max-h-[75vh] flex flex-col"
+          : "absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200/90 dark:border-slate-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150 max-h-[75vh] flex flex-col"
+        }>
           <div className="overflow-y-auto p-2.5 space-y-3 divide-y divide-gray-100">
             
             {/* Recent Searches */}

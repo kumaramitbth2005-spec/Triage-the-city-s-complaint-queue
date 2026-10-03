@@ -111,15 +111,15 @@ export function PrivacySettings() {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Profile Visibility */}
-          <div className="flex items-center justify-between py-2 border-b border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 border-b border-gray-100">
             <div>
-              <div className="font-medium text-gray-800 dark:text-white">Profile Visibility</div>
+              <div className="font-medium text-gray-800 dark:text-white text-sm">Profile Visibility</div>
               <div className="text-xs text-gray-500 dark:text-slate-400">Control who can view your operator contact information</div>
             </div>
             <select 
               value={privacy.profileVisibility || 'Internal Only'}
               onChange={(e) => handleVisibilityChange(e.target.value)}
-              className="form-select w-44 rounded-lg border-gray-300 shadow-xs focus:border-blue-500 focus:ring-blue-500 text-sm font-medium text-gray-700"
+              className="form-select w-full sm:w-44 rounded-lg border-gray-300 shadow-xs focus:border-blue-500 focus:ring-blue-500 text-sm font-medium text-gray-700 bg-white"
             >
               <option value="Public">Public (All Users)</option>
               <option value="Internal Only">Internal Only (Staff)</option>
