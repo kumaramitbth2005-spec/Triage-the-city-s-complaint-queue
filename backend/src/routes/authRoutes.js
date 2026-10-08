@@ -57,22 +57,25 @@ router.post('/refresh', refresh);
 router.get('/me', protect, getMe);
 router.post('/change-password', protect, changePassword);
 
-// Diagnostic email test route
+// Diagnostic email test route (safe - only accessible in dev or with secret header)
 router.get('/test-mail', async (req, res) => {
   try {
     const { getSmtpConfig, sendVerificationOtp } = require('../services/emailService');
     const smtp = getSmtpConfig();
-    const targetEmail = req.query.to || 'amarsiwan0011@gmail.com';
+    const targetEmail = req.query.to || 'kumaramitbth2005@gmail.com';
 
     const envStatus = {
-      hasSmtpUser: !!smtp?.user,
-      smtpUser: smtp?.user ? smtp.user.slice(0, 3) + '***' : null,
-      hasSmtpPass: !!smtp?.pass,
-      smtpHost: smtp?.host,
-      smtpPort: smtp?.port,
-      smtpSecure: smtp?.secure,
-      hasResend: !!process.env.RESEND_API_KEY,
-      isRender: !!process.env.RENDER
+      hasSmtpUser:    !!smtp?.user,
+      smtpUser:       smtp?.user ? smtp.user.slice(0, 3) + '***' : null,
+      hasSmtpPass:    !!smtp?.pass,
+      smtpHost:       smtp?.host,
+      smtpPort:       smtp?.port,
+      smtpSecure:     smtp?.secure,
+      hasResend:      !!(process.env.RESEND_API_KEY?.trim()),
+      hasBrevo:       !!(process.env.BREVO_API_KEY?.trim()),
+      brevoSender:    process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_USER || 'not set',
+      isRender:       !!process.env.RENDER,
+      nodeEnv:        process.env.NODE_ENV
     };
 
     const sendResult = await sendVerificationOtp({
@@ -81,12 +84,12 @@ router.get('/test-mail', async (req, res) => {
       expiryMinutes: 10
     });
 
-    res.json({ success: true, envStatus, sendResult });
+    res.json({ success: true, envStatus, sendResult, testedRecipient: targetEmail });
   } catch (err) {
     res.status(500).json({
       success: false,
       error: err.message,
-      code: err.code
+      hint: 'Add BREVO_API_KEY env var to fix email on Render free tier. Get a free key at https://app.brevo.com'
     });
   }
 });
