@@ -24,7 +24,7 @@ const { createNotification } = require('../services/notificationService');
 const { sendVerificationOtp, maskEmail } = require('../services/emailService');
 
 const JWT_SECRET = () => process.env.JWT_SECRET || 'supersecretjwtkey_change_in_production';
-const OTP_EXPIRY_MINUTES = () => parseInt(process.env.OTP_EXPIRY_MINUTES || '5', 10);
+const OTP_EXPIRY_MINUTES = () => parseInt(process.env.OTP_EXPIRY_MINUTES || '10', 10);
 const OTP_RESEND_COOLDOWN_SECONDS = () => parseInt(process.env.OTP_RESEND_COOLDOWN_SECONDS || '60', 10);
 const MAX_OTP_ATTEMPTS = 5;
 
@@ -97,7 +97,7 @@ exports.sendVerificationCode = async (req, res, next) => {
       console.error('Email dispatch error:', emailErr.message);
       return res.status(503).json({
         success: false,
-        error: { code: 'EMAIL_SERVICE_ERROR', message: 'Unable to send the verification email right now. Please try again later.' }
+        error: { code: 'EMAIL_SERVICE_ERROR', message: 'Email could not be sent. Please try again later.' }
       });
     }
 
@@ -178,7 +178,7 @@ exports.register = async (req, res, next) => {
         console.error('Email error:', emailErr.message);
         return res.status(503).json({
           success: false,
-          error: { code: 'EMAIL_SERVICE_ERROR', message: 'Unable to send the verification email right now. Please try again later.' }
+          error: { code: 'EMAIL_SERVICE_ERROR', message: 'Email could not be sent. Please try again later.' }
         });
       }
 
@@ -235,7 +235,7 @@ exports.register = async (req, res, next) => {
       await UserSettings.deleteOne({ userId: user._id });
       return res.status(503).json({
         success: false,
-        error: { code: 'EMAIL_SERVICE_ERROR', message: 'Unable to send the verification email right now. Please try again later.' }
+        error: { code: 'EMAIL_SERVICE_ERROR', message: 'Email could not be sent. Please try again later.' }
       });
     }
 
@@ -299,17 +299,19 @@ exports.verifyEmail = async (req, res, next) => {
     // Check OTP expiration
     if (!user.verificationOtpExpiresAt || user.verificationOtpExpiresAt < new Date()) {
       user.verificationOtpHash = undefined;
+      user.verificationOtpExpiresAt = undefined;
       user.verificationOtpAttempts = 0;
       await user.save();
       return res.status(400).json({
         success: false,
-        error: { code: 'OTP_EXPIRED', message: 'The verification code has expired. Please request a new code.' }
+        error: { code: 'OTP_EXPIRED', message: 'Verification code expired. Please request a new code.' }
       });
     }
 
     // Check brute-force attempts
     if (user.verificationOtpAttempts >= MAX_OTP_ATTEMPTS) {
       user.verificationOtpHash = undefined;
+      user.verificationOtpExpiresAt = undefined;
       user.verificationOtpAttempts = 0;
       await user.save();
       return res.status(429).json({
@@ -323,15 +325,26 @@ exports.verifyEmail = async (req, res, next) => {
 
     if (!otpMatch) {
       user.verificationOtpAttempts = (user.verificationOtpAttempts || 0) + 1;
+      if (user.verificationOtpAttempts >= MAX_OTP_ATTEMPTS) {
+        user.verificationOtpHash = undefined;
+        user.verificationOtpExpiresAt = undefined;
+        user.verificationOtpAttempts = 0;
+        await user.save();
+        return res.status(429).json({
+          success: false,
+          error: {
+            code: 'TOO_MANY_ATTEMPTS',
+            message: 'Too many incorrect attempts. Please request a new verification code.'
+          }
+        });
+      }
       await user.save();
       const remaining = MAX_OTP_ATTEMPTS - user.verificationOtpAttempts;
       return res.status(400).json({
         success: false,
         error: {
           code: 'OTP_MISMATCH',
-          message: remaining > 0
-            ? `Invalid verification code. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`
-            : 'Too many incorrect attempts. Please request a new verification code.'
+          message: `Invalid verification code. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`
         }
       });
     }
@@ -452,7 +465,7 @@ exports.resendVerification = async (req, res, next) => {
       console.error('Email resend error:', emailErr.message);
       return res.status(503).json({
         success: false,
-        error: { code: 'EMAIL_SERVICE_ERROR', message: 'Unable to send the verification email right now. Please try again later.' }
+        error: { code: 'EMAIL_SERVICE_ERROR', message: 'Email could not be sent. Please try again later.' }
       });
     }
 

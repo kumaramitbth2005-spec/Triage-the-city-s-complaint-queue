@@ -233,7 +233,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
         }, 600);
       }
     } catch (err) {
-      const message = err.response?.data?.error?.message || err.response?.data?.message || 'Registration could not be completed. Please try again.';
+      const message = err.response?.data?.error?.message || err.response?.data?.message || "We couldn't send the verification code. Please try again.";
       setRegisterError(message);
     } finally {
       setRegisterLoading(false);
@@ -272,7 +272,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
         }, 600);
       }
     } catch (err) {
-      const msg = err.response?.data?.error?.message || err.response?.data?.message || 'Could not send verification code. Please try again.';
+      const msg = err.response?.data?.error?.message || err.response?.data?.message || "We couldn't send the verification code. Please try again.";
       setSendOtpError(msg);
     } finally {
       setSendOtpLoading(false);
@@ -402,7 +402,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
         }
       }
     } catch (err) {
-      const msg = err.response?.data?.error?.message || err.response?.data?.message || 'Could not resend code. Please try again later.';
+      const msg = err.response?.data?.error?.message || err.response?.data?.message || "We couldn't send the verification code. Please try again.";
       setVerifyError(msg);
     } finally {
       setResendLoading(false);
