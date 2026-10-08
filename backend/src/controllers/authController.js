@@ -38,6 +38,14 @@ const generateSecureOtp = () => {
   return String(crypto.randomInt(100000, 1000000));
 };
 
+// Safe email error message extractor
+const getEmailErrorMessage = (err) => {
+  if (err?.code === 'RESEND_RECIPIENT_RESTRICTED') {
+    return err.message;
+  }
+  return err?.message || 'Email could not be sent. Please check your email configuration or try again later.';
+};
+
 // ─── SEND VERIFICATION CODE (STANDALONE / PRE-AUTH) ──────────────────────────
 exports.sendVerificationCode = async (req, res, next) => {
   try {
@@ -97,7 +105,7 @@ exports.sendVerificationCode = async (req, res, next) => {
       console.error('Email dispatch error:', emailErr.message);
       return res.status(503).json({
         success: false,
-        error: { code: 'EMAIL_SERVICE_ERROR', message: 'Email could not be sent. Please try again later.' }
+        error: { code: 'EMAIL_SERVICE_ERROR', message: getEmailErrorMessage(emailErr) }
       });
     }
 
@@ -178,7 +186,7 @@ exports.register = async (req, res, next) => {
         console.error('Email error:', emailErr.message);
         return res.status(503).json({
           success: false,
-          error: { code: 'EMAIL_SERVICE_ERROR', message: 'Email could not be sent. Please try again later.' }
+          error: { code: 'EMAIL_SERVICE_ERROR', message: getEmailErrorMessage(emailErr) }
         });
       }
 
@@ -235,7 +243,7 @@ exports.register = async (req, res, next) => {
       await UserSettings.deleteOne({ userId: user._id });
       return res.status(503).json({
         success: false,
-        error: { code: 'EMAIL_SERVICE_ERROR', message: 'Email could not be sent. Please try again later.' }
+        error: { code: 'EMAIL_SERVICE_ERROR', message: getEmailErrorMessage(emailErr) }
       });
     }
 
@@ -465,7 +473,7 @@ exports.resendVerification = async (req, res, next) => {
       console.error('Email resend error:', emailErr.message);
       return res.status(503).json({
         success: false,
-        error: { code: 'EMAIL_SERVICE_ERROR', message: 'Email could not be sent. Please try again later.' }
+        error: { code: 'EMAIL_SERVICE_ERROR', message: getEmailErrorMessage(emailErr) }
       });
     }
 

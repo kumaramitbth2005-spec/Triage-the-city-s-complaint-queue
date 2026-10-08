@@ -1,14 +1,25 @@
 /**
  * emailService.js
- * Production-ready transactional email service using Resend Email API.
+ * Dual-Provider Transactional Email Service
+ * 
+ * PROVIDER PRIORITY:
+ *   1. Gmail SMTP / Custom SMTP (via nodemailer)
+ *      - Allows sending verification codes to ANY recipient email address in the world
+ *        (any Gmail, Yahoo, Outlook, custom domains, etc.) without domain verification.
+ *      - Configured via:
+ *          GMAIL_USER + GMAIL_APP_PASSWORD (or EMAIL_USER + EMAIL_PASS)
+ *   2. Resend API (via @resend)
+ *      - Fallback if SMTP credentials are not configured, or if SMTP delivery fails.
+ *      - Note: Resend free tier without a verified custom domain only sends to the
+ *        account owner's email address.
  * 
  * SECURITY:
- * - Credentials kept strictly server-side (process.env.RESEND_API_KEY)
+ * - Credentials kept strictly server-side (process.env)
  * - Sensitive credentials, passwords, and OTPs never logged to console
  * - Masked email logging only (e.g. a***@gmail.com)
- * - Never returns success without confirmation from Resend API
  */
 
+const nodemailer = require('nodemailer');
 const { Resend } = require('resend');
 
 // Mask email for safe server logging (e.g. amit@gmail.com -> a***@gmail.com)
@@ -64,7 +75,7 @@ const buildVerificationEmailHtml = ({ otp, expiryMinutes = 10 }) => {
                 Hello,
               </p>
               <p style="font-size:15px;color:#334155;margin:0 0 24px;line-height:1.6;">
-                We received a request to create an account for Civic Complaint Triage.
+                We received a request to create or verify an account for Civic Complaint Triage.
               </p>
               <p style="font-size:14px;color:#64748b;margin:0 0 12px;font-weight:600;">
                 Your 6-digit verification code is:
@@ -124,7 +135,7 @@ const buildVerificationEmailText = ({ otp, expiryMinutes = 10 }) => {
   return [
     'Hello,',
     '',
-    'We received a request to create an account for Civic Complaint Triage.',
+    'We received a request to create or verify an account for Civic Complaint Triage.',
     '',
     'Your 6-digit verification code is:',
     '',
@@ -132,6 +143,7 @@ const buildVerificationEmailText = ({ otp, expiryMinutes = 10 }) => {
     '',
     `This code expires in ${expiryMinutes} minutes.`,
     '',
+    'Security Notice: Never share this verification code with anyone.',
     'If you did not request this account, you can safely ignore this email.',
     '',
     'Civic Complaint Triage Team'
@@ -139,10 +151,163 @@ const buildVerificationEmailText = ({ otp, expiryMinutes = 10 }) => {
 };
 
 /**
- * Send an email OTP verification message to the user's email via Resend Email API.
+ * Resolve SMTP credentials from environment variables
+ */
+const getSmtpConfig = () => {
+  const user = (process.env.GMAIL_USER || process.env.EMAIL_USER || '').trim();
+  const rawPass = (process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS || '').trim();
+  // Strip any spaces from Google App Password (e.g. "abcd efgh ijkl mnop" -> "abcdefghijklmnop")
+  const pass = rawPass.replace(/\s+/g, '');
+
+  if (!user || !pass) {
+    return null;
+  }
+
+  const host = (process.env.EMAIL_HOST || 'smtp.gmail.com').trim();
+  const port = parseInt(process.env.EMAIL_PORT || '587', 10);
+  const secure = process.env.EMAIL_SECURE === 'true' || port === 465;
+
+  return { user, pass, host, port, secure };
+};
+
+/**
+ * Create or reuse nodemailer transporter
+ */
+let cachedTransporter = null;
+const getTransporter = () => {
+  const config = getSmtpConfig();
+  if (!config) return null;
+
+  if (cachedTransporter) return cachedTransporter;
+
+  if (config.host.toLowerCase().includes('gmail')) {
+    cachedTransporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: config.user,
+        pass: config.pass
+      }
+    });
+  } else {
+    cachedTransporter = nodemailer.createTransport({
+      host: config.host,
+      port: config.port,
+      secure: config.secure,
+      auth: {
+        user: config.user,
+        pass: config.pass
+      }
+    });
+  }
+
+  return cachedTransporter;
+};
+
+/**
+ * Send email via SMTP (Nodemailer)
+ */
+const sendViaSmtp = async ({ to, otp, expiryMinutes }) => {
+  const config = getSmtpConfig();
+  const transporter = getTransporter();
+
+  if (!config || !transporter) {
+    throw new Error('SMTP is not configured.');
+  }
+
+  const fromName = process.env.EMAIL_FROM_NAME || 'Civic Complaint Triage';
+  const fromHeader = `"${fromName}" <${config.user}>`;
+  const subject = `Your verification code is: ${otp}`;
+  const html = buildVerificationEmailHtml({ otp, expiryMinutes });
+  const text = buildVerificationEmailText({ otp, expiryMinutes });
+
+  const info = await transporter.sendMail({
+    from: fromHeader,
+    to,
+    subject,
+    html,
+    text,
+    headers: {
+      'X-Priority': '1',
+      'X-MSMail-Priority': 'High',
+      'Importance': 'high',
+      'X-Mailer': 'CivicComplaintTriage-SMTP/1.0',
+      'X-Entity-Ref-ID': `otp-${Date.now()}`
+    }
+  });
+
+  return {
+    success: true,
+    provider: 'smtp',
+    messageId: info.messageId
+  };
+};
+
+/**
+ * Send email via Resend API
+ */
+const sendViaResend = async ({ to, otp, expiryMinutes }) => {
+  const apiKey = (process.env.RESEND_API_KEY || '').trim();
+  if (!apiKey) {
+    throw new Error('RESEND_API_KEY is not configured in environment variables.');
+  }
+
+  const resend = new Resend(apiKey);
+  const senderEmail = process.env.EMAIL_FROM || 'Civic Complaint Triage <onboarding@resend.dev>';
+  const subject = `Your verification code is: ${otp}`;
+  const html = buildVerificationEmailHtml({ otp, expiryMinutes });
+  const text = buildVerificationEmailText({ otp, expiryMinutes });
+
+  const sendResult = await resend.emails.send({
+    from: senderEmail,
+    to: [to],
+    subject,
+    html,
+    text,
+    headers: {
+      'X-Priority': '1',
+      'X-MSMail-Priority': 'High',
+      'Importance': 'high',
+      'X-Mailer': 'CivicComplaintTriage-Resend/1.0',
+      'X-Entity-Ref-ID': `otp-${Date.now()}`
+    }
+  });
+
+  const { data, error } = sendResult || {};
+
+  if (error) {
+    const errorMsg = error.message || JSON.stringify(error);
+    if (
+      errorMsg.toLowerCase().includes('only send testing emails to your own email address') ||
+      error.statusCode === 403
+    ) {
+      const helpfulErr = new Error(
+        'Resend free tier only allows sending to the account owner email. To send verification emails to any Gmail address, configure EMAIL_USER and EMAIL_PASS (Gmail App Password) in your backend environment variables.'
+      );
+      helpfulErr.code = 'RESEND_RECIPIENT_RESTRICTED';
+      helpfulErr.statusCode = 403;
+      throw helpfulErr;
+    }
+    const err = new Error(errorMsg);
+    err.code = 'RESEND_API_ERROR';
+    throw err;
+  }
+
+  if (!data || !data.id) {
+    throw new Error('Resend did not return a message ID.');
+  }
+
+  return {
+    success: true,
+    provider: 'resend',
+    messageId: data.id
+  };
+};
+
+/**
+ * Primary dispatch function: Send verification OTP via Gmail SMTP or Resend fallback
  * @param {object} opts
- * @param {string} opts.to              - Recipient email address (e.g. user's Gmail)
- * @param {string} opts.otp             - Plain 6-digit OTP code
+ * @param {string} opts.to              - Recipient email address
+ * @param {string} opts.otp             - 6-digit verification code
  * @param {number} [opts.expiryMinutes] - Expiration duration in minutes (default 10)
  */
 const sendVerificationOtp = async ({ to, otp, expiryMinutes = 10 }) => {
@@ -151,91 +316,51 @@ const sendVerificationOtp = async ({ to, otp, expiryMinutes = 10 }) => {
   }
 
   const cleanRecipient = to.toLowerCase().trim();
-  const apiKey = process.env.RESEND_API_KEY;
+  const smtpConfig = getSmtpConfig();
+  const hasResend = !!(process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.trim());
 
-  if (!apiKey || !apiKey.trim()) {
-    console.error('Resend email delivery error');
-    console.error('Error name: MissingConfigurationError');
-    console.error('Error message: RESEND_API_KEY is not configured in environment variables.');
-    throw new Error('Email delivery service is currently unavailable. Please configure RESEND_API_KEY.');
+  if (!smtpConfig && !hasResend) {
+    console.error('❌ Email service error: Neither SMTP (GMAIL_USER/EMAIL_USER) nor RESEND_API_KEY is configured.');
+    throw new Error('Email delivery service is currently unconfigured. Please configure EMAIL_USER & EMAIL_PASS or RESEND_API_KEY.');
   }
 
-  const senderEmail = process.env.EMAIL_FROM || 'Civic Complaint Triage <onboarding@resend.dev>';
-  const subject = `Your verification code is: ${otp}`;
-  const htmlContent = buildVerificationEmailHtml({ otp, expiryMinutes });
-  const textContent = buildVerificationEmailText({ otp, expiryMinutes });
+  console.log(`📨 Attempting to dispatch OTP to: ${maskEmail(cleanRecipient)}`);
 
-  console.log('OTP email request started');
-  console.log(`Recipient: ${maskEmail(cleanRecipient)}`);
-  console.log('Provider: Resend');
-
-  let resend;
-  try {
-    resend = new Resend(apiKey.trim());
-  } catch (initErr) {
-    console.error('Resend email delivery error');
-    console.error(`Error name: ${initErr.name || 'InitializationError'}`);
-    console.error(`Error message: ${initErr.message}`);
-    throw new Error('Email could not be sent. Please try again later.');
-  }
-
-  let sendResult;
-  try {
-    sendResult = await resend.emails.send({
-      from: senderEmail,
-      to: [cleanRecipient],
-      subject,
-      html: htmlContent,
-      text: textContent,
-      headers: {
-        'X-Priority': '1',
-        'X-MSMail-Priority': 'High',
-        'Importance': 'high',
-        'X-Mailer': 'CivicComplaintTriage-Mailer/1.0',
-        'Reply-To': 'noreply@resend.dev',
-        'X-Entity-Ref-ID': `otp-${Date.now()}`
+  // Priority 1: Gmail SMTP / Custom SMTP (supports ANY recipient email address)
+  if (smtpConfig) {
+    try {
+      console.log(`🚀 Sending via SMTP (${smtpConfig.host}) to ${maskEmail(cleanRecipient)}...`);
+      const result = await sendViaSmtp({ to: cleanRecipient, otp, expiryMinutes });
+      console.log(`✅ SMTP email dispatched successfully. Message ID: ${result.messageId}`);
+      return result;
+    } catch (smtpErr) {
+      console.warn(`⚠️ SMTP dispatch failed: ${smtpErr.message}`);
+      if (hasResend) {
+        console.log('🔄 Falling back to Resend API...');
+      } else {
+        throw smtpErr;
       }
-    });
-  } catch (networkErr) {
-    console.error('Resend email delivery error');
-    console.error(`Error name: ${networkErr.name || 'NetworkError'}`);
-    console.error(`Error message: ${networkErr.message}`);
-    if (networkErr.status || networkErr.statusCode) {
-      console.error(`HTTP status: ${networkErr.status || networkErr.statusCode}`);
     }
-    throw new Error('Email could not be sent. Please try again later.');
   }
 
-  const { data, error } = sendResult || {};
-
-  if (error) {
-    console.error('Resend email delivery error');
-    console.error(`Error name: ${error.name || 'ResendError'}`);
-    console.error(`Error message: ${error.message}`);
-    if (error.statusCode) {
-      console.error(`HTTP status: ${error.statusCode}`);
+  // Priority 2: Resend API (as fallback or primary if SMTP not provided)
+  if (hasResend) {
+    try {
+      console.log(`🚀 Sending via Resend API to ${maskEmail(cleanRecipient)}...`);
+      const result = await sendViaResend({ to: cleanRecipient, otp, expiryMinutes });
+      console.log(`✅ Resend email dispatched successfully. ID: ${result.messageId}`);
+      return result;
+    } catch (resendErr) {
+      console.error(`❌ Resend dispatch failed: ${resendErr.message}`);
+      throw resendErr;
     }
-    throw new Error('Email could not be sent. Please try again later.');
   }
 
-  if (!data || !data.id) {
-    console.error('Resend email delivery error');
-    console.error('Error name: MissingMessageIdError');
-    console.error('Error message: Resend did not return a message ID.');
-    throw new Error('Email could not be sent. Please try again later.');
-  }
-
-  console.log('Send request completed');
-  console.log(`Provider message ID: ${data.id}`);
-
-  return {
-    success: true,
-    provider: 'resend',
-    id: data.id
-  };
+  throw new Error('All configured email dispatch methods failed.');
 };
 
-module.exports = { 
+module.exports = {
   sendVerificationOtp,
-  maskEmail
+  maskEmail,
+  getSmtpConfig
 };
