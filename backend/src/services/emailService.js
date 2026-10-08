@@ -290,7 +290,11 @@ const sendViaResend = async ({ to, otp, expiryMinutes }) => {
   }
 
   const resend = new Resend(apiKey);
-  const senderEmail = process.env.EMAIL_FROM || 'Civic Complaint Triage <onboarding@resend.dev>';
+
+  // Sender address — set RESEND_FROM_EMAIL after verifying your domain on resend.com/domains
+  // e.g. RESEND_FROM_EMAIL="Civic Triage <noreply@yourdomain.com>"
+  // Until domain is verified, only sending to the Resend account-owner email works (testing mode).
+  const senderEmail = (process.env.RESEND_FROM_EMAIL || process.env.EMAIL_FROM || 'Civic Complaint Triage <onboarding@resend.dev>').trim();
   const subject = `Your verification code is: ${otp}`;
   const html = buildVerificationEmailHtml({ otp, expiryMinutes });
   const text = buildVerificationEmailText({ otp, expiryMinutes });
@@ -342,11 +346,20 @@ const sendViaResend = async ({ to, otp, expiryMinutes }) => {
 };
 
 /**
- * Primary dispatch function: Send verification OTP via Gmail SMTP, Brevo, Resend, or resilient Sandbox fallback
+ * Primary dispatch function: Send verification OTP
+ * 
+ * PROVIDER PRIORITY (optimised for Render free tier):
+ *   1. Resend API (HTTPS 443) — works on Render free tier; supports any recipient
+ *      once a custom domain is verified in the Resend dashboard.
+ *      Without a verified domain it only sends to the account-owner email (testing).
+ *   2. Gmail SMTP (port 587 / 465) — works locally and on paid cloud hosts.
+ *      Render free tier blocks all outbound SMTP ports.
+ *   3. Brevo REST API (HTTPS 443) — works on Render free tier; 300 emails/day free.
+ *
  * @param {object} opts
  * @param {string} opts.to              - Recipient email address
- * @param {string} opts.otp             - 6-digit verification code
- * @param {number} [opts.expiryMinutes] - Expiration duration in minutes (default 10)
+ * @param {string} opts.otp             - 6-digit verification code (never returned to frontend)
+ * @param {number} [opts.expiryMinutes] - Expiration in minutes (default 10)
  */
 const sendVerificationOtp = async ({ to, otp, expiryMinutes = 10 }) => {
   if (!to || !to.includes('@')) {
@@ -355,12 +368,29 @@ const sendVerificationOtp = async ({ to, otp, expiryMinutes = 10 }) => {
 
   const cleanRecipient = to.toLowerCase().trim();
   const smtpConfig = getSmtpConfig();
-  const hasBrevo = !!(process.env.BREVO_API_KEY && process.env.BREVO_API_KEY.trim());
-  const hasResend = !!(process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.trim());
+  const hasResend = !!(process.env.RESEND_API_KEY?.trim());
+  const hasBrevo  = !!(process.env.BREVO_API_KEY?.trim());
 
   console.log(`📨 Attempting to dispatch OTP to: ${maskEmail(cleanRecipient)}`);
 
-  // Priority 1: Gmail SMTP / Custom SMTP (supports ANY recipient email address on local / VPS / paid hosts)
+  // Priority 1: Resend API (HTTPS 443 — works on Render free tier)
+  // Sends to ANY recipient once a custom domain is verified on resend.com/domains
+  if (hasResend) {
+    try {
+      console.log(`🚀 Sending via Resend API to ${maskEmail(cleanRecipient)}...`);
+      const result = await sendViaResend({ to: cleanRecipient, otp, expiryMinutes });
+      console.log(`✅ Resend email dispatched successfully. ID: ${result.messageId}`);
+      return result;
+    } catch (resendErr) {
+      console.warn(`⚠️ Resend dispatch failed: ${resendErr.message}`);
+      // If Resend explicitly says the recipient is restricted (unverified domain),
+      // fall through to SMTP. Don't give up yet.
+    }
+  }
+
+  // Priority 2: Gmail SMTP / Custom SMTP
+  // Works locally (port 587) and on paid VPS/cloud hosts that allow outbound SMTP.
+  // NOTE: Render free tier blocks ALL outbound SMTP — both port 587 and 465.
   if (smtpConfig) {
     try {
       console.log(`🚀 Sending via SMTP (${smtpConfig.host}:${smtpConfig.port}) to ${maskEmail(cleanRecipient)}...`);
@@ -372,7 +402,7 @@ const sendVerificationOtp = async ({ to, otp, expiryMinutes = 10 }) => {
     }
   }
 
-  // Priority 2: Brevo REST API (over HTTPS 443 - works on Render Free Tier to ANY email)
+  // Priority 3: Brevo REST API (HTTPS 443 — works on Render free tier, any recipient)
   if (hasBrevo) {
     try {
       console.log(`🚀 Sending via Brevo REST API to ${maskEmail(cleanRecipient)}...`);
@@ -381,18 +411,6 @@ const sendVerificationOtp = async ({ to, otp, expiryMinutes = 10 }) => {
       return result;
     } catch (brevoErr) {
       console.warn(`⚠️ Brevo dispatch failed: ${brevoErr.message}`);
-    }
-  }
-
-  // Priority 3: Resend API (over HTTPS 443 - sends to account owner or verified domain)
-  if (hasResend) {
-    try {
-      console.log(`🚀 Sending via Resend API to ${maskEmail(cleanRecipient)}...`);
-      const result = await sendViaResend({ to: cleanRecipient, otp, expiryMinutes });
-      console.log(`✅ Resend email dispatched successfully. ID: ${result.messageId}`);
-      return result;
-    } catch (resendErr) {
-      console.warn(`⚠️ Resend dispatch failed: ${resendErr.message}`);
     }
   }
 
