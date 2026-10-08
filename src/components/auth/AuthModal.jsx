@@ -40,6 +40,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
   // Verification OTP state (6 separate digits)
   const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
   const [pendingEmail, setPendingEmail] = useState('');
+  const [sandboxOtp, setSandboxOtp] = useState('');
   const otpInputRefs = useRef([]);
 
   const { dispatch } = useSettings();
@@ -96,6 +97,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
     setShowPassword(false);
     setShowConfirmPassword(false);
     setOtpDigits(['', '', '', '', '', '']);
+    setSandboxOtp('');
   };
 
   const handleSwitchTab = (newMode) => {
@@ -227,6 +229,11 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
         setOtpDigits(['', '', '', '', '', '']);
         const secs = res.data.cooldownSeconds || 60;
         setResendCooldown(secs);
+        if (res.data.sandboxCode) {
+          setSandboxOtp(res.data.sandboxCode);
+        } else {
+          setSandboxOtp('');
+        }
         setVerifySuccess(res.data.message || 'Verification code sent to your email!');
         setVerifyError('');
         setMode('verify');
@@ -247,7 +254,10 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
         setOtpDigits(['', '', '', '', '', '']);
         const secs = err.response?.data?.cooldownSeconds || 60;
         setResendCooldown(secs);
-        setVerifySuccess(`A verification code was already sent to ${cleanEmail}. Please enter the 6 digits below.`);
+        if (err.response?.data?.sandboxCode) {
+          setSandboxOtp(err.response.data.sandboxCode);
+        }
+        setVerifySuccess(err.response?.data?.message || `A verification code was already sent to ${cleanEmail}. Please enter the 6 digits below.`);
         setVerifyError('');
         setMode('verify');
         setTimeout(() => {
@@ -286,6 +296,11 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
         setPendingEmail(cleanEmail);
         setOtpDigits(['', '', '', '', '', '']);
         setResendCooldown(res.data.cooldownSeconds || 60);
+        if (res.data.sandboxCode) {
+          setSandboxOtp(res.data.sandboxCode);
+        } else {
+          setSandboxOtp('');
+        }
         setVerifySuccess(res.data.message || 'Verification code sent successfully.');
         setVerifyError('');
         setMode('verify');
@@ -302,7 +317,10 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
         setPendingEmail(cleanEmail);
         setOtpDigits(['', '', '', '', '', '']);
         setResendCooldown(err.response?.data?.cooldownSeconds || 60);
-        setVerifySuccess(`A verification code was already sent to ${cleanEmail}. Please enter the 6 digits below.`);
+        if (err.response?.data?.sandboxCode) {
+          setSandboxOtp(err.response.data.sandboxCode);
+        }
+        setVerifySuccess(err.response?.data?.message || `A verification code was already sent to ${cleanEmail}. Please enter the 6 digits below.`);
         setVerifyError('');
         setMode('verify');
         setTimeout(() => {
@@ -473,9 +491,12 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
     try {
       const res = await authApi.resendVerificationCode(pendingEmail);
       if (res.data?.success) {
-        setResendMessage('A new 6-digit verification code has been sent to your email.');
+        setResendMessage(res.data.message || 'A new 6-digit verification code has been sent to your email.');
         setResendCooldown(60);
         setOtpDigits(['', '', '', '', '', '']);
+        if (res.data.sandboxCode) {
+          setSandboxOtp(res.data.sandboxCode);
+        }
         if (otpInputRefs.current[0]) {
           otpInputRefs.current[0].focus();
         }
@@ -882,6 +903,31 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
         {/* ─── EMAIL OTP VERIFICATION FORM ─── */}
         {mode === 'verify' && (
           <form onSubmit={handleVerifySubmit} className="space-y-5 mt-4">
+            {sandboxOtp && (
+              <div className="p-3 bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/30 dark:border-amber-500/40 rounded-2xl flex items-center justify-between gap-2 text-xs text-amber-800 dark:text-amber-200 animate-in fade-in">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">⚡</span>
+                  <div>
+                    <div className="font-bold">Sandbox Mode Delivery</div>
+                    <div className="text-[11px] text-amber-700/80 dark:text-amber-300/80">
+                      Code: <strong className="font-mono text-sm tracking-wider text-amber-900 dark:text-amber-100">{sandboxOtp}</strong>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const digits = String(sandboxOtp).slice(0, 6).split('');
+                    setOtpDigits(digits);
+                    if (otpInputRefs.current[5]) otpInputRefs.current[5].focus();
+                  }}
+                  className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white rounded-lg text-xs font-bold transition shadow-xs cursor-pointer shrink-0"
+                >
+                  Auto-fill Code
+                </button>
+              </div>
+            )}
+
             <div className="space-y-2">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block text-center">
                 Enter 6-Digit Verification Code

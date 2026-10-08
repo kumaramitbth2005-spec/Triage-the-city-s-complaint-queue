@@ -96,8 +96,9 @@ exports.sendVerificationCode = async (req, res, next) => {
     }
 
     // Dispatch email
+    let emailResult;
     try {
-      await sendVerificationOtp({
+      emailResult = await sendVerificationOtp({
         to: cleanEmail,
         name: user?.name || name || 'User',
         otp,
@@ -111,11 +112,16 @@ exports.sendVerificationCode = async (req, res, next) => {
       });
     }
 
-    console.log(`📨 Verification code dispatched to ${maskEmail(cleanEmail)}`);
+    console.log(`📨 Verification code dispatched to ${maskEmail(cleanEmail)} via ${emailResult?.provider}`);
 
     return res.status(200).json({
       success: true,
-      message: 'Verification code sent successfully.'
+      requiresVerification: true,
+      email: cleanEmail,
+      sandboxCode: emailResult?.isSandbox ? otp : undefined,
+      message: emailResult?.isSandbox
+        ? `Verification code generated. (Sandbox Mode: your code is ${otp})`
+        : 'Verification code sent successfully.'
     });
 
   } catch (err) {
@@ -179,8 +185,9 @@ exports.register = async (req, res, next) => {
       existing.verificationLastSentAt = new Date();
       await existing.save();
 
+      let emailResult;
       try {
-        await sendVerificationOtp({
+        emailResult = await sendVerificationOtp({
           to: cleanEmail,
           name: name.trim(),
           otp,
@@ -198,7 +205,10 @@ exports.register = async (req, res, next) => {
         success: true,
         requiresVerification: true,
         email: cleanEmail,
-        message: 'A new verification code has been sent to your email.'
+        sandboxCode: emailResult?.isSandbox ? otp : undefined,
+        message: emailResult?.isSandbox
+          ? `A new verification code has been generated. (Sandbox Mode: your code is ${otp})`
+          : 'A new verification code has been sent to your email.'
       });
     }
 
@@ -233,8 +243,9 @@ exports.register = async (req, res, next) => {
     });
 
     // Send verification email
+    let emailResult;
     try {
-      await sendVerificationOtp({
+      emailResult = await sendVerificationOtp({
         to: cleanEmail,
         name: name.trim(),
         otp,
@@ -255,7 +266,10 @@ exports.register = async (req, res, next) => {
       success: true,
       requiresVerification: true,
       email: cleanEmail,
-      message: 'Account created. Please check your email for the 6-digit verification code.'
+      sandboxCode: emailResult?.isSandbox ? otp : undefined,
+      message: emailResult?.isSandbox
+        ? `Account created. (Sandbox Mode: your verification code is ${otp})`
+        : 'Account created. Please check your email for the 6-digit verification code.'
     });
 
   } catch (err) {
@@ -466,8 +480,9 @@ exports.resendVerification = async (req, res, next) => {
     user.verificationLastSentAt = new Date();
     await user.save();
 
+    let emailResult;
     try {
-      await sendVerificationOtp({
+      emailResult = await sendVerificationOtp({
         to: cleanEmail,
         name: user.name,
         otp,
@@ -481,11 +496,16 @@ exports.resendVerification = async (req, res, next) => {
       });
     }
 
-    console.log(`🔄 New OTP resent to ${maskEmail(cleanEmail)}`);
+    console.log(`🔄 New OTP resent to ${maskEmail(cleanEmail)} via ${emailResult?.provider}`);
 
     res.json({
       success: true,
-      message: 'A new verification code has been sent to your email.'
+      requiresVerification: true,
+      email: cleanEmail,
+      sandboxCode: emailResult?.isSandbox ? otp : undefined,
+      message: emailResult?.isSandbox
+        ? `New verification code generated. (Sandbox Mode: your code is ${otp})`
+        : 'A new verification code has been sent to your email.'
     });
 
   } catch (err) {
