@@ -69,14 +69,16 @@ exports.sendVerificationCode = async (req, res, next) => {
       });
     }
 
-    // Check resend cooldown
+    // Check resend cooldown - if code was recently sent, smoothly direct to verification
     const cooldownMs = OTP_RESEND_COOLDOWN_SECONDS() * 1000;
     if (user && user.verificationLastSentAt && (Date.now() - user.verificationLastSentAt.getTime()) < cooldownMs) {
       const secsLeft = Math.ceil((cooldownMs - (Date.now() - user.verificationLastSentAt.getTime())) / 1000);
-      return res.status(429).json({
-        success: false,
-        error: { code: 'COOLDOWN', message: `Please wait ${secsLeft} seconds before requesting another code.` },
-        cooldownSeconds: secsLeft
+      return res.status(200).json({
+        success: true,
+        requiresVerification: true,
+        email: cleanEmail,
+        cooldownSeconds: secsLeft,
+        message: `A verification code was already sent to your email. Please enter it below.`
       });
     }
 
@@ -149,14 +151,16 @@ exports.register = async (req, res, next) => {
         });
       }
 
-      // Existing unverified account: enforce cooldown before sending new code
+      // Existing unverified account: if code was already sent recently, guide user to verify
       const cooldownMs = OTP_RESEND_COOLDOWN_SECONDS() * 1000;
       if (existing.verificationLastSentAt && (Date.now() - existing.verificationLastSentAt.getTime()) < cooldownMs) {
         const secsLeft = Math.ceil((cooldownMs - (Date.now() - existing.verificationLastSentAt.getTime())) / 1000);
-        return res.status(429).json({
-          success: false,
-          error: { code: 'COOLDOWN', message: `A verification code was already sent. Please wait ${secsLeft} seconds before requesting a new one.` },
-          cooldownSeconds: secsLeft
+        return res.status(200).json({
+          success: true,
+          requiresVerification: true,
+          email: cleanEmail,
+          cooldownSeconds: secsLeft,
+          message: `A verification code was already sent to your email. Please enter it below.`
         });
       }
 

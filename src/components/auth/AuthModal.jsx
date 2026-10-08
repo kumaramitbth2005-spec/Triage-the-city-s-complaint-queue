@@ -173,8 +173,15 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
       const message = errData?.message || err.response?.data?.message || 'Authentication failed. Please check your credentials.';
 
       if (code === 'EMAIL_NOT_VERIFIED' || err.response?.data?.requiresVerification) {
-        setUnverifiedEmail(formData.email.trim());
-        setLoginError('Please verify your email before signing in.');
+        const cleanEmail = formData.email.trim();
+        setPendingEmail(cleanEmail);
+        setMode('verify');
+        setVerifySuccess(`Please enter the 6-digit verification code sent to ${cleanEmail}.`);
+        setVerifyError('');
+        setTimeout(() => {
+          if (otpInputRefs.current[0]) otpInputRefs.current[0].focus();
+        }, 150);
+        return;
       } else {
         setLoginError(message);
       }
@@ -218,22 +225,40 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
       if (res.data?.success) {
         setPendingEmail(cleanEmail);
         setOtpDigits(['', '', '', '', '', '']);
-        setResendCooldown(60);
-        setRegisterSuccess('Verification code sent to your email!');
-        
-        // Transition to verify mode smoothly
+        const secs = res.data.cooldownSeconds || 60;
+        setResendCooldown(secs);
+        setVerifySuccess(res.data.message || 'Verification code sent to your email!');
+        setVerifyError('');
+        setMode('verify');
         setTimeout(() => {
-          setMode('verify');
-          setRegisterSuccess('');
-          setTimeout(() => {
-            if (otpInputRefs.current[0]) {
-              otpInputRefs.current[0].focus();
-            }
-          }, 100);
-        }, 600);
+          if (otpInputRefs.current[0]) {
+            otpInputRefs.current[0].focus();
+          }
+        }, 150);
       }
     } catch (err) {
-      const message = err.response?.data?.error?.message || err.response?.data?.message || "We couldn't send the verification code. Please try again.";
+      const errData = err.response?.data?.error;
+      const code = errData?.code;
+      const cleanEmail = formData.email.trim();
+
+      // If user has an active code or requires verification, immediately route them to the verify screen
+      if (code === 'COOLDOWN' || err.response?.data?.requiresVerification) {
+        setPendingEmail(cleanEmail);
+        setOtpDigits(['', '', '', '', '', '']);
+        const secs = err.response?.data?.cooldownSeconds || 60;
+        setResendCooldown(secs);
+        setVerifySuccess(`A verification code was already sent to ${cleanEmail}. Please enter the 6 digits below.`);
+        setVerifyError('');
+        setMode('verify');
+        setTimeout(() => {
+          if (otpInputRefs.current[0]) {
+            otpInputRefs.current[0].focus();
+          }
+        }, 150);
+        return;
+      }
+
+      const message = errData?.message || err.response?.data?.message || "We couldn't send the verification code. Please try again.";
       setRegisterError(message);
     } finally {
       setRegisterLoading(false);
@@ -260,19 +285,33 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
       if (res.data?.success) {
         setPendingEmail(cleanEmail);
         setOtpDigits(['', '', '', '', '', '']);
-        setResendCooldown(60);
-        setSendOtpSuccess('Verification code sent successfully.');
-
+        setResendCooldown(res.data.cooldownSeconds || 60);
+        setVerifySuccess(res.data.message || 'Verification code sent successfully.');
+        setVerifyError('');
+        setMode('verify');
         setTimeout(() => {
-          setMode('verify');
-          setSendOtpSuccess('');
-          setTimeout(() => {
-            if (otpInputRefs.current[0]) otpInputRefs.current[0].focus();
-          }, 100);
-        }, 600);
+          if (otpInputRefs.current[0]) otpInputRefs.current[0].focus();
+        }, 150);
       }
     } catch (err) {
-      const msg = err.response?.data?.error?.message || err.response?.data?.message || "We couldn't send the verification code. Please try again.";
+      const errData = err.response?.data?.error;
+      const code = errData?.code;
+      const cleanEmail = formData.email.trim();
+
+      if (code === 'COOLDOWN' || err.response?.data?.requiresVerification) {
+        setPendingEmail(cleanEmail);
+        setOtpDigits(['', '', '', '', '', '']);
+        setResendCooldown(err.response?.data?.cooldownSeconds || 60);
+        setVerifySuccess(`A verification code was already sent to ${cleanEmail}. Please enter the 6 digits below.`);
+        setVerifyError('');
+        setMode('verify');
+        setTimeout(() => {
+          if (otpInputRefs.current[0]) otpInputRefs.current[0].focus();
+        }, 150);
+        return;
+      }
+
+      const msg = errData?.message || err.response?.data?.message || "We couldn't send the verification code. Please try again.";
       setSendOtpError(msg);
     } finally {
       setSendOtpLoading(false);
@@ -783,6 +822,20 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
               {registerLoading && <Loader2 size={16} className="animate-spin" />}
               Send Verification Code
             </Button>
+
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const email = formData.email.trim();
+                  if (email) setPendingEmail(email);
+                  setMode('verify');
+                }}
+                className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
+              >
+                Already received a code? Enter verification code →
+              </button>
+            </div>
           </form>
         )}
 
