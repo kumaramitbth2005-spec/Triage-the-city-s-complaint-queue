@@ -161,7 +161,7 @@ const sendVerificationOtp = async ({ to, otp, expiryMinutes = 10 }) => {
   }
 
   const senderEmail = process.env.EMAIL_FROM || 'Civic Complaint Triage <onboarding@resend.dev>';
-  const subject = 'Verify your Civic Complaint Triage account';
+  const subject = `Your verification code is: ${otp}`;
   const htmlContent = buildVerificationEmailHtml({ otp, expiryMinutes });
   const textContent = buildVerificationEmailText({ otp, expiryMinutes });
 
@@ -186,7 +186,15 @@ const sendVerificationOtp = async ({ to, otp, expiryMinutes = 10 }) => {
       to: [cleanRecipient],
       subject,
       html: htmlContent,
-      text: textContent
+      text: textContent,
+      headers: {
+        'X-Priority': '1',
+        'X-MSMail-Priority': 'High',
+        'Importance': 'high',
+        'X-Mailer': 'CivicComplaintTriage-Mailer/1.0',
+        'Reply-To': 'noreply@resend.dev',
+        'X-Entity-Ref-ID': `otp-${Date.now()}`
+      }
     });
   } catch (networkErr) {
     console.error('Resend email delivery error');
