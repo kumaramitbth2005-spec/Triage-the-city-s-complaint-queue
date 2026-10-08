@@ -57,4 +57,38 @@ router.post('/refresh', refresh);
 router.get('/me', protect, getMe);
 router.post('/change-password', protect, changePassword);
 
+// Diagnostic email test route
+router.get('/test-mail', async (req, res) => {
+  try {
+    const { getSmtpConfig, sendVerificationOtp } = require('../services/emailService');
+    const smtp = getSmtpConfig();
+    const targetEmail = req.query.to || 'amarsiwan0011@gmail.com';
+
+    const envStatus = {
+      hasSmtpUser: !!smtp?.user,
+      smtpUser: smtp?.user ? smtp.user.slice(0, 3) + '***' : null,
+      hasSmtpPass: !!smtp?.pass,
+      smtpHost: smtp?.host,
+      smtpPort: smtp?.port,
+      smtpSecure: smtp?.secure,
+      hasResend: !!process.env.RESEND_API_KEY,
+      isRender: !!process.env.RENDER
+    };
+
+    const sendResult = await sendVerificationOtp({
+      to: targetEmail,
+      otp: '999888',
+      expiryMinutes: 10
+    });
+
+    res.json({ success: true, envStatus, sendResult });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      code: err.code
+    });
+  }
+});
+
 module.exports = router;

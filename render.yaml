@@ -36,5 +36,5 @@ services:
         sync: false
       - key: BREVO_API_KEY
         sync: false
-      - key: ALLOW_SANDBOX_OTP
-        value: "true"
+      - key: EMAIL_FROM_NAME
+        value: "Civic Complaint Triage"

@@ -400,38 +400,10 @@ const sendVerificationOtp = async ({ to, otp, expiryMinutes = 10 }) => {
       return result;
     } catch (resendErr) {
       console.warn(`⚠️ Resend dispatch failed: ${resendErr.message}`);
-      if (resendErr.code === 'RESEND_RECIPIENT_RESTRICTED') {
-        console.log(`ℹ️ Recipient ${maskEmail(cleanRecipient)} is restricted on Resend free tier. Activating Sandbox Demo mode.`);
-        return {
-          success: true,
-          provider: 'sandbox_fallback',
-          isSandbox: true,
-          sandboxOtp: otp,
-          messageId: `sandbox-${Date.now()}`
-        };
-      }
     }
   }
 
-  // Priority 4: Cloud Sandbox Fallback
-  // If running in development, on Render free tier, or if live providers are unconfigured/restricted,
-  // gracefully surface OTP so developers, judges, and testers are never blocked from completing registration.
-  const isCloudOrDev = process.env.NODE_ENV !== 'production' || 
-                       process.env.ALLOW_SANDBOX_OTP === 'true' || 
-                       process.env.RENDER === 'true';
-
-  if (isCloudOrDev) {
-    console.log(`ℹ️ [SANDBOX FALLBACK] No live email provider succeeded. Returning sandbox OTP for testing.`);
-    return {
-      success: true,
-      provider: 'sandbox_fallback',
-      isSandbox: true,
-      sandboxOtp: otp,
-      messageId: `sandbox-${Date.now()}`
-    };
-  }
-
-  throw new Error('All configured email dispatch methods failed. Please configure SMTP, Brevo, or Resend credentials.');
+  throw new Error('All configured email dispatch methods failed. Please configure SMTP (Gmail), Brevo, or Resend credentials in environment variables.');
 };
 
 module.exports = {

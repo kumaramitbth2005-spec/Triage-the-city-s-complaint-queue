@@ -118,10 +118,7 @@ exports.sendVerificationCode = async (req, res, next) => {
       success: true,
       requiresVerification: true,
       email: cleanEmail,
-      sandboxCode: emailResult?.isSandbox ? otp : undefined,
-      message: emailResult?.isSandbox
-        ? `Verification code generated. (Sandbox Mode: your code is ${otp})`
-        : 'Verification code sent successfully.'
+      message: 'A 6-digit verification code has been sent to your email.'
     });
 
   } catch (err) {
@@ -205,10 +202,7 @@ exports.register = async (req, res, next) => {
         success: true,
         requiresVerification: true,
         email: cleanEmail,
-        sandboxCode: emailResult?.isSandbox ? otp : undefined,
-        message: emailResult?.isSandbox
-          ? `A new verification code has been generated. (Sandbox Mode: your code is ${otp})`
-          : 'A new verification code has been sent to your email.'
+        message: 'A new verification code has been sent to your email.'
       });
     }
 
@@ -266,10 +260,7 @@ exports.register = async (req, res, next) => {
       success: true,
       requiresVerification: true,
       email: cleanEmail,
-      sandboxCode: emailResult?.isSandbox ? otp : undefined,
-      message: emailResult?.isSandbox
-        ? `Account created. (Sandbox Mode: your verification code is ${otp})`
-        : 'Account created. Please check your email for the 6-digit verification code.'
+      message: 'Account created! Please check your email for the 6-digit verification code.'
     });
 
   } catch (err) {
@@ -502,10 +493,7 @@ exports.resendVerification = async (req, res, next) => {
       success: true,
       requiresVerification: true,
       email: cleanEmail,
-      sandboxCode: emailResult?.isSandbox ? otp : undefined,
-      message: emailResult?.isSandbox
-        ? `New verification code generated. (Sandbox Mode: your code is ${otp})`
-        : 'A new verification code has been sent to your email.'
+      message: 'A new verification code has been sent to your email.'
     });
 
   } catch (err) {
