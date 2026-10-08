@@ -173,61 +173,40 @@ const getSmtpConfig = () => {
 };
 
 /**
- * Create or reuse nodemailer transporter
+ * Build a fresh nodemailer transporter for the given port/secure config.
+ * We deliberately do NOT cache the transporter — caching prevents the
+ * automatic port-465 fallback from working when 587 is blocked.
  */
-let cachedTransporter = null;
-const getTransporter = () => {
-  const config = getSmtpConfig();
-  if (!config) return null;
-
-  // Always rebuild if config changed (e.g. env hot-reload)
-  if (cachedTransporter) return cachedTransporter;
-
-  // Use explicit host/port/secure — avoids service:'gmail' shorthand which
-  // relies on Nodemailer's internal port 587 lookup and fails on cloud servers
-  // that block outbound STARTTLS (Render free tier, Railway, Heroku, etc.)
-  cachedTransporter = nodemailer.createTransport({
-    host: config.host,
-    port: config.port,
-    secure: config.secure,        // true for 465 SSL, false for 587 STARTTLS
-    auth: {
-      user: config.user,
-      pass: config.pass
-    },
-    connectionTimeout: 4000,      // 4s – fail fast on blocked cloud networks (e.g. Render free tier)
-    greetingTimeout: 4000,
-    socketTimeout: 5000,
-    tls: {
-      rejectUnauthorized: false   // Avoids SNI issues on some cloud providers
-    }
+const buildTransporter = ({ host, port, secure, user, pass }) =>
+  nodemailer.createTransport({
+    host,
+    port,
+    secure,                     // true for 465 SSL, false for 587/25 STARTTLS
+    auth: { user, pass },
+    connectionTimeout: 10000,   // 10 s — cloud SMTP handshakes can be slow
+    greetingTimeout: 10000,
+    socketTimeout: 12000,
+    tls: { rejectUnauthorized: false }  // avoids SNI issues on some cloud providers
   });
 
-  return cachedTransporter;
-};
-
 /**
- * Send email via SMTP (Nodemailer)
+ * Send email via SMTP (Nodemailer).
+ * Strategy:
+ *   1. Try the port specified in env (default 465).
+ *   2. If that port fails AND it isn't 465, automatically retry on port 465 (SSL).
+ *      This makes Gmail work on Render free-tier even when EMAIL_PORT=587 is set.
  */
 const sendViaSmtp = async ({ to, otp, expiryMinutes }) => {
   const config = getSmtpConfig();
-  const transporter = getTransporter();
-
-  if (!config || !transporter) {
-    throw new Error('SMTP is not configured.');
-  }
+  if (!config) throw new Error('SMTP is not configured.');
 
   const fromName = process.env.EMAIL_FROM_NAME || 'Civic Complaint Triage';
-  const fromHeader = `"${fromName}" <${config.user}>`;
-  const subject = `Your verification code is: ${otp}`;
-  const html = buildVerificationEmailHtml({ otp, expiryMinutes });
-  const text = buildVerificationEmailText({ otp, expiryMinutes });
-
-  const info = await transporter.sendMail({
-    from: fromHeader,
+  const mailOptions = {
+    from: `"${fromName}" <${config.user}>`,
     to,
-    subject,
-    html,
-    text,
+    subject: `Your verification code is: ${otp}`,
+    html: buildVerificationEmailHtml({ otp, expiryMinutes }),
+    text: buildVerificationEmailText({ otp, expiryMinutes }),
     headers: {
       'X-Priority': '1',
       'X-MSMail-Priority': 'High',
@@ -235,13 +214,27 @@ const sendViaSmtp = async ({ to, otp, expiryMinutes }) => {
       'X-Mailer': 'CivicComplaintTriage-SMTP/1.0',
       'X-Entity-Ref-ID': `otp-${Date.now()}`
     }
-  });
-
-  return {
-    success: true,
-    provider: 'smtp',
-    messageId: info.messageId
   };
+
+  // --- Attempt 1: configured port (from env, default 465) ---
+  try {
+    const t = buildTransporter(config);
+    const info = await t.sendMail(mailOptions);
+    return { success: true, provider: 'smtp', messageId: info.messageId };
+  } catch (primaryErr) {
+    console.warn(`⚠️  SMTP port ${config.port} failed: ${primaryErr.message}`);
+
+    // --- Attempt 2: automatic port-465 SSL retry (works on Render free tier) ---
+    if (config.port !== 465) {
+      console.log('🔄  Retrying SMTP on port 465 (SSL)…');
+      const altConfig = { ...config, port: 465, secure: true };
+      const t2 = buildTransporter(altConfig);
+      const info2 = await t2.sendMail(mailOptions);   // throws on failure → caught upstream
+      return { success: true, provider: 'smtp', messageId: info2.messageId };
+    }
+
+    throw primaryErr;
+  }
 };
 
 /**

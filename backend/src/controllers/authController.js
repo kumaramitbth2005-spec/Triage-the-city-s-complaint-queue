@@ -38,12 +38,12 @@ const generateSecureOtp = () => {
   return String(crypto.randomInt(100000, 1000000));
 };
 
-// Safe email error message extractor
+// Safe, user-friendly email error message (never leaks implementation details to frontend)
 const getEmailErrorMessage = (err) => {
-  if (err?.code === 'RESEND_RECIPIENT_RESTRICTED') {
-    return err.message;
-  }
-  return err?.message || 'Email could not be sent. Please check your email configuration or try again later.';
+  // Log the real technical error server-side for debugging
+  console.error('📧 Email dispatch error detail:', err?.message || err);
+  // Always return a clean, non-technical message to the client
+  return 'Unable to send the verification email. Please check your email address and try again.';
 };
 
 // ─── SEND VERIFICATION CODE (STANDALONE / PRE-AUTH) ──────────────────────────

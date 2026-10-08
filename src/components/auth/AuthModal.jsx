@@ -260,8 +260,13 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
         return;
       }
 
-      const message = errData?.message || err.response?.data?.message || "We couldn't send the verification code. Please try again.";
-      setRegisterError(message);
+      // Show a user-friendly message — never expose raw backend/SMTP error strings
+      if (code === 'EMAIL_SERVICE_ERROR' || err.response?.status === 503) {
+        setRegisterError('Unable to send OTP to this email. Please check the address and try again, or use a different email.');
+      } else {
+        const message = errData?.message || err.response?.data?.message || "We couldn't send the verification code. Please try again.";
+        setRegisterError(message);
+      }
     } finally {
       setRegisterLoading(false);
     }
@@ -313,8 +318,13 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
         return;
       }
 
-      const msg = errData?.message || err.response?.data?.message || "We couldn't send the verification code. Please try again.";
-      setSendOtpError(msg);
+      // Show a user-friendly message — never expose raw backend/SMTP error strings
+      if (code === 'EMAIL_SERVICE_ERROR' || err.response?.status === 503) {
+        setSendOtpError('Unable to send OTP to this email. Please check the address and try again.');
+      } else {
+        const msg = errData?.message || err.response?.data?.message || "We couldn't send the verification code. Please try again.";
+        setSendOtpError(msg);
+      }
     } finally {
       setSendOtpLoading(false);
     }
