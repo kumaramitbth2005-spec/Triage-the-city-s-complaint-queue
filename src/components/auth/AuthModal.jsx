@@ -343,7 +343,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
     try {
       const res = await authApi.verifyEmail(pendingEmail, otp);
       if (res.data?.success) {
-        setVerifySuccess('✓ Email verified successfully! Activating your account...');
+        setVerifySuccess('✓ Email verified! Taking you to dashboard...');
 
         if (res.data.token && res.data.user) {
           localStorage.setItem('auth_token', res.data.token);
@@ -367,17 +367,57 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
           setTimeout(() => {
             onClose();
             if (onSuccess) onSuccess(u);
-          }, 800);
+          }, 600);
         } else {
-          // Switch to login if no auto-token
+          // No token returned — switch to login
           setTimeout(() => {
             handleSwitchTab('login');
-            setLoginSuccess('Email verified! You can now sign in.');
-          }, 800);
+            setLoginSuccess('Email verified! Please sign in.');
+          }, 600);
         }
       }
     } catch (err) {
+      const errCode = err.response?.data?.error?.code;
       const msg = err.response?.data?.error?.message || err.response?.data?.message || 'Invalid verification code. Please try again.';
+
+      // ─── If email is already verified, auto-login the user ───────────────
+      if (errCode === 'ALREADY_VERIFIED') {
+        setVerifySuccess('✓ Email already verified! Signing you in...');
+        setVerifyError('');
+        try {
+          const loginRes = await authApi.login(pendingEmail, formData.password);
+          if (loginRes.data?.success && loginRes.data?.token) {
+            localStorage.setItem('auth_token', loginRes.data.token);
+            localStorage.setItem('auth_user', JSON.stringify(loginRes.data.user));
+            const u = loginRes.data.user;
+            dispatch({
+              type: 'UPDATE_PROFILE',
+              payload: {
+                name: u.name,
+                username: u.username || u.name.toLowerCase().replace(/\s+/g, '_'),
+                email: u.email,
+                role: u.role || 'operator',
+                zone: u.zone || 'Zone 1 - Central',
+                department: u.department || 'Public Works & Sanitation',
+                avatar: u.avatar || ''
+              }
+            });
+            await Promise.all([fetchComplaints(), fetchNotifications()]);
+            setTimeout(() => {
+              onClose();
+              if (onSuccess) onSuccess(u);
+            }, 600);
+          }
+        } catch {
+          // Password not available or wrong — redirect to login screen
+          setTimeout(() => {
+            handleSwitchTab('login');
+            setLoginSuccess('Your email is verified. Please sign in.');
+          }, 600);
+        }
+        return;
+      }
+
       setVerifyError(msg);
     } finally {
       setVerifyLoading(false);
