@@ -109,13 +109,13 @@ export function LiveTriageDemo() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto rounded-3xl bg-white/95 dark:bg-[#111827] backdrop-blur-2xl border border-slate-200 dark:border-[#2A3548] shadow-2xl dark:shadow-black/60 p-5 sm:p-8 overflow-hidden relative transition-colors">
+    <div className="w-full max-w-5xl mx-auto rounded-3xl bg-white/95 dark:bg-[#0F141D] backdrop-blur-2xl border border-slate-200 dark:border-[#303B4D] shadow-2xl dark:shadow-black/60 p-5 sm:p-8 overflow-hidden relative transition-colors">
       {/* Ambient background glow inside demo card */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-violet-500/10 dark:bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Demo Header */}
-      <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200/80 dark:border-[#2A3548]">
+      <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200/80 dark:border-[#303B4D]">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 text-indigo-600 dark:text-indigo-400 text-xs font-bold mb-2">
             <BrainCircuit size={13} />
@@ -129,12 +129,12 @@ export function LiveTriageDemo() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 bg-slate-100 dark:bg-[#161F30] p-1.5 rounded-xl border border-slate-200 dark:border-[#2A3548]">
+        <div className="flex items-center gap-2 bg-slate-100 dark:bg-[#1B2535] p-1.5 rounded-xl border border-slate-200 dark:border-[#303B4D]">
           <span className="flex h-2 w-2 relative ml-1.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
-          <span className="text-[11px] font-semibold text-slate-700 dark:text-[#CBD5E1] pr-2">
+          <span className="text-[11px] font-semibold text-slate-700 dark:text-[#D1D9E6] pr-2">
             AI Engine Online (v2.4)
           </span>
         </div>
@@ -150,8 +150,8 @@ export function LiveTriageDemo() {
               onClick={() => handleSelectSample(idx)}
               className={`p-3.5 rounded-2xl text-left border transition-all duration-200 flex flex-col justify-between ${
                 isSelected
-                  ? 'bg-indigo-50/90 dark:bg-[#1D293B] border-indigo-500/70 dark:border-indigo-500 shadow-lg shadow-indigo-500/10 ring-2 ring-indigo-500/30'
-                  : 'bg-white dark:bg-[#161F30] border-slate-200 dark:border-[#2A3548] hover:bg-slate-50 dark:hover:bg-[#1D293B]/70'
+                  ? 'bg-indigo-50/90 dark:bg-[#1B2535] border-indigo-500/70 dark:border-indigo-500 shadow-lg shadow-indigo-500/10 ring-2 ring-indigo-500/30'
+                  : 'bg-white dark:bg-[#151C28] border-slate-200 dark:border-[#303B4D] hover:bg-slate-50 dark:hover:bg-[#1B2535]/70'
               }`}
             >
               <div className="flex items-center justify-between mb-2.5">
@@ -162,7 +162,7 @@ export function LiveTriageDemo() {
               </div>
               <div>
                 <div className={`text-xs font-bold line-clamp-1 ${
-                  isSelected ? 'text-indigo-900 dark:text-[#F8FAFC]' : 'text-slate-800 dark:text-[#CBD5E1]'
+                  isSelected ? 'text-indigo-900 dark:text-[#F8FAFC]' : 'text-slate-800 dark:text-[#D1D9E6]'
                 }`}>
                   {item.category}
                 </div>
@@ -178,7 +178,7 @@ export function LiveTriageDemo() {
       {/* Simulation Result Workspace */}
       <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Left Column: Citizen Raw Complaint Stream */}
-        <div className="lg:col-span-5 flex flex-col justify-between p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-[#161F30] border border-slate-200/80 dark:border-[#2A3548]">
+        <div className="lg:col-span-5 flex flex-col justify-between p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-[#151C28] border border-slate-200/80 dark:border-[#303B4D]">
           <div>
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold text-slate-500 dark:text-[#94A3B8] uppercase tracking-wider flex items-center gap-1.5">
@@ -194,12 +194,12 @@ export function LiveTriageDemo() {
               "{activeComplaint.title}"
             </h4>
 
-            <div className="p-3 rounded-xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#2A3548] text-xs text-slate-700 dark:text-[#CBD5E1] leading-relaxed font-sans mb-4">
+            <div className="p-3 rounded-xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#303B4D] text-xs text-slate-700 dark:text-[#D1D9E6] leading-relaxed font-sans mb-4">
               {activeComplaint.rawText}
             </div>
           </div>
 
-          <div className="space-y-2 pt-3 border-t border-slate-200 dark:border-[#2A3548]">
+          <div className="space-y-2 pt-3 border-t border-slate-200 dark:border-[#303B4D]">
             <div className="flex items-center justify-between text-xs">
               <span className="text-slate-500 dark:text-[#94A3B8] flex items-center gap-1">
                 <MapPin size={12} className="text-indigo-500 dark:text-indigo-400" />
@@ -211,17 +211,17 @@ export function LiveTriageDemo() {
             </div>
             <div className="flex items-center justify-between text-xs">
               <span className="text-slate-500 dark:text-[#94A3B8]">Jurisdiction:</span>
-              <span className="font-medium text-slate-700 dark:text-[#CBD5E1]">{activeComplaint.zone}</span>
+              <span className="font-medium text-slate-700 dark:text-[#D1D9E6]">{activeComplaint.zone}</span>
             </div>
           </div>
         </div>
 
         {/* Right Column: AI Live Inference Results */}
-        <div className="lg:col-span-7 flex flex-col justify-between p-4 sm:p-5 rounded-2xl bg-indigo-50/40 dark:bg-[#161F30] border border-indigo-100 dark:border-[#2A3548] shadow-sm relative overflow-hidden">
+        <div className="lg:col-span-7 flex flex-col justify-between p-4 sm:p-5 rounded-2xl bg-indigo-50/40 dark:bg-[#151C28] border border-indigo-100 dark:border-[#303B4D] shadow-sm relative overflow-hidden">
           {isProcessing ? (
             <div className="h-full min-h-[220px] flex flex-col items-center justify-center space-y-3">
               <RefreshCw size={28} className="animate-spin text-indigo-600 dark:text-indigo-400" />
-              <div className="text-xs font-bold text-slate-700 dark:text-[#CBD5E1]">
+              <div className="text-xs font-bold text-slate-700 dark:text-[#D1D9E6]">
                 Analyzing NLP context & clustering coordinates...
               </div>
               <div className="w-48 h-1.5 bg-slate-200 dark:bg-[#111827] rounded-full overflow-hidden">
@@ -237,7 +237,7 @@ export function LiveTriageDemo() {
               className="space-y-3.5"
             >
               {/* AI Classification Pill & Confidence */}
-              <div className="p-3.5 rounded-xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-[#2A3548] flex items-center justify-between flex-wrap gap-2">
+              <div className="p-3.5 rounded-xl bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-[#303B4D] flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
                     AI
@@ -264,7 +264,7 @@ export function LiveTriageDemo() {
               </div>
 
               {/* Duplicate Detection Card */}
-              <div className="p-3 rounded-xl bg-violet-50/80 dark:bg-[#1D293B] border border-violet-200/70 dark:border-purple-700/40 flex items-start gap-2.5">
+              <div className="p-3 rounded-xl bg-violet-50/80 dark:bg-purple-950/40 border border-violet-200/70 dark:border-purple-800/60 flex items-start gap-2.5">
                 <CopyCheck size={18} className="text-violet-600 dark:text-purple-400 shrink-0 mt-0.5" />
                 <div>
                   <div className="text-xs font-bold text-violet-900 dark:text-purple-200 flex items-center gap-1.5 flex-wrap">
@@ -273,7 +273,7 @@ export function LiveTriageDemo() {
                       {activeComplaint.duplicatesCount} Linked Reports
                     </span>
                   </div>
-                  <div className="text-[11px] text-violet-700 dark:text-[#CBD5E1] mt-1 leading-normal">
+                  <div className="text-[11px] text-violet-700 dark:text-[#D1D9E6] mt-1 leading-normal">
                     {activeComplaint.duplicateNote}
                   </div>
                 </div>
@@ -281,7 +281,7 @@ export function LiveTriageDemo() {
 
               {/* SLA & Action Dispatch Recommendation */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <div className="p-2.5 rounded-xl bg-white dark:bg-[#1D293B] border border-slate-200 dark:border-[#2A3548]">
+                <div className="p-2.5 rounded-xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#303B4D]">
                   <div className="text-[10px] uppercase font-bold text-slate-500 dark:text-[#94A3B8] flex items-center gap-1 mb-1">
                     <Clock size={11} className="text-amber-500 dark:text-amber-400" />
                     Target SLA Window
@@ -291,7 +291,7 @@ export function LiveTriageDemo() {
                   </div>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-white dark:bg-[#1D293B] border border-slate-200 dark:border-[#2A3548]">
+                <div className="p-2.5 rounded-xl bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#303B4D]">
                   <div className="text-[10px] uppercase font-bold text-slate-500 dark:text-[#94A3B8] flex items-center gap-1 mb-1">
                     <Zap size={11} className="text-indigo-500 dark:text-indigo-400" />
                     Priority Level
@@ -303,7 +303,7 @@ export function LiveTriageDemo() {
               </div>
 
               {/* Dispatch Recommendation */}
-              <div className="text-xs text-slate-700 dark:text-[#CBD5E1] bg-white dark:bg-[#1D293B] p-3 rounded-xl border border-slate-200 dark:border-[#2A3548] flex items-center justify-between flex-wrap gap-2">
+              <div className="text-xs text-slate-700 dark:text-[#D1D9E6] bg-white dark:bg-[#111827] p-3 rounded-xl border border-slate-200 dark:border-[#303B4D] flex items-center justify-between flex-wrap gap-2">
                 <span className="truncate pr-2 font-medium">
                   💡 <span className="font-bold text-slate-900 dark:text-[#F8FAFC]">Next Action:</span> {activeComplaint.suggestedAction}
                 </span>

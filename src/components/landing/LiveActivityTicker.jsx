@@ -13,10 +13,10 @@ const RESOLVED_UPDATES = [
 
 export function LiveActivityTicker() {
   return (
-    <div className="w-full border-y border-stone-200/80 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md py-3 overflow-hidden relative">
+    <div className="w-full border-y border-stone-200/80 dark:border-[#303B4D] bg-white/40 dark:bg-[#0F141D]/90 backdrop-blur-md py-3 overflow-hidden relative">
       {/* Left and Right Fade Gradients */}
-      <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-28 bg-gradient-to-r from-slate-50 dark:from-slate-950 to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-28 bg-gradient-to-l from-slate-50 dark:from-slate-950 to-transparent z-10 pointer-events-none" />
+      <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-28 bg-gradient-to-r from-slate-50 dark:from-[#0B0D12] to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-28 bg-gradient-to-l from-slate-50 dark:from-[#0B0D12] to-transparent z-10 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-4">
         {/* Live Pill Indicator */}
@@ -35,11 +35,11 @@ export function LiveActivityTicker() {
             {[...RESOLVED_UPDATES, ...RESOLVED_UPDATES].map((item, idx) => (
               <div 
                 key={idx} 
-                className="inline-flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 bg-white/60 dark:bg-slate-800/60 px-3.5 py-1.5 rounded-full border border-stone-200/60 dark:border-slate-700/60"
+                className="inline-flex items-center gap-2 text-xs text-slate-700 dark:text-[#D1D9E6] bg-white/60 dark:bg-[#151C28] px-3.5 py-1.5 rounded-full border border-stone-200/60 dark:border-[#303B4D]"
               >
                 <span className="text-sm">{item.icon}</span>
-                <span className="font-semibold text-slate-900 dark:text-white">{item.text}</span>
-                <span className="text-slate-400 dark:text-slate-500 font-medium text-[11px]">({item.time})</span>
+                <span className="font-semibold text-slate-900 dark:text-[#F8FAFC]">{item.text}</span>
+                <span className="text-slate-400 dark:text-[#94A3B8] font-medium text-[11px]">({item.time})</span>
               </div>
             ))}
           </div>

@@ -98,7 +98,7 @@ export function LandingFeatures() {
             return (
               <div
                 key={idx}
-                className={`group rounded-3xl p-6 sm:p-7 bg-white/80 dark:bg-[#111827] backdrop-blur-xl border border-stone-200/80 dark:border-[#2A3548] shadow-lg shadow-stone-900/5 dark:shadow-black/50 transition-all duration-300 hover:-translate-y-1.5 ${feature.borderGlow} flex flex-col justify-between relative overflow-hidden`}
+                className={`group rounded-3xl p-6 sm:p-7 bg-white/90 dark:bg-[#151C28] backdrop-blur-xl border border-stone-200/80 dark:border-[#303B4D] shadow-lg shadow-stone-900/5 dark:shadow-black/60 transition-all duration-300 hover:-translate-y-1.5 ${feature.borderGlow} flex flex-col justify-between relative overflow-hidden`}
               >
                 {/* Background Hover Flare */}
                 <div className="absolute -right-12 -top-12 w-32 h-32 bg-indigo-500/10 dark:bg-indigo-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
@@ -109,7 +109,7 @@ export function LandingFeatures() {
                     <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${feature.gradient} text-white flex items-center justify-center shadow-md shadow-indigo-500/20 group-hover:scale-110 transition-transform`}>
                       <Icon size={22} />
                     </div>
-                    <span className="text-[11px] font-bold text-slate-700 dark:text-[#CBD5E1] bg-slate-100 dark:bg-[#161F30] px-3 py-1 rounded-full border border-slate-200 dark:border-[#2A3548]">
+                    <span className="text-[11px] font-bold text-slate-700 dark:text-[#D1D9E6] bg-slate-100 dark:bg-[#1B2535] px-3 py-1 rounded-full border border-slate-200 dark:border-[#303B4D]">
                       {feature.metric}
                     </span>
                   </div>
@@ -120,19 +120,19 @@ export function LandingFeatures() {
                   </h3>
 
                   {/* Description */}
-                  <p className="text-xs sm:text-sm text-slate-600 dark:text-[#CBD5E1] leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-[#D1D9E6] leading-relaxed">
                     {feature.description}
                   </p>
                 </div>
 
                 {/* Footer Link */}
-                <div className="mt-6 pt-4 border-t border-stone-200/60 dark:border-[#2A3548] flex items-center justify-between">
+                <div className="mt-6 pt-4 border-t border-stone-200/60 dark:border-[#303B4D] flex items-center justify-between">
                   <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
                     {feature.badge}
                   </span>
                   <Link
                     to={feature.link}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-[#CBD5E1] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-[#D1D9E6] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
                   >
                     <span>Explore</span>
                     <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />

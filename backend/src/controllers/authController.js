@@ -15,6 +15,7 @@
  */
 
 const crypto = require('crypto');
+const axios = require('axios');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
@@ -650,6 +651,274 @@ exports.refresh = async (req, res) => {
 exports.getMe = async (req, res, next) => {
   try {
     res.json({ success: true, user: req.user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── GOOGLE OAUTH / SIGN-IN ───────────────────────────────────────────────────
+exports.googleAuth = async (req, res, next) => {
+  try {
+    const { credential, accessToken } = req.body;
+    const token = credential || accessToken;
+
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Google identity token or credential is required.' }
+      });
+    }
+
+    const googleClientId = process.env.GOOGLE_CLIENT_ID;
+    if (!googleClientId) {
+      return res.status(503).json({
+        success: false,
+        error: { 
+          code: 'OAUTH_NOT_CONFIGURED', 
+          message: 'Google Sign-In is not configured on the server. Please configure GOOGLE_CLIENT_ID in your environment variables.' 
+        }
+      });
+    }
+
+    // Validate token with Google's tokeninfo API
+    let googleUser;
+    try {
+      const response = await axios.get(`https://oauth2.googleapis.com/tokeninfo`, {
+        params: { id_token: token },
+        timeout: 8000
+      });
+      googleUser = response.data;
+    } catch (tokenErr) {
+      // If id_token failed, try userinfo endpoint with accessToken
+      try {
+        const userinfoRes = await axios.get(`https://www.googleapis.com/oauth2/v3/userinfo`, {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 8000
+        });
+        googleUser = userinfoRes.data;
+      } catch (userinfoErr) {
+        return res.status(401).json({
+          success: false,
+          error: { code: 'INVALID_TOKEN', message: 'Failed to verify Google identity token. Token may be expired or invalid.' }
+        });
+      }
+    }
+
+    // Security Verification: Check audience if id_token provided
+    if (googleUser.aud && googleClientId && googleUser.aud !== googleClientId) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'AUDIENCE_MISMATCH', message: 'Google authentication audience mismatch.' }
+      });
+    }
+
+    const { sub, email, email_verified, name, picture } = googleUser;
+    const isEmailVerified = email_verified === true || email_verified === 'true';
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'EMAIL_REQUIRED', message: 'Google account did not return a valid email address.' }
+      });
+    }
+
+    if (!isEmailVerified) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'EMAIL_NOT_VERIFIED', message: 'Your Google email is not verified by Google.' }
+      });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+
+    // Find existing user by googleId or verified email
+    let user = await User.findOne({ 
+      $or: [
+        { googleId: sub },
+        { email: cleanEmail }
+      ]
+    });
+
+    if (user) {
+      if (!user.googleId) {
+        user.googleId = sub;
+      }
+      if (!user.emailVerified) {
+        user.emailVerified = true;
+        user.emailVerifiedAt = new Date();
+      }
+      if (picture && !user.avatar) {
+        user.avatar = picture;
+      }
+      user.lastLogin = Date.now();
+      await user.save();
+    } else {
+      user = await User.create({
+        name: name || cleanEmail.split('@')[0],
+        username: (cleanEmail.split('@')[0] + '_' + sub.slice(-4)).toLowerCase(),
+        email: cleanEmail,
+        googleId: sub,
+        authProvider: 'google',
+        emailVerified: true,
+        emailVerifiedAt: new Date(),
+        avatar: picture || '',
+        role: 'operator',
+        language: 'English',
+        theme: 'dark'
+      });
+
+      await UserSettings.create({
+        userId: user._id,
+        language: 'en',
+        theme: 'dark',
+        compactMode: false
+      });
+    }
+
+    const appToken = generateToken(user._id);
+    await Activity.create({ userId: user._id, action: 'LOGIN', details: { method: 'google_oauth' } });
+
+    res.json({
+      success: true,
+      message: 'Google authentication successful.',
+      user: {
+        _id: user._id,
+        id: user._id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        language: user.language,
+        theme: user.theme,
+        emailVerified: true
+      },
+      token: appToken
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── FACEBOOK OAUTH / LOGIN ───────────────────────────────────────────────────
+exports.facebookAuth = async (req, res, next) => {
+  try {
+    const { accessToken } = req.body;
+
+    if (!accessToken) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Facebook access token is required.' }
+      });
+    }
+
+    const fbAppId = process.env.FACEBOOK_APP_ID;
+    if (!fbAppId) {
+      return res.status(503).json({
+        success: false,
+        error: { 
+          code: 'OAUTH_NOT_CONFIGURED', 
+          message: 'Facebook Login is not configured on the server. Please configure FACEBOOK_APP_ID in your environment variables.' 
+        }
+      });
+    }
+
+    // Verify token with Facebook Graph API
+    let fbProfile;
+    try {
+      const fbRes = await axios.get(`https://graph.facebook.com/v19.0/me`, {
+        params: {
+          fields: 'id,name,email,picture.type(large)',
+          access_token: accessToken
+        },
+        timeout: 8000
+      });
+      fbProfile = fbRes.data;
+    } catch (fbErr) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'INVALID_TOKEN', message: 'Failed to verify Facebook access token with Graph API.' }
+      });
+    }
+
+    const { id: fbId, name, email, picture } = fbProfile;
+    if (!fbId) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'INVALID_RESPONSE', message: 'Invalid Facebook profile response.' }
+      });
+    }
+
+    // Handle cases where Facebook does not return an email address
+    const cleanEmail = email 
+      ? email.toLowerCase().trim() 
+      : `fb_${fbId}@facebook.user.local`;
+
+    let user = await User.findOne({
+      $or: [
+        { facebookId: fbId },
+        ...(email ? [{ email: cleanEmail }] : [])
+      ]
+    });
+
+    if (user) {
+      if (!user.facebookId) {
+        user.facebookId = fbId;
+      }
+      if (email && !user.emailVerified) {
+        user.emailVerified = true;
+        user.emailVerifiedAt = new Date();
+      }
+      if (picture?.data?.url && !user.avatar) {
+        user.avatar = picture.data.url;
+      }
+      user.lastLogin = Date.now();
+      await user.save();
+    } else {
+      user = await User.create({
+        name: name || 'Facebook User',
+        username: ('fb_' + fbId.slice(-6)).toLowerCase(),
+        email: cleanEmail,
+        facebookId: fbId,
+        authProvider: 'facebook',
+        emailVerified: !!email,
+        emailVerifiedAt: email ? new Date() : undefined,
+        avatar: picture?.data?.url || '',
+        role: 'operator',
+        language: 'English',
+        theme: 'dark'
+      });
+
+      await UserSettings.create({
+        userId: user._id,
+        language: 'en',
+        theme: 'dark',
+        compactMode: false
+      });
+    }
+
+    const appToken = generateToken(user._id);
+    await Activity.create({ userId: user._id, action: 'LOGIN', details: { method: 'facebook_oauth' } });
+
+    res.json({
+      success: true,
+      message: 'Facebook authentication successful.',
+      user: {
+        _id: user._id,
+        id: user._id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        language: user.language,
+        theme: user.theme,
+        emailVerified: user.emailVerified
+      },
+      token: appToken
+    });
+
   } catch (err) {
     next(err);
   }

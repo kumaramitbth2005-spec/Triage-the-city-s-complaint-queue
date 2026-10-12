@@ -25,13 +25,13 @@ export function PortalShowcase() {
           </div>
 
           {/* Switcher Tabs */}
-          <div className="bg-slate-100 dark:bg-[#161F30] p-1.5 rounded-2xl border border-slate-200 dark:border-[#2A3548] flex items-center gap-1 self-start md:self-auto">
+          <div className="bg-slate-100 dark:bg-[#151C28] p-1.5 rounded-2xl border border-slate-200 dark:border-[#303B4D] flex items-center gap-1 self-start md:self-auto">
             <button
               onClick={() => setActiveTab('citizen')}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ${
                 activeTab === 'citizen'
-                  ? 'bg-white dark:bg-[#1D293B] text-indigo-600 dark:text-indigo-400 shadow-md'
-                  : 'text-slate-600 dark:text-[#CBD5E1] hover:text-slate-900 dark:hover:text-[#F8FAFC]'
+                  ? 'bg-white dark:bg-[#1B2535] text-indigo-600 dark:text-indigo-400 shadow-md'
+                  : 'text-slate-600 dark:text-[#D1D9E6] hover:text-slate-900 dark:hover:text-[#F8FAFC]'
               }`}
             >
               <Users size={16} />
@@ -41,8 +41,8 @@ export function PortalShowcase() {
               onClick={() => setActiveTab('operator')}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ${
                 activeTab === 'operator'
-                  ? 'bg-white dark:bg-[#1D293B] text-indigo-600 dark:text-indigo-400 shadow-md'
-                  : 'text-slate-600 dark:text-[#CBD5E1] hover:text-slate-900 dark:hover:text-[#F8FAFC]'
+                  ? 'bg-white dark:bg-[#1B2535] text-indigo-600 dark:text-indigo-400 shadow-md'
+                  : 'text-slate-600 dark:text-[#D1D9E6] hover:text-slate-900 dark:hover:text-[#F8FAFC]'
               }`}
             >
               <ShieldCheck size={16} />
@@ -53,16 +53,16 @@ export function PortalShowcase() {
 
         {/* Tab Content Display */}
         {activeTab === 'citizen' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-gradient-to-br from-indigo-50/60 via-white to-blue-50/60 dark:from-[#111827] dark:via-[#111827] dark:to-[#161F30] rounded-3xl p-6 sm:p-10 border border-indigo-100 dark:border-[#2A3548] shadow-xl">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-gradient-to-br from-indigo-50/60 via-white to-blue-50/60 dark:from-[#151C28] dark:via-[#151C28] dark:to-[#0F141D] rounded-3xl p-6 sm:p-10 border border-indigo-100 dark:border-[#303B4D] shadow-xl">
             {/* Left Info */}
             <div className="lg:col-span-6 space-y-6">
               <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
                 <Smartphone size={24} />
               </div>
-              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-[#F8FAFC] tracking-tight">
                 Empowering Citizens with Zero-Friction Reporting
               </h3>
-              <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+              <p className="text-sm sm:text-base text-slate-600 dark:text-[#D1D9E6] leading-relaxed">
                 No complex registration or passwords required. Citizens can file a pothole, pipeline burst, or sanitation grievance in under 60 seconds with live photo upload and GPS geotagging.
               </p>
 
@@ -75,7 +75,7 @@ export function PortalShowcase() {
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
-                    <span className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-medium">
+                    <span className="text-xs sm:text-sm text-slate-700 dark:text-[#D1D9E6] font-medium">
                       {item}
                     </span>
                   </div>
@@ -92,7 +92,7 @@ export function PortalShowcase() {
                 </Link>
                 <Link
                   to="/track"
-                  className="px-6 py-3 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  className="px-6 py-3 rounded-full bg-white dark:bg-[#151C28] border border-slate-200 dark:border-[#303B4D] text-slate-800 dark:text-[#F8FAFC] text-sm font-semibold hover:bg-slate-50 dark:hover:bg-[#1B2535] transition-colors"
                 >
                   Track Grievance
                 </Link>
@@ -100,11 +100,11 @@ export function PortalShowcase() {
             </div>
 
             {/* Right Visual Preview */}
-            <div className="lg:col-span-6 rounded-2xl bg-white dark:bg-slate-950 p-6 border border-stone-200/80 dark:border-slate-800 shadow-lg space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="lg:col-span-6 rounded-2xl bg-white dark:bg-[#0B0D12] p-6 border border-stone-200/80 dark:border-[#303B4D] shadow-lg space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#303B4D]">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                  <span className="text-xs font-bold text-slate-700 dark:text-[#F8FAFC]">
                     Live Tracking: CMP-W14-882
                   </span>
                 </div>
@@ -114,10 +114,10 @@ export function PortalShowcase() {
               </div>
 
               <div className="space-y-3">
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800">
-                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Issue:</div>
-                  <div className="text-sm font-bold text-slate-800 dark:text-white">Water Pipeline Rupture near Gate 2</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#151C28] border border-slate-200/60 dark:border-[#303B4D]">
+                  <div className="text-xs font-semibold text-slate-500 dark:text-[#94A3B8]">Issue:</div>
+                  <div className="text-sm font-bold text-slate-800 dark:text-[#F8FAFC]">Water Pipeline Rupture near Gate 2</div>
+                  <div className="text-xs text-slate-500 dark:text-[#94A3B8] mt-1 flex items-center gap-1">
                     <MapPin size={12} className="text-indigo-500" />
                     Ward 14 (Central Market)
                   </div>
@@ -141,16 +141,16 @@ export function PortalShowcase() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-gradient-to-br from-violet-50/60 via-white to-indigo-50/60 dark:from-[#111827] dark:via-[#111827] dark:to-[#161F30] rounded-3xl p-6 sm:p-10 border border-violet-100 dark:border-[#2A3548] shadow-xl">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-gradient-to-br from-violet-50/60 via-white to-indigo-50/60 dark:from-[#151C28] dark:via-[#151C28] dark:to-[#0F141D] rounded-3xl p-6 sm:p-10 border border-violet-100 dark:border-[#303B4D] shadow-xl">
             {/* Left Info */}
             <div className="lg:col-span-6 space-y-6">
               <div className="w-12 h-12 rounded-2xl bg-violet-600 text-white flex items-center justify-center shadow-lg shadow-violet-500/20">
                 <ShieldCheck size={24} />
               </div>
-              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-[#F8FAFC] tracking-tight">
                 High-Velocity AI Workspace for Municipal Teams
               </h3>
-              <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+              <p className="text-sm sm:text-base text-slate-600 dark:text-[#D1D9E6] leading-relaxed">
                 Supercharge desk officers and ward engineers with automated NLP queue triage, batch duplicate merging, live ward heatmaps, and automatic SLA breach alerts.
               </p>
 
@@ -163,7 +163,7 @@ export function PortalShowcase() {
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
-                    <span className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-medium">
+                    <span className="text-xs sm:text-sm text-slate-700 dark:text-[#D1D9E6] font-medium">
                       {item}
                     </span>
                   </div>
@@ -180,7 +180,7 @@ export function PortalShowcase() {
                 </Link>
                 <Link
                   to="/dashboard/map"
-                  className="px-6 py-3 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  className="px-6 py-3 rounded-full bg-white dark:bg-[#151C28] border border-slate-200 dark:border-[#303B4D] text-slate-800 dark:text-[#F8FAFC] text-sm font-semibold hover:bg-slate-50 dark:hover:bg-[#1B2535] transition-colors"
                 >
                   Ward GIS Map
                 </Link>
@@ -188,11 +188,11 @@ export function PortalShowcase() {
             </div>
 
             {/* Right Visual Preview */}
-            <div className="lg:col-span-6 rounded-2xl bg-white dark:bg-slate-950 p-6 border border-stone-200/80 dark:border-slate-800 shadow-lg space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="lg:col-span-6 rounded-2xl bg-white dark:bg-[#0B0D12] p-6 border border-stone-200/80 dark:border-[#303B4D] shadow-lg space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#303B4D]">
                 <div className="flex items-center gap-2">
                   <Zap size={16} className="text-indigo-500" />
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                  <span className="text-xs font-bold text-slate-700 dark:text-[#F8FAFC]">
                     Municipal Triage Queue (Live)
                   </span>
                 </div>
@@ -202,18 +202,18 @@ export function PortalShowcase() {
               </div>
 
               <div className="space-y-2.5">
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#151C28] border border-slate-200/60 dark:border-[#303B4D] flex items-center justify-between">
                   <div>
-                    <div className="text-xs font-bold text-slate-900 dark:text-white">Active Queue Load</div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400">142 pending · 34 in-field · 86 resolved today</div>
+                    <div className="text-xs font-bold text-slate-900 dark:text-[#F8FAFC]">Active Queue Load</div>
+                    <div className="text-[11px] text-slate-500 dark:text-[#94A3B8]">142 pending · 34 in-field · 86 resolved today</div>
                   </div>
                   <span className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400">Avg SLA: 3.2h</span>
                 </div>
 
-                <div className="p-3 rounded-xl bg-violet-50/50 dark:bg-violet-950/40 border border-violet-100 dark:border-violet-900/60 flex items-center justify-between">
+                <div className="p-3 rounded-xl bg-violet-50/50 dark:bg-[#1B2535] border border-violet-100 dark:border-violet-900/40 flex items-center justify-between">
                   <div>
-                    <div className="text-xs font-bold text-violet-900 dark:text-violet-200">Duplicate Clusters Grouped</div>
-                    <div className="text-[11px] text-violet-700 dark:text-violet-300">28 redundant calls merged across 6 wards</div>
+                    <div className="text-xs font-bold text-violet-900 dark:text-purple-200">Duplicate Clusters Grouped</div>
+                    <div className="text-[11px] text-violet-700 dark:text-[#D1D9E6]">28 redundant calls merged across 6 wards</div>
                   </div>
                   <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Saved 42hrs</span>
                 </div>

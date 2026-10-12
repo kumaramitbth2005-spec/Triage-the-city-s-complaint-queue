@@ -54,8 +54,8 @@ export function LandingNavbar() {
       >
         <div className={`max-w-7xl mx-auto flex items-center justify-between rounded-2xl px-4 sm:px-6 py-3 transition-all duration-300 ${
           scrolled
-            ? 'bg-white/90 dark:bg-[#111827]/90 backdrop-blur-xl border border-stone-200/80 dark:border-[#2A3548] shadow-lg shadow-stone-900/5 dark:shadow-black/60'
-            : 'bg-white/70 dark:bg-[#111827]/80 backdrop-blur-md border border-stone-200/60 dark:border-[#2A3548] shadow-xs'
+            ? 'bg-white/90 dark:bg-[#151C28]/95 backdrop-blur-xl border border-stone-200/80 dark:border-[#303B4D] shadow-lg shadow-stone-900/5 dark:shadow-black/60'
+            : 'bg-white/80 dark:bg-[#151C28]/90 backdrop-blur-md border border-stone-200/60 dark:border-[#303B4D] shadow-xs'
         }`}>
           {/* Brand */}
           <Link to="/" className="flex items-center gap-3 group">

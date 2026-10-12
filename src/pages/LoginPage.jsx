@@ -10,6 +10,25 @@ import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { useAppContext } from '../context/AppContext';
 
+function GoogleIcon({ className = "w-4 h-4" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.27-2.09 3.665-5.17 3.665-9.12z" />
+      <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.24v3.12C3.26 21.36 7.33 24 12 24z" />
+      <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.59H1.24C.45 8.16 0 9.94 0 12s.45 3.84 1.24 5.41l4.04-3.12z" />
+      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.24 6.59l4.04 3.12c.95-2.83 3.6-4.96 6.72-4.96z" />
+    </svg>
+  );
+}
+
+function FacebookIcon({ className = "w-4 h-4" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="#1877F2">
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+    </svg>
+  );
+}
+
 export function LoginPage({ defaultMode = 'login' }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -79,10 +98,126 @@ export function LoginPage({ defaultMode = 'login' }) {
     setErrorMessage('');
   };
 
+  const [socialLoading, setSocialLoading] = useState(null); // 'google' | 'facebook' | null
+  const [socialNotice, setSocialNotice] = useState('');
+
   const handleSwitchTab = (newMode) => {
     setErrorMessage('');
     setSuccessMessage('');
+    setSocialNotice('');
     setMode(newMode);
+  };
+
+  const handleSocialSuccess = async (resData) => {
+    const u = resData.user;
+    authLogin(resData.token, u);
+
+    settingsDispatch({
+      type: 'UPDATE_PROFILE',
+      payload: {
+        name: u.name,
+        username: u.username || u.name.toLowerCase().replace(/\s+/g, '_'),
+        email: u.email,
+        phone: u.phone || '',
+        bio: u.bio || '',
+        role: u.role || 'operator',
+        zone: u.zone || 'Zone 1 - Central',
+        department: u.department || 'Public Works & Sanitation',
+        avatar: u.avatar || ''
+      }
+    });
+
+    setSuccessMessage('Authentication successful! Loading operator desk...');
+    await Promise.allSettled([fetchComplaints(), fetchNotifications()]);
+
+    setTimeout(() => {
+      navigate(getSafeRedirect(), { replace: true });
+    }, 500);
+  };
+
+  const handleGoogleSignIn = async () => {
+    setSocialNotice('');
+    setErrorMessage('');
+    setSocialLoading('google');
+
+    try {
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      if (!clientId) {
+        setSocialNotice(
+          'Google Sign-In setup: Server/Client credentials are not yet configured (missing GOOGLE_CLIENT_ID in backend or VITE_GOOGLE_CLIENT_ID in frontend). See .env.example for configuration instructions.'
+        );
+        setSocialLoading(null);
+        return;
+      }
+
+      if (window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: async (response) => {
+            if (response.credential) {
+              try {
+                const res = await authApi.googleAuth({ credential: response.credential });
+                if (res.data?.success && res.data?.token) {
+                  await handleSocialSuccess(res.data);
+                }
+              } catch (apiErr) {
+                setErrorMessage(apiErr.response?.data?.error?.message || 'Google authentication failed.');
+              }
+            }
+          }
+        });
+        window.google.accounts.id.prompt();
+      } else {
+        setSocialNotice('Google Identity Services SDK is loading or blocked by your browser.');
+      }
+    } catch (err) {
+      setErrorMessage(err.message || 'An error occurred with Google Sign-In.');
+    } finally {
+      setSocialLoading(null);
+    }
+  };
+
+  const handleFacebookSignIn = async () => {
+    setSocialNotice('');
+    setErrorMessage('');
+    setSocialLoading('facebook');
+
+    try {
+      const appId = import.meta.env.VITE_FACEBOOK_APP_ID;
+      if (!appId) {
+        setSocialNotice(
+          'Facebook Login setup: Server/Client credentials are not yet configured (missing FACEBOOK_APP_ID in backend or VITE_FACEBOOK_APP_ID in frontend). See .env.example for configuration instructions.'
+        );
+        setSocialLoading(null);
+        return;
+      }
+
+      if (window.FB) {
+        window.FB.login(async (response) => {
+          if (response.authResponse?.accessToken) {
+            try {
+              const res = await authApi.facebookAuth({
+                accessToken: response.authResponse.accessToken,
+                userID: response.authResponse.userID
+              });
+              if (res.data?.success && res.data?.token) {
+                await handleSocialSuccess(res.data);
+              }
+            } catch (apiErr) {
+              setErrorMessage(apiErr.response?.data?.error?.message || 'Facebook authentication failed.');
+            }
+          } else {
+            setSocialNotice('Facebook sign-in was cancelled.');
+          }
+        }, { scope: 'public_profile,email' });
+      } else {
+        setSocialNotice('Facebook Login SDK is loading or blocked by your browser.');
+      }
+    } catch (err) {
+      setErrorMessage(err.message || 'An error occurred with Facebook Login.');
+    } finally {
+      setSocialLoading(null);
+    }
   };
 
   // ─── LOGIN SUBMIT ──────────────────────────────────────────────────────────
@@ -689,6 +824,89 @@ export function LoginPage({ defaultMode = 'login' }) {
               </button>
             </div>
           </form>
+        )}
+
+        {/* ─── SOCIAL SIGN-IN OPTIONS (GOOGLE & FACEBOOK) ─────────────────── */}
+        {mode !== 'verify' && (
+          <div className="mt-6">
+            <div className="relative my-5">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-[#2A3548]" />
+              </div>
+              <div className="relative flex justify-center text-[10px] uppercase tracking-wider font-bold">
+                <span className="bg-[#111827] px-3 text-[#94A3B8]">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-2.5">
+              {/* Continue with Google */}
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={socialLoading !== null}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#161F30] hover:bg-[#1B2535] active:scale-[0.99] border border-[#2A3548] hover:border-indigo-500/50 text-[#F8FAFC] text-xs font-semibold flex items-center justify-center gap-3 transition-all shadow-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40 disabled:opacity-50"
+              >
+                {socialLoading === 'google' ? (
+                  <Loader2 size={16} className="animate-spin text-indigo-400" />
+                ) : (
+                  <GoogleIcon className="w-4 h-4 shrink-0" />
+                )}
+                <span>Continue with Google</span>
+              </button>
+
+              {/* Continue with Facebook */}
+              <button
+                type="button"
+                onClick={handleFacebookSignIn}
+                disabled={socialLoading !== null}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#161F30] hover:bg-[#1B2535] active:scale-[0.99] border border-[#2A3548] hover:border-blue-500/50 text-[#F8FAFC] text-xs font-semibold flex items-center justify-center gap-3 transition-all shadow-xs focus:outline-none focus:ring-2 focus:ring-blue-500/40 disabled:opacity-50"
+              >
+                {socialLoading === 'facebook' ? (
+                  <Loader2 size={16} className="animate-spin text-blue-400" />
+                ) : (
+                  <FacebookIcon className="w-4 h-4 shrink-0" />
+                )}
+                <span>Continue with Facebook</span>
+              </button>
+            </div>
+
+            {/* Missing Credentials / Configuration Guidance Alert */}
+            {socialNotice && (
+              <div className="mt-3.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-start gap-2">
+                <AlertCircle size={15} className="shrink-0 mt-0.5 text-amber-400" />
+                <span className="leading-snug">{socialNotice}</span>
+              </div>
+            )}
+
+            {/* Bottom Mode Toggle Link */}
+            <div className="mt-5 text-center text-xs text-[#94A3B8]">
+              {mode === 'login' ? (
+                <span>
+                  Don't have a municipal operator account?{' '}
+                  <button
+                    type="button"
+                    onClick={() => handleSwitchTab('register')}
+                    className="text-indigo-400 hover:text-indigo-300 font-bold transition-colors ml-1"
+                  >
+                    Create Account
+                  </button>
+                </span>
+              ) : (
+                <span>
+                  Already registered?{' '}
+                  <button
+                    type="button"
+                    onClick={() => handleSwitchTab('login')}
+                    className="text-indigo-400 hover:text-indigo-300 font-bold transition-colors ml-1"
+                  >
+                    Sign In
+                  </button>
+                </span>
+              )}
+            </div>
+          </div>
         )}
       </div>
 

@@ -7,9 +7,9 @@ import { Link } from 'react-router-dom';
 
 export function LandingFooter() {
   return (
-    <footer className="relative bg-white dark:bg-[#07090E] border-t border-stone-200/80 dark:border-[#2A3548] text-slate-700 dark:text-[#CBD5E1]">
+    <footer className="relative w-full bg-slate-100/60 dark:bg-[#07090E] text-slate-700 dark:text-[#D1D9E6] transition-colors">
       {/* Top CTA Banner */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 -translate-y-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pt-4 pb-12">
         <div className="rounded-3xl p-8 sm:p-12 bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-800 text-white shadow-2xl shadow-indigo-500/25 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
           {/* Background Ambient Glows */}
           <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-violet-400/20 rounded-full blur-3xl pointer-events-none" />
@@ -48,24 +48,25 @@ export function LandingFooter() {
       </div>
 
       {/* Main Footer Links & Information */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pt-8 pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
-          {/* Brand Col */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
-                <Layers size={20} strokeWidth={2.5} />
+      <div className="border-t border-stone-200/80 dark:border-[#303B4D]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pt-12 pb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
+            {/* Brand Col */}
+            <div className="lg:col-span-2 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+                  <Layers size={20} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <span className="text-lg font-black tracking-tight text-slate-900 dark:text-[#F8FAFC]">Nexus AI</span>
+                  <span className="text-[11px] text-slate-500 dark:text-[#94A3B8] block font-medium">
+                    Civic Grievance Triage & SLA Engine
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="text-lg font-black tracking-tight text-slate-900 dark:text-white">Nexus AI</span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">
-                  Civic Grievance Triage & SLA Engine
-                </span>
-              </div>
-            </div>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-sm">
-              Empowering smart municipal administrations with real-time NLP classification, geospatial duplicate grouping, and automated field squad dispatch.
-            </p>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-[#D1D9E6] leading-relaxed max-w-sm">
+                Empowering smart municipal administrations with real-time NLP classification, geospatial duplicate grouping, and automated field squad dispatch.
+              </p>
 
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
               <span className="flex h-2 w-2 relative">
@@ -78,10 +79,10 @@ export function LandingFooter() {
 
           {/* Citizen Links */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+            <h4 className="text-xs font-bold text-slate-900 dark:text-[#F8FAFC] uppercase tracking-wider">
               Citizen Services
             </h4>
-            <ul className="space-y-2 text-xs sm:text-sm">
+            <ul className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-[#D1D9E6]">
               <li>
                 <Link to="/report" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                   Lodge New Complaint
@@ -107,10 +108,10 @@ export function LandingFooter() {
 
           {/* Operator Links */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+            <h4 className="text-xs font-bold text-slate-900 dark:text-[#F8FAFC] uppercase tracking-wider">
               Municipal Workspace
             </h4>
-            <ul className="space-y-2 text-xs sm:text-sm">
+            <ul className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-[#D1D9E6]">
               <li>
                 <Link to="/dashboard" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                   Operator Overview
@@ -141,13 +142,13 @@ export function LandingFooter() {
 
           {/* Emergency & Municipal Contact */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+            <h4 className="text-xs font-bold text-slate-900 dark:text-[#F8FAFC] uppercase tracking-wider">
               City Helplines
             </h4>
-            <div className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
+            <div className="space-y-2 text-xs text-slate-600 dark:text-[#D1D9E6]">
               <div className="flex items-center gap-2">
                 <Phone size={13} className="text-indigo-500" />
-                <span className="font-semibold text-slate-800 dark:text-slate-200">1913 (Toll-Free City Desk)</span>
+                <span className="font-semibold text-slate-800 dark:text-[#F8FAFC]">1913 (Toll-Free City Desk)</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone size={13} className="text-indigo-500" />
@@ -166,7 +167,7 @@ export function LandingFooter() {
         </div>
 
         {/* Bottom copyright row */}
-        <div className="mt-12 pt-6 border-t border-stone-200/60 dark:border-[#2A3548] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-[#94A3B8]">
+        <div className="mt-12 pt-6 border-t border-stone-200/60 dark:border-[#303B4D] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-[#94A3B8]">
           <div>
             © 2026 Nexus AI Civic Platform · Municipal Public Works & Grievance Redressal
           </div>
@@ -179,6 +180,7 @@ export function LandingFooter() {
           </div>
         </div>
       </div>
-    </footer>
+    </div>
+  </footer>
   );
 }

@@ -9,7 +9,9 @@ const {
   changePassword, 
   verifyEmail, 
   resendVerification,
-  sendVerificationCode 
+  sendVerificationCode,
+  googleAuth,
+  facebookAuth
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 
@@ -48,6 +50,8 @@ const verifyLimiter = rateLimit({
 // Auth Routes
 router.post('/register', authLimiter, register);
 router.post('/login', authLimiter, login);
+router.post('/google', authLimiter, googleAuth);
+router.post('/facebook', authLimiter, facebookAuth);
 router.post('/send-verification-code', resendLimiter, sendVerificationCode);
 router.post('/verify-email', verifyLimiter, verifyEmail);
 router.post('/resend-verification-code', resendLimiter, resendVerification);

@@ -10,4 +10,6 @@ export const authApi = {
   logout:                 () => apiClient.post('/auth/logout'),
   getMe:                  () => apiClient.get('/auth/me'),
   changePassword:         (currentPassword, newPassword) => apiClient.post('/auth/change-password', { currentPassword, newPassword }),
+  googleAuth:             (data) => apiClient.post('/auth/google', data),
+  facebookAuth:           (data) => apiClient.post('/auth/facebook', data),
 };

@@ -6,7 +6,14 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   phone: { type: String },
   bio: { type: String },
-  passwordHash: { type: String, required: true },
+  passwordHash: { type: String, required: false },
+  authProvider: { 
+    type: String, 
+    enum: ['local', 'google', 'facebook'], 
+    default: 'local' 
+  },
+  googleId: { type: String, sparse: true, index: true },
+  facebookId: { type: String, sparse: true, index: true },
   role: { 
     type: String, 
     enum: ['citizen', 'operator', 'zone_head', 'department_lead', 'field_team', 'admin'],
