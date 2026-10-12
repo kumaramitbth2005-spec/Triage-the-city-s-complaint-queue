@@ -19,6 +19,9 @@ import { DepartmentManagement } from './pages/DepartmentManagement';
 import { UserManagement } from './pages/UserManagement';
 import { CitizenPortal } from './pages/CitizenPortal';
 import { TrackComplaint } from './pages/TrackComplaint';
+import { LoginPage } from './pages/LoginPage';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
@@ -27,48 +30,62 @@ export default function App() {
     <ErrorBoundary>
       <SettingsProvider>
         <LanguageProvider>
-          <AppProvider>
-            <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/report" element={<CitizenPortal />} />
-            <Route path="/track" element={<TrackComplaint />} />
-            <Route path="/dashboard" element={<Layout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="complaints" element={<Complaints />} />
-              <Route path="complaints/:id" element={<ComplaintDetail />} />
-              <Route path="triage" element={<AITriage />} />
-              <Route path="clusters" element={<DuplicateClusters />} />
-              <Route path="map" element={<MapView />} />
-              <Route path="analytics" element={<Analytics />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="import" element={<DataImport />} />
-              <Route path="departments" element={<DepartmentManagement />} />
-              <Route path="users" element={<UserManagement />} />
-              <Route path="profile" element={<Navigate to="/dashboard/settings/profile" replace />} />
-              <Route path="settings/*" element={<SettingsLayout />} />
-              <Route path="new-complaint" element={<NewComplaint />} />
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Route>
-            <Route path="/profile" element={<Navigate to="/dashboard/settings/profile" replace />} />
-            <Route path="/complaints" element={<Navigate to="/dashboard/complaints" replace />} />
-            <Route path="/triage" element={<Navigate to="/dashboard/triage" replace />} />
-            <Route path="/clusters" element={<Navigate to="/dashboard/clusters" replace />} />
-            <Route path="/map" element={<Navigate to="/dashboard/map" replace />} />
-            <Route path="/analytics" element={<Navigate to="/dashboard/analytics" replace />} />
-            <Route path="/reports" element={<Navigate to="/dashboard/reports" replace />} />
-            <Route path="/import" element={<Navigate to="/dashboard/import" replace />} />
-            <Route path="/departments" element={<Navigate to="/dashboard/departments" replace />} />
-            <Route path="/users" element={<Navigate to="/dashboard/users" replace />} />
-            <Route path="/settings" element={<Navigate to="/dashboard/settings" replace />} />
-            <Route path="/settings/*" element={<Navigate to="/dashboard/settings" replace />} />
-            <Route path="/new-complaint" element={<Navigate to="/dashboard/new-complaint" replace />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
-      </AppProvider>
-    </LanguageProvider>
-  </SettingsProvider>
-</ErrorBoundary>
+          <AuthProvider>
+            <AppProvider>
+              <BrowserRouter>
+                <Routes>
+                  {/* Public Informational & Citizen Routes */}
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/report" element={<CitizenPortal />} />
+                  <Route path="/track" element={<TrackComplaint />} />
+                  
+                  {/* Authentication Routes */}
+                  <Route path="/login" element={<LoginPage defaultMode="login" />} />
+                  <Route path="/register" element={<LoginPage defaultMode="register" />} />
+                  <Route path="/auth" element={<LoginPage defaultMode="login" />} />
+
+                  {/* Protected Operator Desk Routes */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/dashboard" element={<Layout />}>
+                      <Route index element={<Dashboard />} />
+                      <Route path="complaints" element={<Complaints />} />
+                      <Route path="complaints/:id" element={<ComplaintDetail />} />
+                      <Route path="triage" element={<AITriage />} />
+                      <Route path="clusters" element={<DuplicateClusters />} />
+                      <Route path="map" element={<MapView />} />
+                      <Route path="analytics" element={<Analytics />} />
+                      <Route path="reports" element={<Reports />} />
+                      <Route path="import" element={<DataImport />} />
+                      <Route path="departments" element={<DepartmentManagement />} />
+                      <Route path="users" element={<UserManagement />} />
+                      <Route path="profile" element={<Navigate to="/dashboard/settings/profile" replace />} />
+                      <Route path="settings/*" element={<SettingsLayout />} />
+                      <Route path="new-complaint" element={<NewComplaint />} />
+                      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                    </Route>
+                  </Route>
+
+                  {/* Legacy Direct Shortcuts */}
+                  <Route path="/profile" element={<Navigate to="/dashboard/settings/profile" replace />} />
+                  <Route path="/complaints" element={<Navigate to="/dashboard/complaints" replace />} />
+                  <Route path="/triage" element={<Navigate to="/dashboard/triage" replace />} />
+                  <Route path="/clusters" element={<Navigate to="/dashboard/clusters" replace />} />
+                  <Route path="/map" element={<Navigate to="/dashboard/map" replace />} />
+                  <Route path="/analytics" element={<Navigate to="/dashboard/analytics" replace />} />
+                  <Route path="/reports" element={<Navigate to="/dashboard/reports" replace />} />
+                  <Route path="/import" element={<Navigate to="/dashboard/import" replace />} />
+                  <Route path="/departments" element={<Navigate to="/dashboard/departments" replace />} />
+                  <Route path="/users" element={<Navigate to="/dashboard/users" replace />} />
+                  <Route path="/settings" element={<Navigate to="/dashboard/settings" replace />} />
+                  <Route path="/settings/*" element={<Navigate to="/dashboard/settings" replace />} />
+                  <Route path="/new-complaint" element={<Navigate to="/dashboard/new-complaint" replace />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </BrowserRouter>
+            </AppProvider>
+          </AuthProvider>
+        </LanguageProvider>
+      </SettingsProvider>
+    </ErrorBoundary>
   );
 }

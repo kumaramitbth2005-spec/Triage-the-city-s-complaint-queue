@@ -37,7 +37,7 @@ const WORKFLOW_STEPS = [
 
 export function HowItWorks() {
   return (
-    <section id="workflow" className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-12 bg-slate-100/50 dark:bg-slate-900/40 border-y border-stone-200/80 dark:border-slate-800/80">
+    <section id="workflow" className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-12 bg-slate-100/50 dark:bg-[#0B0D12] border-y border-stone-200/80 dark:border-[#2A3548]">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -45,13 +45,13 @@ export function HowItWorks() {
             <Sparkles size={13} />
             <span>Seamless Civic Workflow</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-[#F8FAFC] tracking-tight leading-tight">
             How Nexus AI Transforms <br className="hidden sm:inline" />
             <span className="bg-gradient-to-r from-violet-600 via-indigo-500 to-blue-600 bg-clip-text text-transparent">
               Complaint Resolution
             </span>
           </h2>
-          <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
+          <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-[#CBD5E1] leading-relaxed">
             From citizen report to field squad dispatch and verified resolution — automated end-to-end in 3 transparent steps.
           </p>
         </div>
@@ -63,12 +63,12 @@ export function HowItWorks() {
             return (
               <div 
                 key={idx}
-                className="relative rounded-3xl p-7 sm:p-8 bg-white dark:bg-slate-900/90 border border-stone-200/80 dark:border-slate-800 shadow-xl shadow-stone-900/5 dark:shadow-indigo-950/30 flex flex-col justify-between group hover:border-indigo-500/50 transition-all duration-300"
+                className="relative rounded-3xl p-7 sm:p-8 bg-white dark:bg-[#111827] border border-stone-200/80 dark:border-[#2A3548] shadow-xl shadow-stone-900/5 dark:shadow-black/50 flex flex-col justify-between group hover:border-indigo-500/50 transition-all duration-300"
               >
                 <div>
                   {/* Step Number & Icon */}
                   <div className="flex items-center justify-between mb-6">
-                    <span className="text-4xl sm:text-5xl font-black text-slate-200 dark:text-slate-800 font-mono group-hover:text-indigo-500/30 transition-colors">
+                    <span className="text-4xl sm:text-5xl font-black text-slate-200 dark:text-[#1D293B] font-mono group-hover:text-indigo-500/30 transition-colors">
                       {item.step}
                     </span>
                     <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${item.color} text-white flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform`}>
@@ -77,7 +77,7 @@ export function HowItWorks() {
                   </div>
 
                   {/* Title & Subtitle */}
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 tracking-tight">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-[#F8FAFC] mb-1 tracking-tight">
                     {item.title}
                   </h3>
                   <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-3">
@@ -85,17 +85,17 @@ export function HowItWorks() {
                   </div>
 
                   {/* Description */}
-                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-[#CBD5E1] leading-relaxed mb-6">
                     {item.description}
                   </p>
                 </div>
 
                 {/* Tags Pill Row */}
-                <div className="pt-4 border-t border-stone-200/60 dark:border-slate-800 flex flex-wrap gap-1.5">
+                <div className="pt-4 border-t border-stone-200/60 dark:border-[#2A3548] flex flex-wrap gap-1.5">
                   {item.tags.map((tag, tagIdx) => (
                     <span
                       key={tagIdx}
-                      className="text-[10px] font-semibold px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60"
+                      className="text-[10px] font-semibold px-2.5 py-1 rounded-md bg-slate-100 dark:bg-[#161F30] text-slate-700 dark:text-[#CBD5E1] border border-slate-200/60 dark:border-[#2A3548]"
                     >
                       {tag}
                     </span>

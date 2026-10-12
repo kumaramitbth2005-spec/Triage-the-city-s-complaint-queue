@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 export function Background3D() {
   return (
-    <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none transition-colors duration-500 bg-gradient-to-b from-slate-50 via-indigo-50/30 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="absolute inset-0 w-full min-h-full overflow-hidden pointer-events-none transition-colors duration-500 bg-gradient-to-b from-slate-50 via-indigo-50/30 to-slate-100 dark:from-[#0B0D12] dark:via-[#0E1422] dark:to-[#0B0D12]">
       {/* Ambient Grid Pattern */}
       <div 
         className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07]"

@@ -3,7 +3,7 @@ import { settingsApi, profileApi } from '../api/settingsApi';
 
 // Default preferences
 export const defaultPreferences = {
-  theme: 'light', // 'light' | 'dark' | 'system'
+  theme: 'dark', // 'light' | 'dark' | 'system'
   language: 'en', // 'en' | 'hi' | 'hinglish'
   compactMode: false,
   general: {

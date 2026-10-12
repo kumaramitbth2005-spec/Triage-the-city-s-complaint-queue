@@ -1,10 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { 
-  ArrowRight, Sparkles, ShieldCheck, Zap, 
-  MapPin, CheckCircle2, FileText, Search, Activity
-} from 'lucide-react';
+import { ArrowRight, Sparkles, ShieldCheck, FileText, Search } from 'lucide-react';
 import { LiveTriageDemo } from './LiveTriageDemo';
 
 const containerVariants = {
@@ -91,22 +88,22 @@ export function HeroContent() {
         </motion.div>
 
         {/* Live Trust & Performance Stats */}
-        <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-14 pt-10 border-t border-stone-200/70 dark:border-slate-800/80">
-          <div className="p-3 rounded-2xl bg-white/40 dark:bg-slate-900/40 border border-stone-200/50 dark:border-slate-800/50 backdrop-blur-xs">
-            <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">99.4%</div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">AI Routing Accuracy</div>
+        <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-14 pt-10 border-t border-stone-200/70 dark:border-[#2A3548]">
+          <div className="p-3 rounded-2xl bg-white/60 dark:bg-[#111827]/80 border border-stone-200/50 dark:border-[#2A3548] backdrop-blur-xs">
+            <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-[#F8FAFC]">99.4%</div>
+            <div className="text-xs text-slate-500 dark:text-[#94A3B8] mt-0.5 font-medium">AI Routing Accuracy</div>
           </div>
-          <div className="p-3 rounded-2xl bg-white/40 dark:bg-slate-900/40 border border-stone-200/50 dark:border-slate-800/50 backdrop-blur-xs">
-            <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">3.8x</div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">Faster Resolution</div>
+          <div className="p-3 rounded-2xl bg-white/60 dark:bg-[#111827]/80 border border-stone-200/50 dark:border-[#2A3548] backdrop-blur-xs">
+            <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-[#F8FAFC]">3.8x</div>
+            <div className="text-xs text-slate-500 dark:text-[#94A3B8] mt-0.5 font-medium">Faster Resolution</div>
           </div>
-          <div className="p-3 rounded-2xl bg-white/40 dark:bg-slate-900/40 border border-stone-200/50 dark:border-slate-800/50 backdrop-blur-xs">
-            <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">&lt; 2 Sec</div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">Instant Triage Time</div>
+          <div className="p-3 rounded-2xl bg-white/60 dark:bg-[#111827]/80 border border-stone-200/50 dark:border-[#2A3548] backdrop-blur-xs">
+            <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-[#F8FAFC]">&lt; 2 Sec</div>
+            <div className="text-xs text-slate-500 dark:text-[#94A3B8] mt-0.5 font-medium">Instant Triage Time</div>
           </div>
-          <div className="p-3 rounded-2xl bg-white/40 dark:bg-slate-900/40 border border-stone-200/50 dark:border-slate-800/50 backdrop-blur-xs">
-            <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">45,000+</div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">Grievances Solved</div>
+          <div className="p-3 rounded-2xl bg-white/60 dark:bg-[#111827]/80 border border-stone-200/50 dark:border-[#2A3548] backdrop-blur-xs">
+            <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-[#F8FAFC]">45,000+</div>
+            <div className="text-xs text-slate-500 dark:text-[#94A3B8] mt-0.5 font-medium">Grievances Solved</div>
           </div>
         </motion.div>
       </motion.div>

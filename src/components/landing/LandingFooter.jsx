@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 export function LandingFooter() {
   return (
-    <footer className="relative bg-white dark:bg-slate-950 border-t border-stone-200/80 dark:border-slate-800/90 text-slate-700 dark:text-slate-300">
+    <footer className="relative bg-white dark:bg-[#07090E] border-t border-stone-200/80 dark:border-[#2A3548] text-slate-700 dark:text-[#CBD5E1]">
       {/* Top CTA Banner */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 -translate-y-12">
         <div className="rounded-3xl p-8 sm:p-12 bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-800 text-white shadow-2xl shadow-indigo-500/25 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
@@ -166,7 +166,7 @@ export function LandingFooter() {
         </div>
 
         {/* Bottom copyright row */}
-        <div className="mt-12 pt-6 border-t border-stone-200/60 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
+        <div className="mt-12 pt-6 border-t border-stone-200/60 dark:border-[#2A3548] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-[#94A3B8]">
           <div>
             © 2026 Nexus AI Civic Platform · Municipal Public Works & Grievance Redressal
           </div>

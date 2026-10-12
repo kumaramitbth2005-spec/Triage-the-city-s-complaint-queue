@@ -11,7 +11,7 @@ import { LandingFooter } from '../components/landing/LandingFooter';
 
 export function LandingPage() {
   return (
-    <div className="relative w-full min-h-screen overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-300">
+    <div className="relative w-full min-h-screen overflow-x-hidden bg-slate-50 dark:bg-[#0B0D12] text-slate-900 dark:text-[#F8FAFC] font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-300">
       {/* Dynamic 3D / Ambient Background */}
       <Background3D />
 

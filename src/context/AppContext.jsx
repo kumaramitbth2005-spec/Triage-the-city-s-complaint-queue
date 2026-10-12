@@ -15,6 +15,13 @@ export function AppProvider({ children }) {
   const reconnectIntervalRef = useRef(null);
 
   const fetchComplaints = useCallback(async (params = {}) => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      setComplaints([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await complaintApi.getAll({ page: 1, limit: 50, ...params });
@@ -58,6 +65,12 @@ export function AppProvider({ children }) {
   }, []);
 
   const fetchNotifications = useCallback(async () => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      setNotifications([]);
+      return;
+    }
+
     try {
       const res = await notificationApi.getAll();
       setNotifications(res.data?.data || []);
@@ -68,13 +81,17 @@ export function AppProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    fetchComplaints();
-    fetchNotifications();
+    if (localStorage.getItem('auth_token')) {
+      fetchComplaints();
+      fetchNotifications();
+    } else {
+      setLoading(false);
+    }
   }, [fetchComplaints, fetchNotifications]);
 
   // Auto-reconnect polling while using mock data (e.g. Render waking up)
   useEffect(() => {
-    if (usingMockData) {
+    if (usingMockData && localStorage.getItem('auth_token')) {
       reconnectIntervalRef.current = setInterval(() => {
         complaintApi.getAll({ page: 1, limit: 5 })
           .then(res => {

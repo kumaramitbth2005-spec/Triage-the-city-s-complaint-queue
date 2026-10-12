@@ -9,6 +9,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthModal } from '../auth/AuthModal';
 import { useSettings } from '../../context/SettingsContext';
 import { useTranslation } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 
 export function LandingNavbar() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -19,6 +20,7 @@ export function LandingNavbar() {
   const navigate = useNavigate();
   const { state, dispatch } = useSettings();
   const { currentLang, setLanguage } = useTranslation();
+  const { isAuthenticated, user } = useAuth();
 
   const isDarkMode = state.theme === 'dark' || 
     (state.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -52,8 +54,8 @@ export function LandingNavbar() {
       >
         <div className={`max-w-7xl mx-auto flex items-center justify-between rounded-2xl px-4 sm:px-6 py-3 transition-all duration-300 ${
           scrolled
-            ? 'bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-stone-200/80 dark:border-slate-800 shadow-lg shadow-stone-900/5 dark:shadow-indigo-950/40'
-            : 'bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-stone-200/60 dark:border-slate-800/80 shadow-xs'
+            ? 'bg-white/90 dark:bg-[#111827]/90 backdrop-blur-xl border border-stone-200/80 dark:border-[#2A3548] shadow-lg shadow-stone-900/5 dark:shadow-black/60'
+            : 'bg-white/70 dark:bg-[#111827]/80 backdrop-blur-md border border-stone-200/60 dark:border-[#2A3548] shadow-xs'
         }`}>
           {/* Brand */}
           <Link to="/" className="flex items-center gap-3 group">
@@ -125,24 +127,34 @@ export function LandingNavbar() {
               <select
                 value={currentLang}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="appearance-none bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl pl-6 pr-6 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer transition-colors"
+                className="appearance-none bg-slate-100 dark:bg-[#161F30] border border-slate-200 dark:border-[#2A3548] text-slate-700 dark:text-[#CBD5E1] text-xs font-semibold rounded-xl pl-6 pr-6 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer transition-colors"
                 aria-label="Language Selector"
               >
                 <option value="en">English (EN)</option>
                 <option value="hi">हिंदी (HI)</option>
                 <option value="hinglish">Hinglish</option>
               </select>
-              <Globe size={13} className="absolute left-2 text-slate-500 dark:text-slate-400 pointer-events-none" />
+              <Globe size={13} className="absolute left-2 text-slate-500 dark:text-[#94A3B8] pointer-events-none" />
             </div>
 
-            {/* Sign In Button */}
-            <button
-              onClick={() => { setAuthMode('login'); setIsAuthOpen(true); }}
-              className="text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold text-xs sm:text-sm px-3 py-1.5 transition-colors hidden sm:flex items-center gap-1.5"
-            >
-              <UserCircle size={16} /> 
-              <span>Sign In</span>
-            </button>
+            {/* Sign In / Profile Link */}
+            {isAuthenticated ? (
+              <Link
+                to="/dashboard"
+                className="text-slate-700 dark:text-[#CBD5E1] hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold text-xs sm:text-sm px-3 py-1.5 transition-colors hidden sm:flex items-center gap-1.5"
+              >
+                <UserCircle size={16} /> 
+                <span className="truncate max-w-[90px]">{user?.name ? user.name.split(' ')[0] : 'Operator'}</span>
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                className="text-slate-700 dark:text-[#CBD5E1] hover:text-indigo-600 dark:hover:text-indigo-400 font-semibold text-xs sm:text-sm px-3 py-1.5 transition-colors hidden sm:flex items-center gap-1.5"
+              >
+                <UserCircle size={16} /> 
+                <span>Sign In</span>
+              </Link>
+            )}
 
             {/* Operator Portal Primary CTA */}
             <Link 
@@ -157,7 +169,7 @@ export function LandingNavbar() {
             {/* Mobile Menu Toggle Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden transition-colors"
+              className="p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#161F30] lg:hidden transition-colors"
               aria-label="Toggle mobile menu"
             >
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -172,7 +184,7 @@ export function LandingNavbar() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="lg:hidden mt-2 max-w-7xl mx-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-stone-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xl space-y-3"
+              className="lg:hidden mt-2 max-w-7xl mx-auto bg-white/95 dark:bg-[#111827]/95 backdrop-blur-xl border border-stone-200/80 dark:border-[#2A3548] rounded-2xl p-4 shadow-xl space-y-3"
             >
               <div className="flex flex-col space-y-1">
                 <a 

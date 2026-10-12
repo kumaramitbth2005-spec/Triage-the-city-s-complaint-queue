@@ -5,6 +5,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { useTranslation } from '../../context/LanguageContext';
 import { authApi } from '../../api/authApi';
 import { AuthModal } from '../auth/AuthModal';
+import { useAuth } from '../../context/AuthContext';
 
 export function ProfileMenu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,8 +19,7 @@ export function ProfileMenu() {
   const location = useLocation();
   const { state, dispatch } = useSettings();
   const { t } = useTranslation();
-
-  const isAuthenticated = !!localStorage.getItem('auth_token');
+  const { isAuthenticated, logout } = useAuth();
 
   // Close dropdown on location change
   useEffect(() => {
@@ -62,8 +62,7 @@ export function ProfileMenu() {
       setIsLoggingOut(false);
       setIsLogoutConfirmOpen(false);
       setIsOpen(false);
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('auth_user');
+      logout();
       localStorage.removeItem('settings');
       dispatch({ type: 'RESET_ALL' });
       navigate('/');

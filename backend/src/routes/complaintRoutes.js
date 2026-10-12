@@ -5,8 +5,8 @@ const { protect, optionalProtect } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Read routes: optionalProtect — works with or without token
-router.get('/', optionalProtect, getComplaints);
+// Read routes: protect for full queue, optionalProtect for single complaint tracking
+router.get('/', protect, getComplaints);
 router.get('/:id', optionalProtect, getComplaintById);
 
 // Write routes: protect / optionalProtect

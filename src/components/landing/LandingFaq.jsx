@@ -33,7 +33,7 @@ export function LandingFaq() {
   };
 
   return (
-    <section className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-12 bg-slate-100/40 dark:bg-slate-900/30 border-t border-stone-200/80 dark:border-slate-800">
+    <section className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-12 bg-slate-100/40 dark:bg-[#0B0D12] border-t border-stone-200/80 dark:border-[#2A3548]">
       <div className="max-w-4xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-14">
@@ -41,10 +41,10 @@ export function LandingFaq() {
             <HelpCircle size={13} />
             <span>Got Questions?</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-[#F8FAFC] tracking-tight">
             Frequently Asked Questions
           </h2>
-          <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-300">
+          <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-[#CBD5E1]">
             Everything you need to know about Nexus AI triage, citizen tracking, and municipal deployment.
           </p>
         </div>
@@ -56,16 +56,16 @@ export function LandingFaq() {
             return (
               <div
                 key={idx}
-                className="rounded-2xl bg-white dark:bg-slate-900 border border-stone-200/80 dark:border-slate-800 shadow-sm overflow-hidden transition-colors"
+                className="rounded-2xl bg-white dark:bg-[#111827] border border-stone-200/80 dark:border-[#2A3548] shadow-sm overflow-hidden transition-colors"
               >
                 <button
                   onClick={() => toggle(idx)}
-                  className="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 font-bold text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  className="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 font-bold text-slate-900 dark:text-[#F8FAFC] hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                   aria-expanded={isOpen}
                 >
                   <span className="text-base sm:text-lg tracking-tight">{faq.q}</span>
-                  <div className={`p-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shrink-0 transition-transform duration-200 ${
-                    isOpen ? 'rotate-180 bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400' : ''
+                  <div className={`p-1.5 rounded-full bg-slate-100 dark:bg-[#161F30] text-slate-600 dark:text-[#CBD5E1] shrink-0 transition-transform duration-200 ${
+                    isOpen ? 'rotate-180 bg-indigo-50 dark:bg-[#1D293B] text-indigo-600 dark:text-indigo-400' : ''
                   }`}>
                     <ChevronDown size={18} />
                   </div>
@@ -79,7 +79,7 @@ export function LandingFaq() {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.25, ease: 'easeInOut' }}
                     >
-                      <div className="px-5 sm:px-6 pb-6 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-slate-800/80 pt-4">
+                      <div className="px-5 sm:px-6 pb-6 text-xs sm:text-sm text-slate-600 dark:text-[#CBD5E1] leading-relaxed border-t border-slate-100 dark:border-[#2A3548] pt-4">
                         {faq.a}
                       </div>
                     </motion.div>
