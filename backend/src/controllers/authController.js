@@ -62,7 +62,7 @@ exports.sendVerificationCode = async (req, res, next) => {
     const cleanEmail = email.toLowerCase().trim();
     const user = await User.findOne({ email: cleanEmail });
 
-    // If user is already verified
+    // If user is already verified, reject
     if (user && user.emailVerified) {
       return res.status(400).json({
         success: false,
@@ -70,7 +70,7 @@ exports.sendVerificationCode = async (req, res, next) => {
       });
     }
 
-    // Check resend cooldown - if code was recently sent, smoothly direct to verification
+    // Check resend cooldown — include cooldownSeconds so the frontend timer starts immediately
     const cooldownMs = OTP_RESEND_COOLDOWN_SECONDS() * 1000;
     if (user && user.verificationLastSentAt && (Date.now() - user.verificationLastSentAt.getTime()) < cooldownMs) {
       const secsLeft = Math.ceil((cooldownMs - (Date.now() - user.verificationLastSentAt.getTime())) / 1000);
@@ -79,7 +79,7 @@ exports.sendVerificationCode = async (req, res, next) => {
         requiresVerification: true,
         email: cleanEmail,
         cooldownSeconds: secsLeft,
-        message: `A verification code was already sent to your email. Please enter it below.`
+        message: 'A verification code was already sent to your email. Please enter it below.'
       });
     }
 
@@ -88,20 +88,22 @@ exports.sendVerificationCode = async (req, res, next) => {
     const expiryDate = new Date(Date.now() + OTP_EXPIRY_MINUTES() * 60 * 1000);
 
     if (user) {
-      // Update existing pending user
+      // Update existing pending user with fresh OTP (invalidates any previous code)
       user.verificationOtpHash = otpHash;
       user.verificationOtpExpiresAt = expiryDate;
       user.verificationOtpAttempts = 0;
       user.verificationLastSentAt = new Date();
       await user.save();
     }
+    // Note: if user doesn't exist yet, the OTP will be stored when they complete
+    // the full /register flow which creates the user record atomically.
 
-    // Dispatch email
+    // Dispatch email — only report success after the provider accepts it
     let emailResult;
     try {
       emailResult = await sendVerificationOtp({
         to: cleanEmail,
-        name: user?.name || name || 'User',
+        name: user?.name || name || 'there',
         otp,
         expiryMinutes: OTP_EXPIRY_MINUTES()
       });
@@ -119,6 +121,7 @@ exports.sendVerificationCode = async (req, res, next) => {
       success: true,
       requiresVerification: true,
       email: cleanEmail,
+      cooldownSeconds: OTP_RESEND_COOLDOWN_SECONDS(),
       message: 'A 6-digit verification code has been sent to your email.'
     });
 

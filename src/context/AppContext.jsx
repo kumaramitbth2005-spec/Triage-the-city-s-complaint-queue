@@ -117,23 +117,34 @@ export function AppProvider({ children }) {
   }, [usingMockData, fetchComplaints, fetchNotifications]);
 
 
-  const updateComplaintStatus = async (id, newStatus, newUrgency, newCategory, newDepartment) => {
+  const updateComplaintStatus = async (id, newStatus, newUrgency, newCategory, newDepartment, operatorNotes) => {
     try {
-      await complaintApi.triage(id, {
-        status: newStatus,
-        urgency: newUrgency,
-        category: newCategory,
-        department: newDepartment
-      });
+      const payload = {};
+      if (newStatus) payload.status = newStatus === 'Confirmed' ? 'ASSIGNED' : newStatus;
+      if (newUrgency) payload.urgency = newUrgency;
+      if (newCategory) payload.category = newCategory;
+      if (newDepartment) payload.department = newDepartment;
+      if (operatorNotes !== undefined) payload.operatorNotes = operatorNotes;
+
+      const res = await complaintApi.triage(id, payload);
       await fetchComplaints();
+      return res.data?.data;
     } catch (err) {
       console.error('Failed to update complaint status', err);
-      // Optimistic update on error
-      setComplaints(prev => prev.map(c =>
-        (c.id === id || c.complaintId === id)
-          ? { ...c, status: newStatus }
-          : c
-      ));
+      await fetchComplaints();
+      throw err;
+    }
+  };
+
+  const escalateComplaint = async (id, { reason, notes, targetDepartment } = {}) => {
+    try {
+      const res = await complaintApi.escalate(id, { reason, notes, targetDepartment });
+      await fetchComplaints();
+      return res.data?.data;
+    } catch (err) {
+      console.error('Failed to escalate complaint', err);
+      await fetchComplaints();
+      throw err;
     }
   };
 
@@ -195,7 +206,7 @@ export function AppProvider({ children }) {
       complaints, setComplaints,
       loading, error, usingMockData,
       isDataImported, setIsDataImported,
-      updateComplaintStatus, addComplaint, deleteComplaint,
+      updateComplaintStatus, escalateComplaint, addComplaint, deleteComplaint,
       notifications, setNotifications,
       fetchComplaints
     }}>

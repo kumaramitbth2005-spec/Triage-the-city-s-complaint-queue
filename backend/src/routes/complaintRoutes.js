@@ -1,5 +1,5 @@
 const express = require('express');
-const { createComplaint, getComplaints, getComplaintById, triageComplaint, getTriageQueue, deleteComplaint } = require('../controllers/complaintController');
+const { createComplaint, getComplaints, getComplaintById, triageComplaint, escalateComplaint, getTriageQueue, deleteComplaint } = require('../controllers/complaintController');
 const { transcribeAudio } = require('../controllers/voiceController');
 const { protect, optionalProtect } = require('../middleware/auth');
 
@@ -13,6 +13,7 @@ router.get('/:id', optionalProtect, getComplaintById);
 router.post('/', optionalProtect, createComplaint);
 router.post('/transcribe', optionalProtect, transcribeAudio);
 router.patch('/:id/triage', protect, triageComplaint);
+router.post('/:id/escalate', protect, escalateComplaint);
 router.delete('/:id', protect, deleteComplaint);
 
 module.exports = router;

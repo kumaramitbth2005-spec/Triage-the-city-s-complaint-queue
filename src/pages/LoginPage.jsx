@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
 import { 
   ShieldCheck, Lock, Mail, User, Eye, EyeOff, 
   ArrowRight, ArrowLeft, Loader2, CheckCircle2, AlertCircle, 
-  RefreshCw, KeyRound, Layers
+  RefreshCw, KeyRound, Layers, Info
 } from 'lucide-react';
 import { authApi } from '../api/authApi';
 import { useAuth } from '../context/AuthContext';
@@ -81,6 +81,9 @@ export function LoginPage({ defaultMode = 'login' }) {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resendLoading, setResendLoading] = useState(false);
   const otpInputRefs = useRef([]);
+
+  // Prevent duplicate in-flight submissions (double-click / re-render guard)
+  const submittingRef = useRef(false);
 
   // Cooldown countdown timer
   useEffect(() => {
@@ -296,6 +299,9 @@ export function LoginPage({ defaultMode = 'login' }) {
     setErrorMessage('');
     setSuccessMessage('');
 
+    // Double-click / re-render guard
+    if (submittingRef.current) return;
+
     if (!formData.name.trim()) {
       setErrorMessage('Full name is required.');
       return;
@@ -316,6 +322,7 @@ export function LoginPage({ defaultMode = 'login' }) {
       return;
     }
 
+    submittingRef.current = true;
     setLoading(true);
 
     try {
@@ -330,7 +337,8 @@ export function LoginPage({ defaultMode = 'login' }) {
       if (res.data?.success) {
         setPendingEmail(cleanEmail);
         setOtpDigits(['', '', '', '', '', '']);
-        const secs = res.data.cooldownSeconds || 60;
+        // Use the cooldown from the server response (defaults to 60s if not provided)
+        const secs = res.data.cooldownSeconds ?? 60;
         setResendCooldown(secs);
         setSuccessMessage(res.data.message || 'Verification code sent to your email!');
         setErrorMessage('');
@@ -347,9 +355,12 @@ export function LoginPage({ defaultMode = 'login' }) {
       if (code === 'COOLDOWN' || err.response?.data?.requiresVerification) {
         setPendingEmail(cleanEmail);
         setOtpDigits(['', '', '', '', '', '']);
-        const secs = err.response?.data?.cooldownSeconds || 60;
+        const secs = err.response?.data?.cooldownSeconds ?? 60;
         setResendCooldown(secs);
-        setSuccessMessage(err.response?.data?.message || `A verification code was sent to ${cleanEmail}. Please enter the 6 digits.`);
+        setSuccessMessage(
+          err.response?.data?.message ||
+          `A verification code was sent to ${cleanEmail}. Please enter the 6 digits.`
+        );
         setErrorMessage('');
         setMode('verify');
         setTimeout(() => {
@@ -359,13 +370,14 @@ export function LoginPage({ defaultMode = 'login' }) {
       }
 
       if (code === 'EMAIL_SERVICE_ERROR' || err.response?.status === 503) {
-        setErrorMessage('Unable to dispatch verification code to this address. Please verify the email and try again.');
+        setErrorMessage('Unable to dispatch a verification code to this address. Please check the email and try again.');
       } else {
         const msg = errData?.message || err.response?.data?.message || 'Registration failed. Please try again.';
         setErrorMessage(msg);
       }
     } finally {
       setLoading(false);
+      submittingRef.current = false;
     }
   };
 
@@ -479,17 +491,25 @@ export function LoginPage({ defaultMode = 'login' }) {
     if (resendCooldown > 0 || resendLoading) return;
     setResendLoading(true);
     setErrorMessage('');
+    setSuccessMessage('');
 
     try {
       const res = await authApi.resendVerificationCode(pendingEmail);
       if (res.data?.success) {
-        setResendCooldown(res.data.cooldownSeconds || 60);
-        setSuccessMessage('A fresh verification code has been dispatched to your email.');
+        // Use backend-supplied cooldown (or 60s default)
+        const secs = res.data.cooldownSeconds ?? 60;
+        setResendCooldown(secs);
+        setSuccessMessage('A new verification code has been sent. Check your inbox (and Spam folder).');
         setOtpDigits(['', '', '', '', '', '']);
         otpInputRefs.current[0]?.focus();
       }
     } catch (err) {
-      const msg = err.response?.data?.error?.message || err.response?.data?.message || 'Could not resend verification code. Please try again.';
+      const errData = err.response?.data?.error;
+      // If backend says cooldown is still active, parse remaining seconds
+      if (errData?.code === 'COOLDOWN' && err.response?.data?.cooldownSeconds) {
+        setResendCooldown(err.response.data.cooldownSeconds);
+      }
+      const msg = errData?.message || err.response?.data?.message || 'Could not resend verification code. Please try again.';
       setErrorMessage(msg);
     } finally {
       setResendLoading(false);
@@ -817,11 +837,20 @@ export function LoginPage({ defaultMode = 'login' }) {
               >
                 <RefreshCw size={12} className={resendLoading ? 'animate-spin' : ''} />
                 <span>
-                  {resendCooldown > 0 
-                    ? `Resend in ${resendCooldown}s` 
+                  {resendCooldown > 0
+                    ? `Resend in ${resendCooldown}s`
                     : 'Resend Code'}
                 </span>
               </button>
+            </div>
+
+            {/* Spam folder notice — shown while improving domain reputation */}
+            <div className="flex items-start gap-2 rounded-xl bg-amber-500/8 border border-amber-500/20 px-3 py-2.5">
+              <Info size={13} className="shrink-0 mt-0.5 text-amber-400" />
+              <p className="text-[11px] text-amber-300/80 leading-snug">
+                Didn't receive it? Check your <strong>Spam / Junk</strong> folder.
+                If you find it there, mark it as <em>Not Spam</em> to help future emails arrive in your inbox.
+              </p>
             </div>
           </form>
         )}

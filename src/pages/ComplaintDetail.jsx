@@ -8,9 +8,12 @@ import { Button } from '../components/ui/Button';
 import {
   ArrowLeft, MapPin, Clock, User, Mic, Image as ImageIcon, FileText,
   MessageSquare, Send, CheckCircle, AlertCircle, Sparkles, Activity,
-  ChevronDown, ChevronUp, Copy, ExternalLink, Trash2
+  ChevronDown, ChevronUp, Copy, Check, ExternalLink, Trash2, Flame, ShieldAlert
 } from 'lucide-react';
 import { EvidenceChip } from '../components/ui/EvidenceChip';
+import { copyToClipboard } from '../utils/clipboard';
+import { RouteComplaintModal } from '../components/complaints/RouteComplaintModal';
+import { EscalateComplaintModal } from '../components/complaints/EscalateComplaintModal';
 
 const MOCK_TIMELINE = [
   { time: '2 hours ago', event: 'Complaint submitted via App', icon: FileText, color: 'blue' },
@@ -27,7 +30,7 @@ const MOCK_MESSAGES = [
 export function ComplaintDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { complaints, loading: contextLoading, updateComplaintStatus, deleteComplaint } = useAppContext();
+  const { complaints, loading: contextLoading, deleteComplaint } = useAppContext();
   const [showFullText, setShowFullText] = useState(false);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState(MOCK_MESSAGES);
@@ -35,6 +38,12 @@ export function ComplaintDetail() {
   const [deleting, setDeleting] = useState(false);
   const [apiComplaint, setApiComplaint] = useState(null);
   const [apiLoading, setApiLoading] = useState(false);
+
+  // Modals & Feedback state
+  const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
+  const [isEscalateModalOpen, setIsEscalateModalOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [feedbackToast, setFeedbackToast] = useState(null);
 
   // Look for complaint in context complaints
   const contextComplaint = complaints.find(
@@ -66,6 +75,44 @@ export function ComplaintDetail() {
 
   const complaint = contextComplaint || apiComplaint;
 
+  const handleCopyId = async (e) => {
+    if (e) e.stopPropagation();
+    const idToCopy = complaint?.complaintId || complaint?.id || complaint?._id;
+    if (!idToCopy) {
+      setFeedbackToast({ type: 'error', message: 'No valid complaint ID to copy.' });
+      setTimeout(() => setFeedbackToast(null), 3000);
+      return;
+    }
+    const ok = await copyToClipboard(idToCopy);
+    if (ok) {
+      setCopied(true);
+      setFeedbackToast({ type: 'success', message: `Copied ticket ID #${idToCopy} to clipboard!` });
+      setTimeout(() => setCopied(false), 2500);
+      setTimeout(() => setFeedbackToast(null), 3500);
+    } else {
+      setFeedbackToast({ type: 'error', message: 'Unable to access clipboard. Please copy manually.' });
+      setTimeout(() => setFeedbackToast(null), 3500);
+    }
+  };
+
+  const handleRouteSuccess = (updated) => {
+    setApiComplaint(prev => ({ ...(prev || {}), ...updated }));
+    setFeedbackToast({
+      type: 'success',
+      message: `Complaint #${updated.complaintId || displayId} confirmed and routed to ${updated.department}!`
+    });
+    setTimeout(() => setFeedbackToast(null), 4000);
+  };
+
+  const handleEscalateSuccess = (updated) => {
+    setApiComplaint(prev => ({ ...(prev || {}), ...updated }));
+    setFeedbackToast({
+      type: 'success',
+      message: `Complaint #${updated.complaintId || displayId} successfully escalated to Level ${updated.escalation?.level || 1}!`
+    });
+    setTimeout(() => setFeedbackToast(null), 4000);
+  };
+
   if (contextLoading || apiLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3 text-center">
@@ -88,6 +135,8 @@ export function ComplaintDetail() {
     );
   }
 
+  const displayId = complaint.complaintId || complaint.id || complaint._id;
+
   const handleSendMessage = () => {
     if (!message.trim()) return;
     setMessages(prev => [...prev, {
@@ -108,12 +157,6 @@ export function ComplaintDetail() {
     }
   };
 
-  const statusColors = {
-    'Confirmed': 'emerald', 'Resolved': 'emerald',
-    'Needs Review': 'amber', 'New': 'blue',
-    'RECEIVED': 'blue', 'Pending': 'amber',
-  };
-
   const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'ai', label: 'AI Analysis' },
@@ -122,36 +165,84 @@ export function ComplaintDetail() {
   ];
 
   return (
-    <div className="max-w-5xl mx-auto space-y-4 w-full">
+    <div className="max-w-5xl mx-auto space-y-4 w-full relative">
+      {/* Toast Feedback Notification */}
+      {feedbackToast && (
+        <div 
+          className={`p-3.5 rounded-xl border text-xs sm:text-sm font-semibold flex items-center justify-between shadow-lg transition-all animate-in fade-in slide-in-from-top-2 ${
+            feedbackToast.type === 'success' 
+              ? 'bg-emerald-50 dark:bg-emerald-950/80 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200' 
+              : 'bg-rose-50 dark:bg-rose-950/80 border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {feedbackToast.type === 'success' ? (
+              <CheckCircle size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+            ) : (
+              <AlertCircle size={16} className="text-rose-600 dark:text-rose-400 shrink-0" />
+            )}
+            <span>{feedbackToast.message}</span>
+          </div>
+          <button 
+            onClick={() => setFeedbackToast(null)}
+            className="text-xs opacity-70 hover:opacity-100 ml-4 px-1"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={() => navigate('/dashboard/complaints')}
-            className="p-2 rounded-lg hover:bg-gray-100 text-slate-500 transition-colors shrink-0"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-slate-500 transition-colors shrink-0"
           >
             <ArrowLeft size={20} />
           </button>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-lg sm:text-xl font-bold text-slate-800 font-mono truncate">{complaint.id}</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-white font-mono truncate">
+                #{displayId}
+              </h1>
               <Badge>{complaint.status}</Badge>
               <UrgencyBadge level={complaint.urgency} />
+              {complaint.escalation?.isEscalated && (
+                <Badge variant="danger" className="text-xs font-bold animate-pulse">
+                  <Flame size={12} className="mr-1 inline-block" />
+                  Level {complaint.escalation.level} Escalated
+                </Badge>
+              )}
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5 truncate">
-              {complaint.department} · {complaint.category} · Ward {complaint.ward}
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+              {complaint.department || 'Unassigned'} · {complaint.category || 'General'} · Ward {complaint.ward || '1'}
             </p>
           </div>
         </div>
+
         <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+          {/* Functional Copy ID Button */}
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigator.clipboard?.writeText(complaint.id)}
-            className="text-xs"
+            onClick={handleCopyId}
+            className="text-xs transition-all font-semibold"
+            title={`Copy ticket ID ${displayId}`}
           >
-            <Copy size={13} className="mr-1.5" /> Copy ID
+            {copied ? (
+              <>
+                <Check size={13} className="mr-1.5 text-emerald-500" />
+                <span className="text-emerald-600 dark:text-emerald-400">Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy size={13} className="mr-1.5" />
+                Copy ID
+              </>
+            )}
           </Button>
+
           <Button
             variant="danger"
             size="sm"
@@ -165,15 +256,15 @@ export function ComplaintDetail() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 overflow-x-auto">
+      <div className="flex border-b border-gray-200 dark:border-slate-800 overflow-x-auto">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
               activeTab === tab.id
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
             {tab.label}
@@ -193,28 +284,28 @@ export function ComplaintDetail() {
               <CardContent className="p-4 pt-0">
                 <div className="flex items-center gap-2 mb-3">
                   {complaint.inputType === 'Voice' ? (
-                    <span className="flex items-center gap-1.5 text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded-md border border-purple-100">
+                    <span className="flex items-center gap-1.5 text-xs text-purple-600 bg-purple-50 dark:bg-purple-950/50 px-2 py-1 rounded-md border border-purple-100 dark:border-purple-900">
                       <Mic size={12} /> Voice Input
                     </span>
                   ) : complaint.inputType === 'Image' ? (
-                    <span className="flex items-center gap-1.5 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100">
+                    <span className="flex items-center gap-1.5 text-xs text-blue-600 bg-blue-50 dark:bg-blue-950/50 px-2 py-1 rounded-md border border-blue-100 dark:border-blue-900">
                       <ImageIcon size={12} /> Photo Input
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1.5 text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded-md border border-gray-200">
+                    <span className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-slate-800 px-2 py-1 rounded-md border border-gray-200 dark:border-slate-700">
                       <FileText size={12} /> Text Input
                     </span>
                   )}
                   <span className="text-xs text-gray-400">·</span>
-                  <span className="text-xs text-gray-500">{complaint.language || 'English'}</span>
+                  <span className="text-xs text-gray-500 dark:text-slate-400">{complaint.language || 'English'}</span>
                 </div>
-                <p className={`text-slate-700 text-sm leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-100 ${!showFullText ? 'line-clamp-4' : ''}`}>
+                <p className={`text-slate-700 dark:text-slate-200 text-sm leading-relaxed bg-gray-50 dark:bg-slate-800/60 p-4 rounded-xl border border-gray-100 dark:border-slate-800 ${!showFullText ? 'line-clamp-4' : ''}`}>
                   "{complaint.originalText}"
                 </p>
                 {complaint.originalText?.length > 200 && (
                   <button
                     onClick={() => setShowFullText(!showFullText)}
-                    className="mt-2 text-xs text-blue-600 hover:underline flex items-center gap-1"
+                    className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                   >
                     {showFullText ? <><ChevronUp size={12} /> Show less</> : <><ChevronDown size={12} /> Read more</>}
                   </button>
@@ -222,34 +313,70 @@ export function ComplaintDetail() {
               </CardContent>
             </Card>
 
+            {/* Escalation Alert Banner if Escalated */}
+            {complaint.escalation?.isEscalated && (
+              <div className="p-4 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/70 dark:bg-rose-950/30 flex items-start gap-3">
+                <div className="p-1.5 rounded-lg bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 shrink-0 mt-0.5">
+                  <Flame size={16} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs sm:text-sm font-bold text-rose-900 dark:text-rose-200">
+                      SLA Tier {complaint.escalation.level} Escalation Active
+                    </h4>
+                    <span className="text-[11px] text-rose-700 dark:text-rose-400">
+                      {new Date(complaint.escalation.escalatedAt || Date.now()).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-xs text-rose-800 dark:text-rose-300/90 leading-relaxed mt-1">
+                    <strong>Reason:</strong> {complaint.escalation.reason}
+                  </p>
+                  {complaint.escalation.notes && (
+                    <p className="text-[11px] text-rose-700 dark:text-rose-400 mt-1">
+                      <strong>Directive:</strong> {complaint.escalation.notes}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Location card */}
             <Card>
               <CardContent className="p-4 flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
-                  <MapPin size={18} className="text-emerald-600" />
+                <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center shrink-0">
+                  <MapPin size={18} className="text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Location</p>
-                  <p className="text-base font-semibold text-slate-800">{complaint.normalizedLocality || complaint.locality}</p>
-                  <p className="text-sm text-slate-500">Ward {complaint.ward} · {complaint.city || 'Bhopal'}</p>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Location</p>
+                  <p className="text-base font-semibold text-slate-800 dark:text-white">{complaint.normalizedLocality || complaint.locality || 'Bhopal'}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Ward {complaint.ward || '1'} · {complaint.city || 'Bhopal'}</p>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Actions */}
+            {/* Actions Panel */}
             <Card>
               <CardContent className="p-4 flex flex-wrap gap-3">
+                {/* Confirm & Route Button */}
                 <Button
-                  className="flex-1"
-                  onClick={() => updateComplaintStatus(complaint.id, 'Confirmed', complaint.urgency, complaint.category, complaint.department)}
+                  className="flex-1 font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
+                  onClick={() => setIsRouteModalOpen(true)}
                 >
                   <CheckCircle size={16} className="mr-2" /> Confirm & Route
                 </Button>
-                <Button variant="outline" className="flex-1" onClick={() => navigate('/dashboard/triage')}>
+
+                {/* Full AI Triage Navigation Button */}
+                <Button variant="outline" className="flex-1 font-semibold" onClick={() => navigate('/dashboard/triage')}>
                   <Sparkles size={16} className="mr-2" /> Full AI Triage
                 </Button>
-                <Button variant="outline" className="flex-1">
-                  <ExternalLink size={16} className="mr-2" /> Escalate
+
+                {/* Escalate Button */}
+                <Button 
+                  variant="outline" 
+                  className="flex-1 font-semibold border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                  onClick={() => setIsEscalateModalOpen(true)}
+                >
+                  <Flame size={16} className="mr-2 text-rose-500" /> Escalate
                 </Button>
               </CardContent>
             </Card>
@@ -260,34 +387,34 @@ export function ComplaintDetail() {
             <Card>
               <CardContent className="p-4 space-y-3">
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Department</p>
-                  <p className="text-sm font-semibold text-slate-800">{complaint.department}</p>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Department</p>
+                  <p className="text-sm font-semibold text-slate-800 dark:text-white">{complaint.department || 'Not Assigned'}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Category</p>
-                  <p className="text-sm font-medium text-slate-700">{complaint.category}</p>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Category</p>
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{complaint.category || 'General Civic Grievance'}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">AI Confidence</p>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">AI Confidence</p>
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="flex-1 h-2 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-blue-500 rounded-full transition-all"
-                        style={{ width: `${complaint.confidence}%` }}
+                        style={{ width: `${complaint.confidence || 85}%` }}
                       />
                     </div>
-                    <span className="text-sm font-bold text-blue-600">{complaint.confidence}%</span>
+                    <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{complaint.confidence || 85}%</span>
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Submitted</p>
-                  <div className="flex items-center gap-1.5 text-sm text-slate-700">
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Submitted</p>
+                  <div className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300">
                     <Clock size={14} className="text-gray-400" />
-                    {new Date(complaint.timestamp || complaint.createdAt).toLocaleString()}
+                    {new Date(complaint.timestamp || complaint.createdAt || Date.now()).toLocaleString()}
                   </div>
                 </div>
                 {complaint.duplicateStatus === 'Possible' && (
-                  <div className="p-2 bg-amber-50 rounded-lg border border-amber-100 text-xs text-amber-700">
+                  <div className="p-2 bg-amber-50 dark:bg-amber-950/40 rounded-lg border border-amber-100 dark:border-amber-900 text-xs text-amber-700 dark:text-amber-300">
                     <AlertCircle size={12} className="inline mr-1" />
                     Possible duplicate detected
                   </div>
@@ -440,6 +567,22 @@ export function ComplaintDetail() {
           </CardContent>
         </Card>
       )}
+
+      {/* Route & Confirm Modal */}
+      <RouteComplaintModal
+        isOpen={isRouteModalOpen}
+        complaint={complaint}
+        onClose={() => setIsRouteModalOpen(false)}
+        onSuccess={handleRouteSuccess}
+      />
+
+      {/* Escalation Modal */}
+      <EscalateComplaintModal
+        isOpen={isEscalateModalOpen}
+        complaint={complaint}
+        onClose={() => setIsEscalateModalOpen(false)}
+        onSuccess={handleEscalateSuccess}
+      />
     </div>
   );
 }

@@ -82,6 +82,26 @@ const complaintSchema = new mongoose.Schema({
   operatorDecision: { type: Object },
   operatorNotes: { type: String },
   
+  escalation: {
+    level: { type: Number, default: 0, min: 0, max: 3 },
+    isEscalated: { type: Boolean, default: false },
+    escalatedAt: { type: Date },
+    escalatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    reason: { type: String },
+    notes: { type: String },
+    history: [{
+      level: Number,
+      reason: String,
+      notes: String,
+      escalatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      escalatorName: String,
+      escalatorRole: String,
+      timestamp: { type: Date, default: Date.now },
+      previousUrgency: String,
+      newUrgency: String
+    }]
+  },
+  
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   resolvedAt: { type: Date }
 }, { timestamps: true });

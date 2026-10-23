@@ -4,11 +4,16 @@ import { Badge, UrgencyBadge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { useAppContext } from '../context/AppContext';
 import { useTranslation } from '../context/LanguageContext';
-import { Search, Filter, Mic, Image as ImageIcon, FileText, X } from 'lucide-react';
+import { Search, Filter, Mic, Image as ImageIcon, FileText, X, Copy, Check, CheckCircle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { copyToClipboard } from '../utils/clipboard';
+import { RouteComplaintModal } from '../components/complaints/RouteComplaintModal';
 
 export function Complaints() {
   const [complaintToDelete, setComplaintToDelete] = useState(null);
+  const [complaintToRoute, setComplaintToRoute] = useState(null);
+  const [copiedId, setCopiedId] = useState(null);
+  const [copyToast, setCopyToast] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
   
@@ -35,6 +40,21 @@ export function Complaints() {
       setSearchParams({ q: val.trim() });
     } else {
       setSearchParams({});
+    }
+  };
+
+  const handleCopyId = async (e, idToCopy) => {
+    e.stopPropagation();
+    if (!idToCopy) return;
+    const ok = await copyToClipboard(idToCopy);
+    if (ok) {
+      setCopiedId(idToCopy);
+      setCopyToast(`Copied ID #${idToCopy} to clipboard!`);
+      setTimeout(() => setCopiedId(null), 2500);
+      setTimeout(() => setCopyToast(null), 3500);
+    } else {
+      setCopyToast('Failed to access clipboard.');
+      setTimeout(() => setCopyToast(null), 3000);
     }
   };
 
@@ -232,14 +252,28 @@ export function Complaints() {
               <div className="flex-1 space-y-3 min-w-0">
                 <div className="flex flex-wrap items-center justify-between gap-y-2 gap-x-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-semibold text-slate-900 text-sm sm:text-base">{c.id || c.complaintId}</span>
+                    <span className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base font-mono">
+                      #{c.id || c.complaintId}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => handleCopyId(e, c.complaintId || c.id)}
+                      title={`Copy ticket ID #${c.complaintId || c.id}`}
+                      className="p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      {copiedId === (c.complaintId || c.id) ? (
+                        <Check size={14} className="text-emerald-500" />
+                      ) : (
+                        <Copy size={14} />
+                      )}
+                    </button>
                     <Badge className="text-[10px] sm:text-xs py-0 sm:py-0.5">{c.status}</Badge>
                     {(c.duplicateStatus === 'Possible' || (c.duplicateCandidates && c.duplicateCandidates.length > 0)) && (
                       <Badge variant="warning" className="text-[10px] sm:text-xs py-0 sm:py-0.5">Possible Duplicate</Badge>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 px-2 py-0.5 sm:py-1 rounded-md bg-gray-100 text-[10px] sm:text-xs font-medium text-gray-600">
+                    <div className="flex items-center gap-1 px-2 py-0.5 sm:py-1 rounded-md bg-gray-100 dark:bg-slate-800 text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-300">
                       {getIconForType(c.inputType)}
                       {c.inputType}
                     </div>
@@ -247,34 +281,48 @@ export function Complaints() {
                   </div>
                 </div>
 
-                <p className="text-slate-700 text-sm sm:text-base leading-relaxed break-words line-clamp-3 sm:line-clamp-none">
+                <p className="text-slate-700 dark:text-slate-200 text-sm sm:text-base leading-relaxed break-words line-clamp-3 sm:line-clamp-none">
                   "{c.originalText || c.description}"
                 </p>
 
                 <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-y-1 gap-x-6 text-[11px] sm:text-sm">
                   <div className="flex items-start sm:items-center gap-1.5">
                     <span className="text-gray-500 shrink-0">Location:</span>
-                    <span className="font-medium text-slate-800 break-words">{c.normalizedLocality || c.location?.locality || 'Bhopal'}, Ward {c.ward || c.location?.ward || '1'}</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-200 break-words">{c.normalizedLocality || c.location?.locality || 'Bhopal'}, Ward {c.ward || c.location?.ward || '1'}</span>
                   </div>
                   <div className="flex items-start sm:items-center gap-1.5">
                     <span className="text-gray-500 shrink-0">Routing:</span>
-                    <span className="font-medium text-slate-800 break-words">{c.department} &bull; {c.category}</span>
+                    <span className="font-medium text-slate-800 dark:text-slate-200 break-words">{c.department} &bull; {c.category}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row md:flex-col justify-between sm:items-center md:items-end gap-3 md:min-w-[150px] shrink-0 pl-0 md:pl-6 pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-gray-100">
+              <div className="flex flex-col sm:flex-row md:flex-col justify-between sm:items-center md:items-end gap-3 md:min-w-[150px] shrink-0 pl-0 md:pl-6 pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-gray-100 dark:border-slate-800">
                 <div className="flex items-center sm:items-start md:items-end justify-between sm:justify-start gap-2 w-full sm:w-auto">
                   <UrgencyBadge level={c.urgency} />
                   <div className="text-[11px] sm:text-xs text-slate-500">
-                    Confidence: <span className="font-semibold text-blue-600">{c.confidence || c.aiAnalysis?.overallConfidence || 85}%</span>
+                    Confidence: <span className="font-semibold text-blue-600 dark:text-blue-400">{c.confidence || c.aiAnalysis?.overallConfidence || 85}%</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto md:w-full">
-                  <Button className="flex-1 sm:flex-initial md:flex-1 text-xs sm:text-sm px-3 py-1.5 sm:py-2 h-8 sm:h-9" onClick={(e) => { e.stopPropagation(); navigate('/dashboard/triage'); }}>
-                    {t('edit', 'Edit')}
+                  <Button 
+                    className="flex-1 sm:flex-initial md:flex-1 text-xs sm:text-sm px-3 py-1.5 sm:py-2 h-8 sm:h-9 bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                    onClick={(e) => { e.stopPropagation(); setComplaintToRoute(c); }}
+                  >
+                    {t('route', 'Route')}
                   </Button>
-                  <Button variant="danger" className="flex-1 sm:flex-initial md:flex-1 text-xs sm:text-sm px-3 py-1.5 sm:py-2 h-8 sm:h-9" onClick={(e) => handleDeleteClick(e, c.id || c.complaintId)}>
+                  <Button 
+                    variant="outline"
+                    className="flex-1 sm:flex-initial md:flex-1 text-xs sm:text-sm px-3 py-1.5 sm:py-2 h-8 sm:h-9" 
+                    onClick={(e) => { e.stopPropagation(); navigate('/dashboard/triage'); }}
+                  >
+                    {t('triage', 'Triage')}
+                  </Button>
+                  <Button 
+                    variant="danger" 
+                    className="flex-1 sm:flex-initial md:flex-1 text-xs sm:text-sm px-3 py-1.5 sm:py-2 h-8 sm:h-9" 
+                    onClick={(e) => handleDeleteClick(e, c.id || c.complaintId)}
+                  >
                     {t('delete', 'Delete')}
                   </Button>
                 </div>
@@ -284,11 +332,26 @@ export function Complaints() {
           </Card>
         ))}
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-gray-500 text-sm sm:text-base bg-white rounded-xl border border-gray-200">
+          <div className="text-center py-12 text-gray-500 text-sm sm:text-base bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800">
             {t('noRecords', 'No complaints match your filters or search term.')}
           </div>
         )}
       </div>
+
+      {/* Copy Feedback Toast */}
+      {copyToast && (
+        <div className="fixed bottom-5 right-5 z-50 p-3 bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-xl shadow-xl text-xs font-semibold flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
+          <CheckCircle size={15} className="text-emerald-400" />
+          <span>{copyToast}</span>
+        </div>
+      )}
+
+      {/* Route Complaint Modal */}
+      <RouteComplaintModal
+        isOpen={Boolean(complaintToRoute)}
+        complaint={complaintToRoute}
+        onClose={() => setComplaintToRoute(null)}
+      />
     </div>
   );
 }

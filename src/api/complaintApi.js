@@ -5,6 +5,7 @@ export const complaintApi = {
   getById:        (id) => apiClient.get(`/complaints/${id}`),
   create:         (data) => apiClient.post('/complaints', data),
   triage:         (id, data) => apiClient.patch(`/complaints/${id}/triage`, data),
+  escalate:       (id, data) => apiClient.post(`/complaints/${id}/escalate`, data),
   getTriageQueue: (params) => apiClient.get('/triage', { params }),
   delete:         (id) => apiClient.delete(`/complaints/${id}`),
 };
