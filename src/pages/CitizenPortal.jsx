@@ -113,7 +113,7 @@ export function CitizenPortal() {
             <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-lg flex items-center justify-center shadow-sm">
               <Layers className="text-white" size={16} strokeWidth={2.5} />
             </div>
-            <span className="font-bold text-slate-900 dark:text-white text-sm">Nexus AI</span>
+            <span className="font-bold text-slate-900 dark:text-white text-sm">Smart City</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/track" className="text-sm text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors hidden sm:block">
@@ -431,7 +431,7 @@ export function CitizenPortal() {
           <span className="flex items-center gap-1"><Shield size={10} /> Secure & Anonymous</span>
           <span className="flex items-center gap-1"><Phone size={10} /> 24/7 Available</span>
         </div>
-        Nexus AI · Bhopal Municipal Corporation · All data processed securely
+        Smart City · Bhopal Municipal Corporation · All data processed securely
       </div>
     </div>
   );

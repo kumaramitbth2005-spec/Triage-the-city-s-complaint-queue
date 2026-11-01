@@ -78,9 +78,61 @@ export function LoginPage({ defaultMode = 'login' }) {
   // 6-digit OTP verification state
   const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
   const [pendingEmail, setPendingEmail] = useState('');
+  const [devOtpCode, setDevOtpCode] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resendLoading, setResendLoading] = useState(false);
   const otpInputRefs = useRef([]);
+
+  // Auto-fill OTP helper
+  const handleAutoFillOtp = (code) => {
+    if (!code) return;
+    const digits = String(code).trim().slice(0, 6).split('');
+    const newDigits = [...otpDigits];
+    digits.forEach((d, i) => { if (i < 6) newDigits[i] = d; });
+    setOtpDigits(newDigits);
+    setErrorMessage('');
+    setTimeout(() => {
+      otpInputRefs.current[Math.min(digits.length, 5)]?.focus();
+    }, 50);
+  };
+
+  // Quick Demo Login helper
+  const handleQuickDemoLogin = async (demoEmail, demoPassword) => {
+    setFormData(prev => ({ ...prev, email: demoEmail, password: demoPassword }));
+    setErrorMessage('');
+    setSuccessMessage('');
+    setLoading(true);
+
+    try {
+      const res = await authApi.login(demoEmail, demoPassword);
+      if (res.data?.success && res.data?.token) {
+        const u = res.data.user;
+        authLogin(res.data.token, u);
+
+        settingsDispatch({
+          type: 'UPDATE_PROFILE',
+          payload: {
+            name: u.name,
+            username: u.username || u.name.toLowerCase().replace(/\s+/g, '_'),
+            email: u.email,
+            role: u.role || 'operator',
+            zone: u.zone || 'Zone 1 - Central',
+            department: u.department || 'Public Works & Sanitation',
+            avatar: u.avatar || ''
+          }
+        });
+
+        setSuccessMessage(`Welcome, ${u.name}! Entering operator desk...`);
+        await Promise.allSettled([fetchComplaints(), fetchNotifications()]);
+        setTimeout(() => navigate(getSafeRedirect(), { replace: true }), 400);
+      }
+    } catch (err) {
+      const msg = err.response?.data?.error?.message || err.response?.data?.message || 'Demo sign-in failed.';
+      setErrorMessage(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Prevent duplicate in-flight submissions (double-click / re-render guard)
   const submittingRef = useRef(false);
@@ -279,8 +331,16 @@ export function LoginPage({ defaultMode = 'login' }) {
       if (code === 'EMAIL_NOT_VERIFIED' || err.response?.data?.requiresVerification) {
         const cleanEmail = formData.email.trim();
         setPendingEmail(cleanEmail);
+        const devOtp = err.response?.data?.devOtp;
+        if (devOtp) {
+          setDevOtpCode(String(devOtp));
+        }
         setMode('verify');
-        setSuccessMessage(`Please enter the 6-digit verification code sent to ${cleanEmail}.`);
+        setSuccessMessage(
+          devOtp
+            ? `Please verify your email. Verification code: ${devOtp}`
+            : `Please enter the 6-digit verification code sent to ${cleanEmail}.`
+        );
         setErrorMessage('');
         setTimeout(() => {
           otpInputRefs.current[0]?.focus();
@@ -337,6 +397,10 @@ export function LoginPage({ defaultMode = 'login' }) {
       if (res.data?.success) {
         setPendingEmail(cleanEmail);
         setOtpDigits(['', '', '', '', '', '']);
+        const devOtp = res.data.devOtp;
+        if (devOtp) {
+          setDevOtpCode(String(devOtp));
+        }
         // Use the cooldown from the server response (defaults to 60s if not provided)
         const secs = res.data.cooldownSeconds ?? 60;
         setResendCooldown(secs);
@@ -351,6 +415,10 @@ export function LoginPage({ defaultMode = 'login' }) {
       const errData = err.response?.data?.error;
       const code = errData?.code;
       const cleanEmail = formData.email.trim();
+      const devOtp = err.response?.data?.devOtp;
+      if (devOtp) {
+        setDevOtpCode(String(devOtp));
+      }
 
       if (code === 'COOLDOWN' || err.response?.data?.requiresVerification) {
         setPendingEmail(cleanEmail);
@@ -496,15 +564,27 @@ export function LoginPage({ defaultMode = 'login' }) {
     try {
       const res = await authApi.resendVerificationCode(pendingEmail);
       if (res.data?.success) {
+        const devOtp = res.data.devOtp;
+        if (devOtp) {
+          setDevOtpCode(String(devOtp));
+        }
         // Use backend-supplied cooldown (or 60s default)
         const secs = res.data.cooldownSeconds ?? 60;
         setResendCooldown(secs);
-        setSuccessMessage('A new verification code has been sent. Check your inbox (and Spam folder).');
+        setSuccessMessage(
+          devOtp
+            ? `New verification code: ${devOtp}`
+            : 'A new verification code has been sent. Check your inbox (and Spam folder).'
+        );
         setOtpDigits(['', '', '', '', '', '']);
         otpInputRefs.current[0]?.focus();
       }
     } catch (err) {
       const errData = err.response?.data?.error;
+      const devOtp = err.response?.data?.devOtp;
+      if (devOtp) {
+        setDevOtpCode(String(devOtp));
+      }
       // If backend says cooldown is still active, parse remaining seconds
       if (errData?.code === 'COOLDOWN' && err.response?.data?.cooldownSeconds) {
         setResendCooldown(err.response.data.cooldownSeconds);
@@ -533,7 +613,7 @@ export function LoginPage({ defaultMode = 'login' }) {
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-xs">
             <Layers size={15} />
           </div>
-          <span className="text-xs font-black tracking-tight text-[#F8FAFC]">Nexus AI</span>
+          <span className="text-xs font-black tracking-tight text-[#F8FAFC]">Smart City</span>
         </div>
       </div>
 
@@ -665,6 +745,31 @@ export function LoginPage({ defaultMode = 'login' }) {
                 </>
               )}
             </button>
+
+            {/* Quick Demo Sign In Shortcuts */}
+            <div className="pt-3 border-t border-[#2A3548]/50 mt-4">
+              <div className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider text-center mb-2.5">
+                ⚡ Quick Demo Access (1-Click Sign In)
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemoLogin('admin@city.gov', 'admin123')}
+                  className="py-2 px-3 rounded-xl bg-[#161F30] hover:bg-[#1D293B] border border-[#2A3548] text-[11px] font-bold text-indigo-300 hover:text-white transition-all text-center flex items-center justify-center gap-1.5"
+                >
+                  <ShieldCheck size={13} className="text-indigo-400" />
+                  <span>Demo Admin</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemoLogin('operator@city.gov', 'operator123')}
+                  className="py-2 px-3 rounded-xl bg-[#161F30] hover:bg-[#1D293B] border border-[#2A3548] text-[11px] font-bold text-emerald-300 hover:text-white transition-all text-center flex items-center justify-center gap-1.5"
+                >
+                  <User size={13} className="text-emerald-400" />
+                  <span>Demo Operator</span>
+                </button>
+              </div>
+            </div>
           </form>
         )}
 
@@ -778,6 +883,23 @@ export function LoginPage({ defaultMode = 'login' }) {
         {mode === 'verify' && (
           <form onSubmit={handleVerifySubmit} className="space-y-5">
             <div>
+              {/* Dev Mode OTP auto-fill banner */}
+              {devOtpCode && (
+                <div className="mb-4 p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs flex items-center justify-between shadow-xs">
+                  <div className="flex items-center gap-2">
+                    <KeyRound size={16} className="text-indigo-400 shrink-0" />
+                    <span>Dev Code: <strong className="font-mono text-white tracking-widest text-sm">{devOtpCode}</strong></span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleAutoFillOtp(devOtpCode)}
+                    className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold transition-all shadow-xs cursor-pointer"
+                  >
+                    Auto-Fill
+                  </button>
+                </div>
+              )}
+
               <label className="block text-center text-xs font-semibold text-[#CBD5E1] mb-3">
                 Enter the 6-digit verification code:
               </label>
@@ -941,7 +1063,7 @@ export function LoginPage({ defaultMode = 'login' }) {
 
       {/* Footer Info */}
       <div className="mt-8 text-center text-[11px] text-[#94A3B8] z-10">
-        Nexus AI Municipal Desk · Protected by JWT and 6-Digit Verification
+        Smart City Municipal Desk · Protected by JWT and 6-Digit Verification
       </div>
     </div>
   );

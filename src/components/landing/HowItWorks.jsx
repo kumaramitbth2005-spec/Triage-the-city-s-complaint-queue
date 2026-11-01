@@ -37,7 +37,7 @@ const WORKFLOW_STEPS = [
 
 export function HowItWorks() {
   return (
-    <section id="workflow" className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-12 bg-slate-100/50 dark:bg-[#0F141D] border-y border-stone-200/80 dark:border-[#303B4D]">
+    <section id="workflow" className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-12 bg-[#060C1E]/50 backdrop-blur-sm border-y border-white/10">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -45,13 +45,13 @@ export function HowItWorks() {
             <Sparkles size={13} />
             <span>Seamless Civic Workflow</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-[#F8FAFC] tracking-tight leading-tight">
-            How Nexus AI Transforms <br className="hidden sm:inline" />
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
+            How Smart City Transforms <br className="hidden sm:inline" />
             <span className="bg-gradient-to-r from-violet-600 via-indigo-500 to-blue-600 dark:from-violet-400 dark:via-indigo-300 dark:to-blue-400 bg-clip-text text-transparent">
               Complaint Resolution
             </span>
           </h2>
-          <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-[#D1D9E6] leading-relaxed">
+          <p className="mt-4 text-base sm:text-lg text-slate-200 leading-relaxed">
             From citizen report to field squad dispatch and verified resolution — automated end-to-end in 3 transparent steps.
           </p>
         </div>
@@ -63,12 +63,12 @@ export function HowItWorks() {
             return (
               <div 
                 key={idx}
-                className="relative rounded-3xl p-7 sm:p-8 bg-white dark:bg-[#151C28] border border-stone-200/80 dark:border-[#303B4D] shadow-xl shadow-stone-900/5 dark:shadow-black/60 flex flex-col justify-between group hover:border-indigo-500/50 transition-all duration-300"
+                className="relative rounded-3xl p-7 sm:p-8 bg-white/10 backdrop-blur-md border border-white/20 shadow-xl shadow-black/40 flex flex-col justify-between group hover:border-indigo-500/50 transition-all duration-300"
               >
                 <div>
                   {/* Step Number & Icon */}
                   <div className="flex items-center justify-between mb-6">
-                    <span className="text-4xl sm:text-5xl font-black text-slate-200 dark:text-slate-700/80 font-mono group-hover:text-indigo-500/30 group-hover:dark:text-indigo-400/50 transition-colors">
+                    <span className="text-4xl sm:text-5xl font-black text-white/20 font-mono group-hover:text-indigo-400/50 transition-colors">
                       {item.step}
                     </span>
                     <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${item.color} text-white flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform`}>
@@ -77,25 +77,25 @@ export function HowItWorks() {
                   </div>
 
                   {/* Title & Subtitle */}
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-[#F8FAFC] mb-1 tracking-tight">
+                  <h3 className="text-xl font-bold text-white mb-1 tracking-tight">
                     {item.title}
                   </h3>
-                  <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-3">
+                  <div className="text-xs font-semibold text-indigo-400 mb-3">
                     {item.subtitle}
                   </div>
 
                   {/* Description */}
-                  <p className="text-xs sm:text-sm text-slate-600 dark:text-[#D1D9E6] leading-relaxed mb-6">
+                  <p className="text-xs sm:text-sm text-slate-200 leading-relaxed mb-6">
                     {item.description}
                   </p>
                 </div>
 
                 {/* Tags Pill Row */}
-                <div className="pt-4 border-t border-stone-200/60 dark:border-[#303B4D] flex flex-wrap gap-1.5">
+                <div className="pt-4 border-t border-white/15 flex flex-wrap gap-1.5">
                   {item.tags.map((tag, tagIdx) => (
                     <span
                       key={tagIdx}
-                      className="text-[10px] font-semibold px-2.5 py-1 rounded-md bg-slate-100 dark:bg-[#1B2535] text-slate-700 dark:text-[#D1D9E6] border border-slate-200/60 dark:border-[#303B4D]"
+                      className="text-[10px] font-semibold px-2.5 py-1 rounded-md bg-white/10 text-slate-200 border border-white/15"
                     >
                       {tag}
                     </span>
@@ -117,7 +117,7 @@ export function HowItWorks() {
           </Link>
           <Link
             to="/track"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white dark:bg-[#151C28] text-slate-800 dark:text-[#F8FAFC] border border-slate-300 dark:border-[#303B4D] text-sm font-semibold hover:bg-slate-50 dark:hover:bg-[#1B2535] transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/15 text-white border border-white/20 text-sm font-semibold hover:bg-white/25 transition-colors"
           >
             <span>Track Existing Ticket</span>
           </Link>

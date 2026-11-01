@@ -105,7 +105,7 @@ app.get('/', (req, res) => {
     <html lang="en">
     <head>
       <meta charset="UTF-8">
-      <title>Nexus AI Backend API</title>
+      <title>Smart City Backend API</title>
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
         .card { background: white; padding: 2.5rem; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 480px; width: 90%; text-align: center; border: 1px solid #e2e8f0; }
@@ -120,7 +120,7 @@ app.get('/', (req, res) => {
     <body>
       <div class="card">
         <div class="badge">● Backend Service Online</div>
-        <h1>Nexus AI Backend API</h1>
+        <h1>Smart City Backend API</h1>
         <p>This is the Render cloud API service for the City Complaint Triage platform. Database status is <strong>${dbStatus}</strong>.</p>
         <a href="https://triage-the-city-s-complaint-queue.vercel.app" class="btn">Open Vercel Frontend →</a>
         <div class="meta">Health Endpoint: <a href="/health" style="color:#6366f1;">/health</a> · API: <a href="/api/complaints" style="color:#6366f1;">/api/complaints</a></div>

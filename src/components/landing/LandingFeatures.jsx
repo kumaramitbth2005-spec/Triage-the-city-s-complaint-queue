@@ -72,7 +72,7 @@ const FEATURES = [
 
 export function LandingFeatures() {
   return (
-    <section id="features" className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-12">
+    <section id="features" className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-12 bg-white/5 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -80,13 +80,13 @@ export function LandingFeatures() {
             <Sparkles size={13} />
             <span>Enterprise Civic Infrastructure</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
             Engineered to Solve City-Scale <br className="hidden sm:inline" />
             <span className="bg-gradient-to-r from-indigo-600 via-violet-500 to-purple-600 bg-clip-text text-transparent">
               Grievance Bottlenecks
             </span>
           </h2>
-          <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
+          <p className="mt-4 text-base sm:text-lg text-slate-200 leading-relaxed">
             Eliminate manual sorting backlogs. Empower municipal operators with autonomous AI routing, instant deduplication, and complete citizen transparency.
           </p>
         </div>
@@ -98,7 +98,7 @@ export function LandingFeatures() {
             return (
               <div
                 key={idx}
-                className={`group rounded-3xl p-6 sm:p-7 bg-white/90 dark:bg-[#151C28] backdrop-blur-xl border border-stone-200/80 dark:border-[#303B4D] shadow-lg shadow-stone-900/5 dark:shadow-black/60 transition-all duration-300 hover:-translate-y-1.5 ${feature.borderGlow} flex flex-col justify-between relative overflow-hidden`}
+                className={`group rounded-3xl p-6 sm:p-7 bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/40 transition-all duration-300 hover:-translate-y-1.5 ${feature.borderGlow} flex flex-col justify-between relative overflow-hidden`}
               >
                 {/* Background Hover Flare */}
                 <div className="absolute -right-12 -top-12 w-32 h-32 bg-indigo-500/10 dark:bg-indigo-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
@@ -109,30 +109,30 @@ export function LandingFeatures() {
                     <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${feature.gradient} text-white flex items-center justify-center shadow-md shadow-indigo-500/20 group-hover:scale-110 transition-transform`}>
                       <Icon size={22} />
                     </div>
-                    <span className="text-[11px] font-bold text-slate-700 dark:text-[#D1D9E6] bg-slate-100 dark:bg-[#1B2535] px-3 py-1 rounded-full border border-slate-200 dark:border-[#303B4D]">
+                    <span className="text-[11px] font-bold text-slate-200 bg-white/15 px-3 py-1 rounded-full border border-white/20">
                       {feature.metric}
                     </span>
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-[#F8FAFC] mb-2.5 tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  <h3 className="text-lg sm:text-xl font-bold text-white mb-2.5 tracking-tight group-hover:text-indigo-300 transition-colors">
                     {feature.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-xs sm:text-sm text-slate-600 dark:text-[#D1D9E6] leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
                     {feature.description}
                   </p>
                 </div>
 
                 {/* Footer Link */}
-                <div className="mt-6 pt-4 border-t border-stone-200/60 dark:border-[#303B4D] flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+                <div className="mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-indigo-400 uppercase tracking-wider">
                     {feature.badge}
                   </span>
                   <Link
                     to={feature.link}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-[#D1D9E6] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-slate-200 group-hover:text-indigo-300 transition-colors"
                   >
                     <span>Explore</span>
                     <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />

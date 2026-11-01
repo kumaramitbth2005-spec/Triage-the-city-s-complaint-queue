@@ -10,7 +10,7 @@ export function PortalShowcase() {
   const [activeTab, setActiveTab] = useState('citizen'); // 'citizen' | 'operator'
 
   return (
-    <section className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-12">
+    <section className="relative py-20 sm:py-28 px-4 sm:px-6 lg:px-12 bg-[#0A1226]/50 backdrop-blur-sm border-t border-white/10">
       <div className="max-w-7xl mx-auto">
         {/* Section Header & Tab Switcher */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
@@ -19,13 +19,13 @@ export function PortalShowcase() {
               <Layers size={13} />
               <span>Unified Dual-Portal Architecture</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
               Tailored for Citizens & City Operators
             </h2>
           </div>
 
           {/* Switcher Tabs */}
-          <div className="bg-slate-100 dark:bg-[#151C28] p-1.5 rounded-2xl border border-slate-200 dark:border-[#303B4D] flex items-center gap-1 self-start md:self-auto">
+          <div className="bg-white/10 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 flex items-center gap-1 self-start md:self-auto">
             <button
               onClick={() => setActiveTab('citizen')}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ${
@@ -53,16 +53,16 @@ export function PortalShowcase() {
 
         {/* Tab Content Display */}
         {activeTab === 'citizen' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-gradient-to-br from-indigo-50/60 via-white to-blue-50/60 dark:from-[#151C28] dark:via-[#151C28] dark:to-[#0F141D] rounded-3xl p-6 sm:p-10 border border-indigo-100 dark:border-[#303B4D] shadow-xl">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white/10 backdrop-blur-md rounded-3xl p-6 sm:p-10 border border-white/20 shadow-xl">
             {/* Left Info */}
             <div className="lg:col-span-6 space-y-6">
               <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
                 <Smartphone size={24} />
               </div>
-              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-[#F8FAFC] tracking-tight">
+              <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                 Empowering Citizens with Zero-Friction Reporting
               </h3>
-              <p className="text-sm sm:text-base text-slate-600 dark:text-[#D1D9E6] leading-relaxed">
+              <p className="text-sm sm:text-base text-slate-200 leading-relaxed">
                 No complex registration or passwords required. Citizens can file a pothole, pipeline burst, or sanitation grievance in under 60 seconds with live photo upload and GPS geotagging.
               </p>
 
@@ -75,7 +75,7 @@ export function PortalShowcase() {
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
-                    <span className="text-xs sm:text-sm text-slate-700 dark:text-[#D1D9E6] font-medium">
+                    <span className="text-xs sm:text-sm text-slate-200 font-medium">
                       {item}
                     </span>
                   </div>
@@ -147,10 +147,10 @@ export function PortalShowcase() {
               <div className="w-12 h-12 rounded-2xl bg-violet-600 text-white flex items-center justify-center shadow-lg shadow-violet-500/20">
                 <ShieldCheck size={24} />
               </div>
-              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-[#F8FAFC] tracking-tight">
+              <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                 High-Velocity AI Workspace for Municipal Teams
               </h3>
-              <p className="text-sm sm:text-base text-slate-600 dark:text-[#D1D9E6] leading-relaxed">
+              <p className="text-sm sm:text-base text-slate-200 leading-relaxed">
                 Supercharge desk officers and ward engineers with automated NLP queue triage, batch duplicate merging, live ward heatmaps, and automatic SLA breach alerts.
               </p>
 
@@ -163,7 +163,7 @@ export function PortalShowcase() {
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
-                    <span className="text-xs sm:text-sm text-slate-700 dark:text-[#D1D9E6] font-medium">
+                    <span className="text-xs sm:text-sm text-slate-200 font-medium">
                       {item}
                     </span>
                   </div>

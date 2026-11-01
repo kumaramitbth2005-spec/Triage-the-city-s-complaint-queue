@@ -1,4 +1,5 @@
 import React from 'react';
+import { SmartCity3DExperience } from '../components/landing/SmartCity3DExperience';
 import { LandingNavbar } from '../components/landing/LandingNavbar';
 import { HeroContent } from '../components/landing/HeroContent';
 import { Background3D } from '../components/landing/Background3D';
@@ -11,48 +12,56 @@ import { LandingFooter } from '../components/landing/LandingFooter';
 
 export function LandingPage() {
   return (
-    <div className="relative w-full min-h-screen overflow-x-hidden bg-slate-50 dark:bg-[#0B0D12] text-slate-900 dark:text-[#F8FAFC] font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-300">
-      {/* Dynamic 3D / Ambient Background */}
-      <Background3D />
+    <div className="relative w-full min-h-screen overflow-x-hidden text-[#F8FAFC] font-sans selection:bg-indigo-500 selection:text-white">
+      {/* 3D Interactive Scroll-Through Smart City Experience
+          The canvas inside is fixed/full-screen — it lives BEHIND everything */}
+      <SmartCity3DExperience />
 
-      {/* Navigation Header */}
-      <div className="relative z-50 w-full">
-        <LandingNavbar />
-      </div>
+      {/* Platform sections rendered ON TOP of the still-running 3D canvas */}
+      <div id="platform-features" className="relative w-full" style={{ zIndex: 10 }}>
 
-      {/* Main Hero & Live Triage Demo Section */}
-      <main className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-12">
-        <HeroContent />
-      </main>
+        {/* Glassy separator + live ticker */}
+        <div className="relative z-20 w-full pt-10 pb-4 bg-[#0A1226]/60 backdrop-blur-sm border-t border-white/10">
+          <LiveActivityTicker />
+        </div>
 
-      {/* Live Real-Time Activity Marquee Ticker */}
-      <div className="relative z-20 w-full my-8 sm:my-12">
-        <LiveActivityTicker />
-      </div>
+        {/* Navigation (shown in platform sections) */}
+        <div className="relative z-50 w-full bg-[#0A1226]/70 backdrop-blur-md border-b border-white/10 shadow-lg">
+          <LandingNavbar />
+        </div>
 
-      {/* 6 Key Architectural Features */}
-      <div className="relative z-10 w-full">
-        <LandingFeatures />
-      </div>
+        {/* Main Hero Content */}
+        <div className="relative z-10 bg-[#0A1226]/50 backdrop-blur-sm">
+          <Background3D />
+          <main className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-12">
+            <HeroContent />
+          </main>
+        </div>
 
-      {/* 3-Step Interactive Civic Workflow */}
-      <div className="relative z-10 w-full">
-        <HowItWorks />
-      </div>
+        {/* 6 Key Architectural Features */}
+        <div className="relative z-10 w-full bg-[#060C1E]/65 backdrop-blur-md">
+          <LandingFeatures />
+        </div>
 
-      {/* Citizen vs Municipal Operator Dual-Portal Perspective */}
-      <div className="relative z-10 w-full">
-        <PortalShowcase />
-      </div>
+        {/* 3-Step Interactive Civic Workflow */}
+        <div className="relative z-10 w-full bg-[#0A1226]/55 backdrop-blur-sm">
+          <HowItWorks />
+        </div>
 
-      {/* Interactive FAQ Section */}
-      <div className="relative z-10 w-full">
-        <LandingFaq />
-      </div>
+        {/* Citizen vs Municipal Operator Dual-Portal Perspective */}
+        <div className="relative z-10 w-full bg-[#060C1E]/65 backdrop-blur-md">
+          <PortalShowcase />
+        </div>
 
-      {/* Conversion Banner & Comprehensive Dark Mode Footer */}
-      <div className="relative z-20 w-full mt-24">
-        <LandingFooter />
+        {/* Interactive FAQ Section */}
+        <div className="relative z-10 w-full bg-[#0A1226]/55 backdrop-blur-sm">
+          <LandingFaq />
+        </div>
+
+        {/* Footer */}
+        <div className="relative z-20 w-full mt-0 bg-[#060C1E]/80 backdrop-blur-lg border-t border-white/10">
+          <LandingFooter />
+        </div>
       </div>
     </div>
   );

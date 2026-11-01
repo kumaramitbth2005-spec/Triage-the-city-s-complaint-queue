@@ -19,7 +19,7 @@
  *     These are classic spam signals that Gmail penalises.
  *   - Subject line no longer embeds the OTP code; it uses a plain, trustworthy
  *     phrase.  OTP-in-subject is a phishing pattern that spam filters flag.
- *   - Sender name is "Nexus AI" (consistent with the app branding) everywhere.
+ *   - Sender name is "Smart City" (consistent with the app branding) everywhere.
  *   - HTML is lightweight, no tracking pixels, no external image resources.
  *   - Plain-text part is always provided alongside HTML.
  *   - The from-address is the verified sender (Gmail account or Resend domain).
@@ -67,7 +67,7 @@ const buildVerificationEmailHtml = ({ otp, expiryMinutes = 10, recipientName = '
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Your Nexus AI verification code</title>
+  <title>Your Smart City verification code</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;color:#1e293b;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9;padding:36px 16px;">
@@ -85,7 +85,7 @@ const buildVerificationEmailHtml = ({ otp, expiryMinutes = 10, recipientName = '
                     🏛️
                   </td>
                   <td style="padding-left:12px;">
-                    <div style="color:#ffffff;font-size:18px;font-weight:800;letter-spacing:-0.3px;">Nexus AI</div>
+                    <div style="color:#ffffff;font-size:18px;font-weight:800;letter-spacing:-0.3px;">Smart City</div>
                     <div style="color:rgba(255,255,255,0.80);font-size:11px;font-weight:500;margin-top:2px;">Municipal Complaint Triage Platform</div>
                   </td>
                 </tr>
@@ -100,7 +100,7 @@ const buildVerificationEmailHtml = ({ otp, expiryMinutes = 10, recipientName = '
                 Hi ${firstName},
               </p>
               <p style="font-size:15px;color:#334155;margin:0 0 24px;line-height:1.6;">
-                We received a request to verify your email address for Nexus AI. Use the code below to complete your account registration.
+                We received a request to verify your email address for Smart City. Use the code below to complete your account registration.
               </p>
 
               <p style="font-size:12px;font-weight:700;color:#64748b;margin:0 0 10px;text-transform:uppercase;letter-spacing:0.05em;">
@@ -121,7 +121,7 @@ const buildVerificationEmailHtml = ({ otp, expiryMinutes = 10, recipientName = '
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#fffbeb;border-radius:10px;border:1px solid #fde68a;margin:0 0 22px;">
                 <tr>
                   <td style="padding:12px 16px;font-size:12px;color:#92400e;line-height:1.5;">
-                    🔒 <strong style="color:#78350f;">Security reminder:</strong> Never share this code with anyone. Nexus AI staff will never ask for your verification code.
+                    🔒 <strong style="color:#78350f;">Security reminder:</strong> Never share this code with anyone. Smart City staff will never ask for your verification code.
                   </td>
                 </tr>
               </table>
@@ -131,7 +131,7 @@ const buildVerificationEmailHtml = ({ otp, expiryMinutes = 10, recipientName = '
               </p>
 
               <p style="font-size:13px;color:#334155;margin:0;font-weight:600;">
-                The Nexus AI Team
+                The Smart City Team
               </p>
             </td>
           </tr>
@@ -141,7 +141,7 @@ const buildVerificationEmailHtml = ({ otp, expiryMinutes = 10, recipientName = '
             <td style="background-color:#f8fafc;padding:16px 32px;border-top:1px solid #e2e8f0;text-align:center;">
               <p style="font-size:11px;color:#94a3b8;margin:0;line-height:1.5;">
                 This is an automated message — please do not reply to this email.<br/>
-                © ${currentYear} Nexus AI · Municipal Complaint Triage Platform
+                © ${currentYear} Smart City · Municipal Complaint Triage Platform
               </p>
             </td>
           </tr>
@@ -163,7 +163,7 @@ const buildVerificationEmailText = ({ otp, expiryMinutes = 10, recipientName = '
   return [
     `Hi ${firstName},`,
     '',
-    'We received a request to verify your email address for Nexus AI.',
+    'We received a request to verify your email address for Smart City.',
     'Use the code below to complete your account registration.',
     '',
     '─────────────────────',
@@ -172,12 +172,12 @@ const buildVerificationEmailText = ({ otp, expiryMinutes = 10, recipientName = '
     '─────────────────────',
     '',
     'Security reminder: Never share this code with anyone.',
-    'Nexus AI staff will never ask for your verification code.',
+    'Smart City staff will never ask for your verification code.',
     '',
     'If you did not request this code, you can safely ignore this email.',
     'Your account will not be created without it.',
     '',
-    '— The Nexus AI Team',
+    '— The Smart City Team',
   ].join('\n');
 };
 
@@ -193,7 +193,7 @@ const getSmtpConfig = () => {
   if (!user || !pass) return null;
 
   const host = (process.env.EMAIL_HOST || 'smtp.gmail.com').trim();
-  // Default port 465 (SSL) — Render free tier and many cloud hosts block 587 (STARTTLS)
+  // Default port 465 (SSL) — reliable on all networks and avoids STARTTLS port 587 ISP blocks
   const port = parseInt(process.env.EMAIL_PORT || '465', 10);
   const secure = port === 465 || process.env.EMAIL_SECURE === 'true';
 
@@ -202,10 +202,23 @@ const getSmtpConfig = () => {
 
 /**
  * Build a fresh nodemailer transporter.
- * Not cached intentionally — caching prevents the port-465 auto-fallback.
+ * Uses service: 'gmail' for Gmail accounts for maximum reliability and direct SSL.
  */
-const buildTransporter = ({ host, port, secure, user, pass }) =>
-  nodemailer.createTransport({
+const buildTransporter = ({ host, port, secure, user, pass }) => {
+  const isGmail = host === 'smtp.gmail.com' || user.toLowerCase().endsWith('@gmail.com');
+
+  if (isGmail) {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user, pass },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 12000,
+      tls: { rejectUnauthorized: false }
+    });
+  }
+
+  return nodemailer.createTransport({
     host,
     port,
     secure,
@@ -215,44 +228,50 @@ const buildTransporter = ({ host, port, secure, user, pass }) =>
     socketTimeout: 12000,
     tls: { rejectUnauthorized: false }
   });
+};
 
 /**
  * Send via SMTP.
- * Attempts the configured port first, then auto-retries on port 465 SSL if needed.
+ * Attempts primary connection first, then retries on port 465 SSL if needed.
  */
 const sendViaSmtp = async ({ to, otp, expiryMinutes, recipientName }) => {
   const config = getSmtpConfig();
   if (!config) throw new Error('SMTP credentials are not configured.');
 
-  const fromName = process.env.EMAIL_FROM_NAME || 'Nexus AI';
+  const fromName = process.env.EMAIL_FROM_NAME || 'Smart City';
   const mailOptions = {
     from: `"${fromName}" <${config.user}>`,
     to,
-    subject: 'Your Nexus AI verification code',
+    subject: 'Your Smart City verification code',
     html: buildVerificationEmailHtml({ otp, expiryMinutes, recipientName }),
     text: buildVerificationEmailText({ otp, expiryMinutes, recipientName }),
-    // NOTE: Do NOT add X-Priority / Importance / X-MSMail-Priority headers.
-    // These are classic spam triggers and actively hurt Gmail inbox placement.
   };
 
-  // Attempt 1: configured port
+  // Attempt 1: primary transporter
   try {
     const t = buildTransporter(config);
     const info = await t.sendMail(mailOptions);
     return { success: true, provider: 'smtp', messageId: info.messageId };
   } catch (primaryErr) {
-    console.warn(`⚠️  SMTP port ${config.port} failed: ${primaryErr.message}`);
+    console.warn(`⚠️  SMTP attempt failed: ${primaryErr.message}`);
 
-    // Attempt 2: auto-retry on port 465 SSL (works even when 587 is blocked)
-    if (config.port !== 465) {
-      console.log('🔄  Retrying SMTP on port 465 SSL…');
-      const altConfig = { ...config, port: 465, secure: true };
-      const t2 = buildTransporter(altConfig);
-      const info2 = await t2.sendMail(mailOptions);
+    // Attempt 2: auto-retry with explicit port 465 SSL if not tried
+    try {
+      console.log('🔄  Retrying SMTP with direct port 465 SSL…');
+      const altTransporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: { user: config.user, pass: config.pass },
+        connectionTimeout: 10000,
+        tls: { rejectUnauthorized: false }
+      });
+      const info2 = await altTransporter.sendMail(mailOptions);
       return { success: true, provider: 'smtp', messageId: info2.messageId };
+    } catch (retryErr) {
+      console.warn(`⚠️  SMTP 465 retry failed: ${retryErr.message}`);
+      throw primaryErr;
     }
-
-    throw primaryErr;
   }
 };
 
@@ -263,11 +282,11 @@ const sendViaBrevo = async ({ to, otp, expiryMinutes, recipientName }) => {
   const apiKey = (process.env.BREVO_API_KEY || '').trim();
   if (!apiKey) throw new Error('BREVO_API_KEY is not configured.');
 
-  const fromName = process.env.EMAIL_FROM_NAME || 'Nexus AI';
+  const fromName = process.env.EMAIL_FROM_NAME || 'Smart City';
   const fromEmail = (
     process.env.BREVO_SENDER_EMAIL ||
     process.env.EMAIL_USER ||
-    'no-reply@nexusai.app'
+    'no-reply@smartcity.app'
   ).trim();
 
   const res = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -280,7 +299,7 @@ const sendViaBrevo = async ({ to, otp, expiryMinutes, recipientName }) => {
     body: JSON.stringify({
       sender: { name: fromName, email: fromEmail },
       to: [{ email: to }],
-      subject: 'Your Nexus AI verification code',
+      subject: 'Your Smart City verification code',
       htmlContent: buildVerificationEmailHtml({ otp, expiryMinutes, recipientName }),
       textContent: buildVerificationEmailText({ otp, expiryMinutes, recipientName }),
     }),
@@ -303,21 +322,18 @@ const sendViaResend = async ({ to, otp, expiryMinutes, recipientName }) => {
 
   const resend = new Resend(apiKey);
 
-  // RESEND_FROM_EMAIL should be set after domain verification at resend.com/domains.
-  // Without a verified domain, Resend only delivers to the account-owner email.
   const senderEmail = (
     process.env.RESEND_FROM_EMAIL ||
     process.env.EMAIL_FROM ||
-    'Nexus AI <onboarding@resend.dev>'
+    'Smart City <onboarding@resend.dev>'
   ).trim();
 
   const sendResult = await resend.emails.send({
     from: senderEmail,
     to: [to],
-    subject: 'Your Nexus AI verification code',
+    subject: 'Your Smart City verification code',
     html: buildVerificationEmailHtml({ otp, expiryMinutes, recipientName }),
     text: buildVerificationEmailText({ otp, expiryMinutes, recipientName }),
-    // No spam-trigger headers added here intentionally
   });
 
   const { data, error } = sendResult || {};
@@ -352,16 +368,9 @@ const sendViaResend = async ({ to, otp, expiryMinutes, recipientName }) => {
 /**
  * Send a verification OTP email to the given recipient.
  *
- * Provider priority (optimised for Render free tier):
- *   1. Resend API  — HTTPS 443, works on Render free tier
- *   2. Gmail SMTP  — works locally and on paid cloud hosts
- *   3. Brevo API   — HTTPS 443, works on Render free tier
- *
- * @param {object} opts
- * @param {string} opts.to              Recipient email address
- * @param {string} opts.otp             6-digit verification code (NEVER returned to frontend)
- * @param {number} [opts.expiryMinutes] Expiration in minutes (default 10)
- * @param {string} [opts.name]          Recipient name for personalisation
+ * Adaptive Priority:
+ *   - Local / Non-Render: Gmail SMTP first (delivers directly to any recipient without domain restriction)
+ *   - Cloud / Render: Resend API / Brevo first (ports 25/465/587 blocked on Render free tier)
  */
 const sendVerificationOtp = async ({ to, otp, expiryMinutes = 10, name }) => {
   if (!to || !to.includes('@')) {
@@ -373,38 +382,44 @@ const sendVerificationOtp = async ({ to, otp, expiryMinutes = 10, name }) => {
   const smtpConfig = getSmtpConfig();
   const hasResend = !!(process.env.RESEND_API_KEY?.trim());
   const hasBrevo = !!(process.env.BREVO_API_KEY?.trim());
+  const isRender = !!process.env.RENDER;
 
-  console.log(`📨 Dispatching OTP email to: ${maskEmail(cleanRecipient)}`);
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log(`🔐 [VERIFICATION OTP DISPATCH]`);
+  console.log(`📧 Recipient : ${cleanRecipient}`);
+  console.log(`👉 OTP Code  : ${otp}`);
+  console.log(`⏱️  Valid for : ${expiryMinutes} minutes`);
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-  // ── Priority 1: Resend ────────────────────────────────────────────────────
+  // Strategy 1: If not on Render and SMTP is configured, prefer Gmail SMTP
+  // (Gmail SMTP delivers to ANY recipient, whereas Resend onboarding@resend.dev only delivers to account owner)
+  if (!isRender && smtpConfig) {
+    try {
+      console.log(`🚀 [Priority 1: Gmail SMTP] → ${maskEmail(cleanRecipient)}`);
+      const result = await sendViaSmtp({ to: cleanRecipient, otp, expiryMinutes, recipientName });
+      console.log(`✅ Gmail SMTP accepted email. Message ID: ${result.messageId}`);
+      return result;
+    } catch (smtpErr) {
+      console.warn(`⚠️  Gmail SMTP failed: ${smtpErr.message}. Trying API fallbacks...`);
+    }
+  }
+
+  // Strategy 2: Resend API
   if (hasResend) {
     try {
-      console.log(`🚀 Trying Resend API → ${maskEmail(cleanRecipient)}`);
+      console.log(`🚀 [Resend API] → ${maskEmail(cleanRecipient)}`);
       const result = await sendViaResend({ to: cleanRecipient, otp, expiryMinutes, recipientName });
       console.log(`✅ Resend accepted email. Message ID: ${result.messageId}`);
       return result;
     } catch (resendErr) {
       console.warn(`⚠️  Resend failed: ${resendErr.message}`);
-      // RESEND_RECIPIENT_RESTRICTED → fall through to SMTP
     }
   }
 
-  // ── Priority 2: SMTP ──────────────────────────────────────────────────────
-  if (smtpConfig) {
-    try {
-      console.log(`🚀 Trying SMTP (${smtpConfig.host}:${smtpConfig.port}) → ${maskEmail(cleanRecipient)}`);
-      const result = await sendViaSmtp({ to: cleanRecipient, otp, expiryMinutes, recipientName });
-      console.log(`✅ SMTP accepted email. Message ID: ${result.messageId}`);
-      return result;
-    } catch (smtpErr) {
-      console.warn(`⚠️  SMTP failed: ${smtpErr.message}`);
-    }
-  }
-
-  // ── Priority 3: Brevo ─────────────────────────────────────────────────────
+  // Strategy 3: Brevo API (works on cloud hosts with blocked SMTP)
   if (hasBrevo) {
     try {
-      console.log(`🚀 Trying Brevo API → ${maskEmail(cleanRecipient)}`);
+      console.log(`🚀 [Brevo API] → ${maskEmail(cleanRecipient)}`);
       const result = await sendViaBrevo({ to: cleanRecipient, otp, expiryMinutes, recipientName });
       console.log(`✅ Brevo accepted email. Message ID: ${result.messageId}`);
       return result;
@@ -413,9 +428,21 @@ const sendVerificationOtp = async ({ to, otp, expiryMinutes = 10, name }) => {
     }
   }
 
+  // Strategy 4: If on Render but Resend/Brevo failed, attempt SMTP as last resort
+  if (isRender && smtpConfig) {
+    try {
+      console.log(`🚀 [Last Resort: SMTP] → ${maskEmail(cleanRecipient)}`);
+      const result = await sendViaSmtp({ to: cleanRecipient, otp, expiryMinutes, recipientName });
+      console.log(`✅ SMTP accepted email. Message ID: ${result.messageId}`);
+      return result;
+    } catch (smtpErr) {
+      console.warn(`⚠️  SMTP failed: ${smtpErr.message}`);
+    }
+  }
+
   throw new Error(
     'All configured email providers failed. ' +
-    'Please check SMTP (Gmail), Brevo, or Resend credentials in your environment variables.'
+    'Please check your Gmail SMTP App Password or API credentials in backend/.env.'
   );
 };
 

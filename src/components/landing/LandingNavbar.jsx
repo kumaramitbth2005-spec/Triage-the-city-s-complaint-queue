@@ -64,9 +64,9 @@ export function LandingNavbar() {
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-base font-black tracking-tight text-slate-900 dark:text-white leading-tight">Nexus AI</span>
+                <span className="text-base font-black tracking-tight text-slate-900 dark:text-white leading-tight">Smart City</span>
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60">
-                  CIVIC v2.0
+                  CIVIC OS
                 </span>
               </div>
               <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block">City Complaint Triage & SLA System</span>

@@ -58,7 +58,7 @@ export function LandingFooter() {
                   <Layers size={20} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <span className="text-lg font-black tracking-tight text-slate-900 dark:text-[#F8FAFC]">Nexus AI</span>
+                  <span className="text-lg font-black tracking-tight text-slate-900 dark:text-[#F8FAFC]">Smart City</span>
                   <span className="text-[11px] text-slate-500 dark:text-[#94A3B8] block font-medium">
                     Civic Grievance Triage & SLA Engine
                   </span>
@@ -169,7 +169,7 @@ export function LandingFooter() {
         {/* Bottom copyright row */}
         <div className="mt-12 pt-6 border-t border-stone-200/60 dark:border-[#303B4D] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-[#94A3B8]">
           <div>
-            © 2026 Nexus AI Civic Platform · Municipal Public Works & Grievance Redressal
+            © 2026 Smart City Platform · Municipal Public Works & Grievance Redressal
           </div>
           <div className="flex items-center gap-4">
             <span className="hover:text-indigo-600 cursor-pointer">Privacy Policy</span>

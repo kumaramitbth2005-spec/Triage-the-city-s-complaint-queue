@@ -146,7 +146,7 @@ export function TrackComplaint() {
             <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-lg flex items-center justify-center shadow-sm">
               <Layers className="text-white" size={16} strokeWidth={2.5} />
             </div>
-            <span className="font-bold text-slate-900 dark:text-white text-sm">Nexus AI</span>
+            <span className="font-bold text-slate-900 dark:text-white text-sm">Smart City</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/report" className="text-sm text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors hidden sm:block">

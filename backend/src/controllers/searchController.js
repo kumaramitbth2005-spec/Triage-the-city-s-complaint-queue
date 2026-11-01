@@ -24,7 +24,7 @@ const NAVIGATION_ITEMS = [
   { type: 'setting', id: 'SET-security', title: 'Security & Password', description: 'Change password and view active JWT sessions', route: '/dashboard/settings/security', keywords: 'security password change session authentication jwt' },
   { type: 'setting', id: 'SET-accessibility', title: 'Accessibility', description: 'Text size scaling, reduce motion, and high contrast', route: '/dashboard/settings/accessibility', keywords: 'accessibility text size reduce motion high contrast focus font' },
   { type: 'setting', id: 'SET-activity', title: 'Activity History', description: 'Chronological audit logs and authenticated user actions', route: '/dashboard/settings/activity', keywords: 'activity history audit logs recent logins updates actions' },
-  { type: 'setting', id: 'SET-about', title: 'About Nexus AI', description: 'Technical architecture, version info, and developer profile', route: '/dashboard/settings/about', keywords: 'about developer creator amit kumar project tech stack version' },
+  { type: 'setting', id: 'SET-about', title: 'About Smart City', description: 'Technical architecture, version info, and developer profile', route: '/dashboard/settings/about', keywords: 'about developer creator amit kumar project tech stack version' },
 ];
 
 // GET /api/search?q=&page=1&limit=10

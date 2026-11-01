@@ -32,6 +32,13 @@ server.on('error', (err) => {
   try {
     await connectDB();
     
+    // Ensure demo accounts are verified so users can immediately log in
+    const User = require('./src/models/User');
+    await User.updateMany(
+      { email: { $in: ['admin@city.gov', 'operator@city.gov'] } },
+      { $set: { emailVerified: true, emailVerifiedAt: new Date() } }
+    );
+
     // Check if database needs seeding
     const Complaint = require('./src/models/Complaint');
     const complaintCount = await Complaint.countDocuments();

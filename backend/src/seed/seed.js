@@ -31,8 +31,8 @@ async function seedDatabase(options = { disconnect: true }) {
   const operatorHash = await bcrypt.hash('operator123', salt);
 
   const [admin, operator] = await User.insertMany([
-    { name: 'Admin User', email: 'admin@city.gov', passwordHash: adminHash, role: 'admin', zone: 'Zone 1', department: 'General' },
-    { name: 'Operator One', email: 'operator@city.gov', passwordHash: operatorHash, role: 'operator', zone: 'Zone 2', department: 'Sanitation' }
+    { name: 'Admin User', email: 'admin@city.gov', passwordHash: adminHash, role: 'admin', zone: 'Zone 1', department: 'General', emailVerified: true, emailVerifiedAt: new Date() },
+    { name: 'Operator One', email: 'operator@city.gov', passwordHash: operatorHash, role: 'operator', zone: 'Zone 2', department: 'Sanitation', emailVerified: true, emailVerifiedAt: new Date() }
   ]);
   console.log('Users seeded');
 

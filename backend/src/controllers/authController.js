@@ -100,6 +100,7 @@ exports.sendVerificationCode = async (req, res, next) => {
 
     // Dispatch email — only report success after the provider accepts it
     let emailResult;
+    let devOtp;
     try {
       emailResult = await sendVerificationOtp({
         to: cleanEmail,
@@ -109,20 +110,28 @@ exports.sendVerificationCode = async (req, res, next) => {
       });
     } catch (emailErr) {
       console.error('Email dispatch error:', emailErr.message);
-      return res.status(503).json({
-        success: false,
-        error: { code: 'EMAIL_SERVICE_ERROR', message: getEmailErrorMessage(emailErr) }
-      });
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`⚠️ Continuing with dev/console OTP for ${cleanEmail}`);
+        devOtp = otp;
+      } else {
+        return res.status(503).json({
+          success: false,
+          error: { code: 'EMAIL_SERVICE_ERROR', message: getEmailErrorMessage(emailErr) }
+        });
+      }
     }
 
-    console.log(`📨 Verification code dispatched to ${maskEmail(cleanEmail)} via ${emailResult?.provider}`);
+    console.log(`📨 Verification code dispatched to ${maskEmail(cleanEmail)} via ${emailResult?.provider || 'local-dev'}`);
 
     return res.status(200).json({
       success: true,
       requiresVerification: true,
       email: cleanEmail,
+      devOtp: process.env.NODE_ENV !== 'production' ? otp : undefined,
       cooldownSeconds: OTP_RESEND_COOLDOWN_SECONDS(),
-      message: 'A 6-digit verification code has been sent to your email.'
+      message: devOtp 
+        ? `Verification code generated. In development mode, check your server console or enter: ${otp}`
+        : 'A 6-digit verification code has been sent to your email.'
     });
 
   } catch (err) {
@@ -187,6 +196,7 @@ exports.register = async (req, res, next) => {
       await existing.save();
 
       let emailResult;
+      let devOtp;
       try {
         emailResult = await sendVerificationOtp({
           to: cleanEmail,
@@ -196,17 +206,26 @@ exports.register = async (req, res, next) => {
         });
       } catch (emailErr) {
         console.error('Email error:', emailErr.message);
-        return res.status(503).json({
-          success: false,
-          error: { code: 'EMAIL_SERVICE_ERROR', message: getEmailErrorMessage(emailErr) }
-        });
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(`⚠️ Dev fallback: verification code for ${cleanEmail} is ${otp}`);
+          devOtp = otp;
+        } else {
+          return res.status(503).json({
+            success: false,
+            error: { code: 'EMAIL_SERVICE_ERROR', message: getEmailErrorMessage(emailErr) }
+          });
+        }
       }
 
       return res.status(200).json({
         success: true,
         requiresVerification: true,
         email: cleanEmail,
-        message: 'A new verification code has been sent to your email.'
+        devOtp: process.env.NODE_ENV !== 'production' ? otp : undefined,
+        cooldownSeconds: OTP_RESEND_COOLDOWN_SECONDS(),
+        message: devOtp
+          ? `A new verification code was generated: ${otp} (Email provider notice: check inbox or enter code).`
+          : 'A new verification code has been sent to your email.'
       });
     }
 
@@ -242,6 +261,7 @@ exports.register = async (req, res, next) => {
 
     // Send verification email
     let emailResult;
+    let devOtp;
     try {
       emailResult = await sendVerificationOtp({
         to: cleanEmail,
@@ -251,20 +271,29 @@ exports.register = async (req, res, next) => {
       });
     } catch (emailErr) {
       console.error('Email registration error:', emailErr.message);
-      // Clean up unverified user so they can retry without orphaned data
-      await User.findByIdAndDelete(user._id);
-      await UserSettings.deleteOne({ userId: user._id });
-      return res.status(503).json({
-        success: false,
-        error: { code: 'EMAIL_SERVICE_ERROR', message: getEmailErrorMessage(emailErr) }
-      });
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`⚠️ Dev fallback: Keeping user account alive. OTP for ${cleanEmail} is ${otp}`);
+        devOtp = otp;
+      } else {
+        // Clean up unverified user so they can retry without orphaned data
+        await User.findByIdAndDelete(user._id);
+        await UserSettings.deleteOne({ userId: user._id });
+        return res.status(503).json({
+          success: false,
+          error: { code: 'EMAIL_SERVICE_ERROR', message: getEmailErrorMessage(emailErr) }
+        });
+      }
     }
 
     res.status(201).json({
       success: true,
       requiresVerification: true,
       email: cleanEmail,
-      message: 'Account created! Please check your email for the 6-digit verification code.'
+      devOtp: process.env.NODE_ENV !== 'production' ? otp : undefined,
+      cooldownSeconds: OTP_RESEND_COOLDOWN_SECONDS(),
+      message: devOtp
+        ? `Account created! Verification code is ${otp} (Enter code or check server console).`
+        : 'Account created! Please check your email for the 6-digit verification code.'
     });
 
   } catch (err) {
@@ -476,6 +505,7 @@ exports.resendVerification = async (req, res, next) => {
     await user.save();
 
     let emailResult;
+    let devOtp;
     try {
       emailResult = await sendVerificationOtp({
         to: cleanEmail,
@@ -485,19 +515,28 @@ exports.resendVerification = async (req, res, next) => {
       });
     } catch (emailErr) {
       console.error('Email resend error:', emailErr.message);
-      return res.status(503).json({
-        success: false,
-        error: { code: 'EMAIL_SERVICE_ERROR', message: getEmailErrorMessage(emailErr) }
-      });
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`⚠️ Dev fallback on resend: OTP for ${cleanEmail} is ${otp}`);
+        devOtp = otp;
+      } else {
+        return res.status(503).json({
+          success: false,
+          error: { code: 'EMAIL_SERVICE_ERROR', message: getEmailErrorMessage(emailErr) }
+        });
+      }
     }
 
-    console.log(`🔄 New OTP resent to ${maskEmail(cleanEmail)} via ${emailResult?.provider}`);
+    console.log(`🔄 New OTP resent to ${maskEmail(cleanEmail)} via ${emailResult?.provider || 'local-dev'}`);
 
     res.json({
       success: true,
       requiresVerification: true,
       email: cleanEmail,
-      message: 'A new verification code has been sent to your email.'
+      devOtp: process.env.NODE_ENV !== 'production' ? otp : undefined,
+      cooldownSeconds: OTP_RESEND_COOLDOWN_SECONDS(),
+      message: devOtp
+        ? `A new verification code was generated: ${otp} (Check server console or enter code).`
+        : 'A new verification code has been sent to your email.'
     });
 
   } catch (err) {
@@ -535,13 +574,43 @@ exports.login = async (req, res, next) => {
       });
     }
 
-    // Block login for unverified accounts
+    // Automatically send verification OTP for unverified accounts and prompt for verification
     if (!user.emailVerified) {
+      const otp = generateSecureOtp();
+      const otpHash = await bcrypt.hash(otp, 10);
+      user.verificationOtpHash = otpHash;
+      user.verificationOtpExpiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES() * 60 * 1000);
+      user.verificationOtpAttempts = 0;
+      user.verificationLastSentAt = new Date();
+      await user.save();
+
+      let devOtp;
+      try {
+        await sendVerificationOtp({
+          to: cleanEmail,
+          name: user.name,
+          otp,
+          expiryMinutes: OTP_EXPIRY_MINUTES()
+        });
+      } catch (e) {
+        console.warn(`⚠️ Could not send verification email on login: ${e.message}`);
+        if (process.env.NODE_ENV !== 'production') {
+          devOtp = otp;
+        }
+      }
+
       return res.status(403).json({
         success: false,
-        error: { code: 'EMAIL_NOT_VERIFIED', message: 'Please verify your email before signing in.' },
+        error: { 
+          code: 'EMAIL_NOT_VERIFIED', 
+          message: devOtp 
+            ? `Please verify your email before signing in. Verification code: ${otp}` 
+            : 'Please verify your email before signing in. A 6-digit verification code has been sent to your email.' 
+        },
         requiresVerification: true,
-        email: cleanEmail
+        email: cleanEmail,
+        cooldownSeconds: OTP_RESEND_COOLDOWN_SECONDS(),
+        devOtp: process.env.NODE_ENV !== 'production' ? otp : undefined
       });
     }
 

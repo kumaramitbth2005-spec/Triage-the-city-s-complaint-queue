@@ -42,10 +42,66 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
   // Verification OTP state (6 separate digits)
   const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
   const [pendingEmail, setPendingEmail] = useState('');
+  const [devOtpCode, setDevOtpCode] = useState('');
   const otpInputRefs = useRef([]);
 
   const { dispatch } = useSettings();
   const { fetchComplaints, fetchNotifications } = useAppContext();
+
+  const handleAutoFillOtp = (code) => {
+    if (!code) return;
+    const digits = String(code).trim().slice(0, 6).split('');
+    const newDigits = [...otpDigits];
+    digits.forEach((d, i) => { if (i < 6) newDigits[i] = d; });
+    setOtpDigits(newDigits);
+    setVerifyError('');
+    setTimeout(() => {
+      if (otpInputRefs.current[Math.min(digits.length, 5)]) {
+        otpInputRefs.current[Math.min(digits.length, 5)].focus();
+      }
+    }, 50);
+  };
+
+  const handleQuickDemoLogin = async (demoEmail, demoPassword) => {
+    setFormData(prev => ({ ...prev, email: demoEmail, password: demoPassword }));
+    setLoginError('');
+    setLoginSuccess('');
+    setLoginLoading(true);
+
+    try {
+      const res = await authApi.login(demoEmail, demoPassword);
+      if (res.data?.success && res.data?.token) {
+        localStorage.setItem('auth_token', res.data.token);
+        localStorage.setItem('auth_user', JSON.stringify(res.data.user));
+
+        const u = res.data.user;
+        dispatch({
+          type: 'UPDATE_PROFILE',
+          payload: {
+            name: u.name,
+            username: u.username || u.name.toLowerCase().replace(/\s+/g, '_'),
+            email: u.email,
+            role: u.role || 'operator',
+            zone: u.zone || 'Zone 1 - Central',
+            department: u.department || 'Public Works & Sanitation',
+            avatar: u.avatar || ''
+          }
+        });
+
+        setLoginSuccess(`Signed in as ${u.name}! Entering desk...`);
+        await Promise.all([fetchComplaints(), fetchNotifications()]);
+        setTimeout(() => {
+          onClose();
+          if (onSuccess) onSuccess(u);
+        }, 500);
+      }
+    } catch (err) {
+      const msg = err.response?.data?.error?.message || err.response?.data?.message || 'Demo sign-in failed.';
+      setLoginError(msg);
+    } finally {
+      setLoginLoading(false);
+    }
+  };
 
   const [formData, setFormData] = useState({
     name: '',
@@ -177,8 +233,16 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
       if (code === 'EMAIL_NOT_VERIFIED' || err.response?.data?.requiresVerification) {
         const cleanEmail = formData.email.trim();
         setPendingEmail(cleanEmail);
+        const devOtp = err.response?.data?.devOtp;
+        if (devOtp) {
+          setDevOtpCode(String(devOtp));
+        }
         setMode('verify');
-        setVerifySuccess(`Please enter the 6-digit verification code sent to ${cleanEmail}.`);
+        setVerifySuccess(
+          devOtp
+            ? `Please verify your email. Verification code: ${devOtp}`
+            : `Please enter the 6-digit verification code sent to ${cleanEmail}.`
+        );
         setVerifyError('');
         setTimeout(() => {
           if (otpInputRefs.current[0]) otpInputRefs.current[0].focus();
@@ -227,6 +291,10 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
       if (res.data?.success) {
         setPendingEmail(cleanEmail);
         setOtpDigits(['', '', '', '', '', '']);
+        const devOtp = res.data.devOtp;
+        if (devOtp) {
+          setDevOtpCode(String(devOtp));
+        }
         const secs = res.data.cooldownSeconds || 60;
         setResendCooldown(secs);
         setVerifySuccess(res.data.message || 'Verification code sent to your email!');
@@ -242,6 +310,10 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
       const errData = err.response?.data?.error;
       const code = errData?.code;
       const cleanEmail = formData.email.trim();
+      const devOtp = err.response?.data?.devOtp;
+      if (devOtp) {
+        setDevOtpCode(String(devOtp));
+      }
 
       // If user has an active code or requires verification, immediately route them to the verify screen
       if (code === 'COOLDOWN' || err.response?.data?.requiresVerification) {
@@ -489,7 +561,13 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
     try {
       const res = await authApi.resendVerificationCode(pendingEmail);
       if (res.data?.success) {
-        setResendMessage(res.data.message || 'A new 6-digit verification code has been sent to your email.');
+        const devOtp = res.data.devOtp;
+        if (devOtp) setDevOtpCode(String(devOtp));
+        setResendMessage(
+          devOtp
+            ? `New verification code: ${devOtp}`
+            : (res.data.message || 'A new 6-digit verification code has been sent to your email.')
+        );
         setResendCooldown(60);
         setOtpDigits(['', '', '', '', '', '']);
         if (otpInputRefs.current[0]) {
@@ -497,6 +575,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
         }
       }
     } catch (err) {
+      const devOtp = err.response?.data?.devOtp;
+      if (devOtp) setDevOtpCode(String(devOtp));
       const msg = err.response?.data?.error?.message || err.response?.data?.message || "We couldn't send the verification code. Please try again.";
       setVerifyError(msg);
     } finally {
@@ -725,6 +805,29 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
               {loginLoading && <Loader2 size={16} className="animate-spin" />}
               Sign In
             </Button>
+
+            {/* Quick Demo Logins */}
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 mt-3">
+              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center mb-2">
+                ⚡ Demo Access (Instant 1-Click Sign In)
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemoLogin('admin@city.gov', 'admin123')}
+                  className="py-1.5 px-2.5 rounded-lg border border-indigo-200 dark:border-indigo-900 bg-indigo-50 dark:bg-indigo-950/40 text-[11px] font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 transition-colors"
+                >
+                  🛡️ Demo Admin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemoLogin('operator@city.gov', 'operator123')}
+                  className="py-1.5 px-2.5 rounded-lg border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 transition-colors"
+                >
+                  👷 Demo Operator
+                </button>
+              </div>
+            </div>
           </form>
         )}
 
@@ -899,6 +1002,22 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login', onSuccess })
         {mode === 'verify' && (
           <form onSubmit={handleVerifySubmit} className="space-y-5 mt-4">
             <div className="space-y-2">
+              {devOtpCode && (
+                <div className="mb-3 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs flex items-center justify-between shadow-xs">
+                  <div className="flex items-center gap-2">
+                    <KeyRound size={15} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <span>Dev Code: <strong className="font-mono text-slate-900 dark:text-white tracking-widest text-sm">{devOtpCode}</strong></span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleAutoFillOtp(devOtpCode)}
+                    className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold transition-all shadow-xs cursor-pointer"
+                  >
+                    Auto-Fill
+                  </button>
+                </div>
+              )}
+
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block text-center">
                 Enter 6-Digit Verification Code
               </label>
