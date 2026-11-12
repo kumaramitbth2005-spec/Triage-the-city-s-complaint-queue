@@ -196,38 +196,68 @@ export function LoginPage({ defaultMode = 'login' }) {
     setSocialLoading('google');
 
     try {
+      // Load Google Identity Services if not yet available
+      const waitForGIS = () => new Promise((resolve, reject) => {
+        if (window.google?.accounts?.id) { resolve(window.google); return; }
+        let attempts = 0;
+        const check = setInterval(() => {
+          attempts++;
+          if (window.google?.accounts?.id) { clearInterval(check); resolve(window.google); }
+          else if (attempts > 30) { clearInterval(check); reject(new Error('Google SDK did not load')); }
+        }, 200);
+      });
+
       const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-      if (!clientId) {
-        setSocialNotice(
-          'Google Sign-In setup: Server/Client credentials are not yet configured (missing GOOGLE_CLIENT_ID in backend or VITE_GOOGLE_CLIENT_ID in frontend). See .env.example for configuration instructions.'
-        );
+      if (!clientId || clientId === 'your_google_client_id_here') {
+        setErrorMessage('Google Sign-In is not configured yet. Please add VITE_GOOGLE_CLIENT_ID to your .env file.');
         setSocialLoading(null);
         return;
       }
 
-      if (window.google?.accounts?.id) {
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          callback: async (response) => {
-            if (response.credential) {
-              try {
-                const res = await authApi.googleAuth({ credential: response.credential });
-                if (res.data?.success && res.data?.token) {
-                  await handleSocialSuccess(res.data);
-                }
-              } catch (apiErr) {
-                setErrorMessage(apiErr.response?.data?.error?.message || 'Google authentication failed.');
-              }
-            }
+      const google = await waitForGIS();
+
+      // Initialize GIS with credential callback
+      google.accounts.id.initialize({
+        client_id: clientId,
+        callback: async (response) => {
+          if (!response.credential) {
+            setErrorMessage('Google sign-in was cancelled or failed.');
+            setSocialLoading(null);
+            return;
           }
-        });
-        window.google.accounts.id.prompt();
-      } else {
-        setSocialNotice('Google Identity Services SDK is loading or blocked by your browser.');
-      }
+          try {
+            setSocialLoading('google');
+            const res = await authApi.googleAuth({ credential: response.credential });
+            if (res.data?.success && res.data?.token) {
+              await handleSocialSuccess(res.data);
+            } else {
+              setErrorMessage('Google authentication failed. Please try again.');
+            }
+          } catch (apiErr) {
+            setErrorMessage(apiErr.response?.data?.error?.message || 'Google authentication failed. Please try again.');
+          } finally {
+            setSocialLoading(null);
+          }
+        },
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+
+      // Show the Google One-Tap prompt
+      google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // One-tap was blocked → fall back to popup button
+          google.accounts.id.renderButton(
+            document.getElementById('google-signin-btn-hidden'),
+            { theme: 'outline', size: 'large', type: 'standard' }
+          );
+          document.getElementById('google-signin-btn-hidden')?.querySelector('div[role="button"]')?.click();
+          setSocialLoading(null);
+        }
+      });
+
     } catch (err) {
-      setErrorMessage(err.message || 'An error occurred with Google Sign-In.');
-    } finally {
+      setErrorMessage(err.message || 'Google Sign-In failed. Please try again.');
       setSocialLoading(null);
     }
   };
@@ -239,38 +269,51 @@ export function LoginPage({ defaultMode = 'login' }) {
 
     try {
       const appId = import.meta.env.VITE_FACEBOOK_APP_ID;
-      if (!appId) {
-        setSocialNotice(
-          'Facebook Login setup: Server/Client credentials are not yet configured (missing FACEBOOK_APP_ID in backend or VITE_FACEBOOK_APP_ID in frontend). See .env.example for configuration instructions.'
-        );
+      if (!appId || appId === 'your_facebook_app_id_here') {
+        setErrorMessage('Facebook Login is not configured. Please add VITE_FACEBOOK_APP_ID to your .env file.');
         setSocialLoading(null);
         return;
       }
 
-      if (window.FB) {
-        window.FB.login(async (response) => {
-          if (response.authResponse?.accessToken) {
-            try {
-              const res = await authApi.facebookAuth({
-                accessToken: response.authResponse.accessToken,
-                userID: response.authResponse.userID
-              });
-              if (res.data?.success && res.data?.token) {
-                await handleSocialSuccess(res.data);
-              }
-            } catch (apiErr) {
-              setErrorMessage(apiErr.response?.data?.error?.message || 'Facebook authentication failed.');
-            }
-          } else {
-            setSocialNotice('Facebook sign-in was cancelled.');
+      // Wait for FB SDK to fully load (async CDN load)
+      const waitForFB = () => new Promise((resolve, reject) => {
+        if (window.FB) { resolve(window.FB); return; }
+        let attempts = 0;
+        const check = setInterval(() => {
+          attempts++;
+          if (window.FB) { clearInterval(check); resolve(window.FB); }
+          else if (attempts > 30) {
+            clearInterval(check);
+            reject(new Error('Facebook SDK did not load in time. Please check your connection and try again.'));
           }
-        }, { scope: 'public_profile,email' });
-      } else {
-        setSocialNotice('Facebook Login SDK is loading or blocked by your browser.');
-      }
+        }, 200);
+      });
+
+      const FB = await waitForFB();
+
+      FB.login(async (response) => {
+        if (response.authResponse?.accessToken) {
+          try {
+            const res = await authApi.facebookAuth({
+              accessToken: response.authResponse.accessToken,
+              userID: response.authResponse.userID
+            });
+            if (res.data?.success && res.data?.token) {
+              await handleSocialSuccess(res.data);
+            } else {
+              setErrorMessage('Facebook authentication failed. Please try again.');
+            }
+          } catch (apiErr) {
+            setErrorMessage(apiErr.response?.data?.error?.message || 'Facebook authentication failed. Please try again.');
+          }
+        } else {
+          setSocialNotice('Facebook sign-in was cancelled.');
+        }
+        setSocialLoading(null);
+      }, { scope: 'public_profile,email' });
+
     } catch (err) {
-      setErrorMessage(err.message || 'An error occurred with Facebook Login.');
-    } finally {
+      setErrorMessage(err.message || 'Facebook Sign-In failed. Please try again.');
       setSocialLoading(null);
     }
   };
@@ -1060,6 +1103,9 @@ export function LoginPage({ defaultMode = 'login' }) {
           </div>
         )}
       </div>
+
+      {/* Hidden Google Sign-In button (used as fallback when One-Tap is blocked by browser) */}
+      <div id="google-signin-btn-hidden" style={{ display: 'none' }} aria-hidden="true" />
 
       {/* Footer Info */}
       <div className="mt-8 text-center text-[11px] text-[#94A3B8] z-10">

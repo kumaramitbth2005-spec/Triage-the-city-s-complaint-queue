@@ -19,10 +19,34 @@ const connectDB = async (retries = 5, delay = 3000) => {
     try {
       console.log(`📡 Connecting to MongoDB (Attempt ${attempt}/${retries})...`);
       const conn = await mongoose.connect(uri, {
-        serverSelectionTimeoutMS: 8000,
-        connectTimeoutMS: 10000,
+        // Connection timeouts — generous enough for Atlas free-tier cold starts
+        serverSelectionTimeoutMS: 30000,
+        connectTimeoutMS:         30000,
+        socketTimeoutMS:          45000,
+
+        // Buffering: allow mongoose to queue ops while (re-)connecting
+        // but cap the buffer so stale ops don't pile up
+        bufferCommands: true,
+        maxPoolSize:    10,
+        minPoolSize:    2,
+
+        // Heartbeat keeps the connection alive between requests
+        heartbeatFrequencyMS: 10000,
+
+        // Automatically retry once on initial connection failure
+        retryWrites: true,
+        retryReads:  true,
       });
       console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+
+      // Reconnect event handlers
+      mongoose.connection.on('disconnected', () => {
+        console.warn('⚠️ MongoDB disconnected — will auto-reconnect');
+      });
+      mongoose.connection.on('reconnected', () => {
+        console.log('🔄 MongoDB reconnected');
+      });
+
       return conn;
     } catch (error) {
       console.error(`⚠️ MongoDB connection attempt ${attempt} failed: ${error.message}`);

@@ -12,8 +12,35 @@
     <link rel="apple-touch-icon" href="/icon-192.png">
     <link rel="manifest" href="/manifest.json" />
     <title>Smart City | AI Municipal Complaint Triage Platform</title>
+
+    <!-- Google Identity Services (for "Continue with Google") -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- Facebook JS SDK (for "Continue with Facebook") -->
+    <script>
+      window.fbAsyncInit = function() {
+        const fbAppId = document.getElementById('fb-app-id-meta')?.content;
+        if (fbAppId && fbAppId !== 'your_facebook_app_id_here') {
+          FB.init({
+            appId: fbAppId,
+            cookie: true,
+            xfbml: true,
+            version: 'v20.0'
+          });
+        }
+      };
+      (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = 'https://connect.facebook.net/en_US/sdk.js';
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));
+    </script>
   </head>
   <body>
+    <!-- Facebook App ID passed to FB SDK via meta tag (set by Vite env) -->
+    <meta id="fb-app-id-meta" content="%VITE_FACEBOOK_APP_ID%" />
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>

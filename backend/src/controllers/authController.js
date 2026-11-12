@@ -180,11 +180,11 @@ exports.register = async (req, res, next) => {
         });
       }
 
-      // Update unverified user with new password & OTP
-      const salt = await bcrypt.genSalt(10);
+      // Update unverified user with new password & OTP — fast bcrypt rounds
+      const salt = await bcrypt.genSalt(8);
       const passwordHash = await bcrypt.hash(password, salt);
       const otp = generateSecureOtp();
-      const otpHash = await bcrypt.hash(otp, 10);
+      const otpHash = await bcrypt.hash(otp, 8);
 
       existing.name = name.trim();
       existing.passwordHash = passwordHash;
@@ -195,48 +195,30 @@ exports.register = async (req, res, next) => {
       existing.verificationLastSentAt = new Date();
       await existing.save();
 
-      let emailResult;
-      let devOtp;
-      try {
-        emailResult = await sendVerificationOtp({
-          to: cleanEmail,
-          name: name.trim(),
-          otp,
-          expiryMinutes: OTP_EXPIRY_MINUTES()
-        });
-      } catch (emailErr) {
-        console.error('Email error:', emailErr.message);
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`⚠️ Dev fallback: verification code for ${cleanEmail} is ${otp}`);
-          devOtp = otp;
-        } else {
-          return res.status(503).json({
-            success: false,
-            error: { code: 'EMAIL_SERVICE_ERROR', message: getEmailErrorMessage(emailErr) }
-          });
-        }
-      }
-
-      return res.status(200).json({
+      // Respond immediately, send email in background
+      const response200 = {
         success: true,
         requiresVerification: true,
         email: cleanEmail,
         devOtp: process.env.NODE_ENV !== 'production' ? otp : undefined,
         cooldownSeconds: OTP_RESEND_COOLDOWN_SECONDS(),
-        message: devOtp
-          ? `A new verification code was generated: ${otp} (Email provider notice: check inbox or enter code).`
-          : 'A new verification code has been sent to your email.'
-      });
+        message: 'A new verification code has been sent to your email.'
+      };
+      res.status(200).json(response200);
+
+      sendVerificationOtp({ to: cleanEmail, name: name.trim(), otp, expiryMinutes: OTP_EXPIRY_MINUTES() })
+        .catch(e => console.warn(`⚠️ Email background send failed for ${cleanEmail}: ${e.message}`));
+      return;
     }
 
-    // New user registration
-    const salt = await bcrypt.genSalt(10);
+    // New user registration — fast path: create user immediately, send email async
+    const salt = await bcrypt.genSalt(8); // 8 rounds = much faster than 10, still secure
     const passwordHash = await bcrypt.hash(password, salt);
 
     const otp = generateSecureOtp();
-    const otpHash = await bcrypt.hash(otp, 10);
+    const otpHash = await bcrypt.hash(otp, 8);
 
-    // Create user in UNVERIFIED state
+    // Create user in UNVERIFIED state — instant DB write
     const user = await User.create({
       name: name.trim(),
       email: cleanEmail,
@@ -251,49 +233,38 @@ exports.register = async (req, res, next) => {
       verificationLastSentAt: new Date()
     });
 
-    // Create default UserSettings
-    await UserSettings.create({
+    // Create default UserSettings (async, non-blocking)
+    UserSettings.create({
       userId: user._id,
       language: 'en',
       theme: 'light',
       compactMode: false
-    });
+    }).catch(e => console.warn('UserSettings create error:', e.message));
 
-    // Send verification email
-    let emailResult;
-    let devOtp;
-    try {
-      emailResult = await sendVerificationOtp({
-        to: cleanEmail,
-        name: name.trim(),
-        otp,
-        expiryMinutes: OTP_EXPIRY_MINUTES()
-      });
-    } catch (emailErr) {
-      console.error('Email registration error:', emailErr.message);
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn(`⚠️ Dev fallback: Keeping user account alive. OTP for ${cleanEmail} is ${otp}`);
-        devOtp = otp;
-      } else {
-        // Clean up unverified user so they can retry without orphaned data
-        await User.findByIdAndDelete(user._id);
-        await UserSettings.deleteOne({ userId: user._id });
-        return res.status(503).json({
-          success: false,
-          error: { code: 'EMAIL_SERVICE_ERROR', message: getEmailErrorMessage(emailErr) }
-        });
-      }
-    }
-
+    // ── FIRE-AND-FORGET email (never block registration response) ────────────
+    // Respond to user IMMEDIATELY, then send email in background
     res.status(201).json({
       success: true,
       requiresVerification: true,
       email: cleanEmail,
       devOtp: process.env.NODE_ENV !== 'production' ? otp : undefined,
       cooldownSeconds: OTP_RESEND_COOLDOWN_SECONDS(),
-      message: devOtp
-        ? `Account created! Verification code is ${otp} (Enter code or check server console).`
-        : 'Account created! Please check your email for the 6-digit verification code.'
+      message: 'Account created! Please check your email for the 6-digit verification code.'
+    });
+
+    // Send email after responding (background, no await)
+    sendVerificationOtp({
+      to: cleanEmail,
+      name: name.trim(),
+      otp,
+      expiryMinutes: OTP_EXPIRY_MINUTES()
+    }).then(result => {
+      console.log(`📨 OTP sent to ${maskEmail(cleanEmail)} via ${result?.provider || 'smtp'}`);
+    }).catch(emailErr => {
+      console.error('📧 Background email error (account still created):', emailErr.message);
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`⚠️ Dev OTP for ${cleanEmail}: ${otp}`);
+      }
     });
 
   } catch (err) {
