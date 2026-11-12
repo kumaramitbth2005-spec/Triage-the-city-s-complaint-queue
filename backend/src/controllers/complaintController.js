@@ -1,13 +1,21 @@
+const mongoose = require('mongoose');
 const Complaint = require('../models/Complaint');
 const Activity = require('../models/Activity');
 const User = require('../models/User');
 const { createNotification } = require('../services/notificationService');
 const { createComplaint: createComplaintService } = require('../services/complaintService');
+const resilientStore = require('../services/resilientStore');
 
 // POST /api/complaints
 exports.createComplaint = async (req, res, next) => {
   try {
-    const complaint = await createComplaintService(req.body, req.user?._id);
+    let complaint;
+    try {
+      complaint = await createComplaintService(req.body, req.user?._id);
+    } catch (dbErr) {
+      console.warn('⚠️ createComplaintService failed, saving to resilientStore:', dbErr.message);
+      complaint = resilientStore.createComplaint({ ...req.body, createdBy: req.user?._id });
+    }
     res.status(201).json({ success: true, data: complaint });
   } catch (err) {
     next(err);
@@ -31,15 +39,29 @@ exports.getComplaints = async (req, res, next) => {
     if (req.query.ward) filter['location.ward'] = req.query.ward;
     if (req.query.locality) filter['location.locality'] = new RegExp(req.query.locality.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
 
-    const [data, total] = await Promise.all([
-      Complaint.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-      Complaint.countDocuments(filter)
-    ]);
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const [data, total] = await Promise.all([
+          Complaint.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+          Complaint.countDocuments(filter)
+        ]);
 
+        return res.json({
+          success: true,
+          data,
+          pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+        });
+      } catch (dbErr) {
+        console.warn('⚠️ Complaint.find query failed, using resilientStore:', dbErr.message);
+      }
+    }
+
+    // Resilient store fallback
+    const result = resilientStore.getComplaints(filter, page, limit);
     res.json({
       success: true,
-      data,
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+      data: result.data,
+      pagination: { page, limit, total: result.total, totalPages: result.totalPages }
     });
   } catch (err) {
     next(err);
@@ -49,9 +71,18 @@ exports.getComplaints = async (req, res, next) => {
 // GET /api/complaints/:id
 exports.getComplaintById = async (req, res, next) => {
   try {
-    const complaint = await Complaint.findOne({
-      $or: [{ _id: req.params.id.match(/^[0-9a-fA-F]{24}$/) ? req.params.id : null }, { complaintId: req.params.id }]
-    }).lean();
+    let complaint = null;
+    if (mongoose.connection.readyState === 1) {
+      try {
+        complaint = await Complaint.findOne({
+          $or: [{ _id: req.params.id.match(/^[0-9a-fA-F]{24}$/) ? req.params.id : null }, { complaintId: req.params.id }]
+        }).lean();
+      } catch (e) {}
+    }
+
+    if (!complaint) {
+      complaint = resilientStore.getComplaintById(req.params.id);
+    }
 
     if (!complaint) {
       return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Complaint not found' } });

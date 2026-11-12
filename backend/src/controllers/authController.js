@@ -18,16 +18,54 @@ const crypto = require('crypto');
 const axios = require('axios');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const UserSettings = require('../models/UserSettings');
 const Activity = require('../models/Activity');
 const { createNotification } = require('../services/notificationService');
 const { sendVerificationOtp, maskEmail } = require('../services/emailService');
+const resilientStore = require('../services/resilientStore');
 
 const JWT_SECRET = () => process.env.JWT_SECRET || 'supersecretjwtkey_change_in_production';
 const OTP_EXPIRY_MINUTES = () => parseInt(process.env.OTP_EXPIRY_MINUTES || '10', 10);
 const OTP_RESEND_COOLDOWN_SECONDS = () => parseInt(process.env.OTP_RESEND_COOLDOWN_SECONDS || '60', 10);
 const MAX_OTP_ATTEMPTS = 5;
+
+// Resilient DB helpers: never wait more than 2s and fall back immediately to resilientStore
+const findUserSafe = async (query) => {
+  if (mongoose.connection.readyState === 1) {
+    try {
+      const user = await Promise.race([
+        User.findOne(query),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2000))
+      ]);
+      if (user) return user;
+    } catch (err) {
+      console.warn('⚠️ Mongoose findUser failed/timed out, using resilient fallback:', err.message);
+    }
+  }
+  return resilientStore.findUser(query);
+};
+
+const createUserSafe = async (data) => {
+  let user = null;
+  if (mongoose.connection.readyState === 1) {
+    try {
+      user = await Promise.race([
+        User.create(data),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 2000))
+      ]);
+    } catch (err) {
+      console.warn('⚠️ Mongoose createUser failed/timed out, using resilient fallback:', err.message);
+    }
+  }
+  if (!user) {
+    user = resilientStore.createUser(data);
+  } else {
+    try { resilientStore.createUser({ ...data, _id: user._id }); } catch (e) {}
+  }
+  return user;
+};
 
 // Generate JWT token
 const generateToken = (id) => {
@@ -157,8 +195,8 @@ exports.register = async (req, res, next) => {
 
     const cleanEmail = email.toLowerCase().trim();
 
-    // Check if user already exists
-    const existing = await User.findOne({ email: cleanEmail });
+    // Check if user already exists (safe & resilient)
+    const existing = await findUserSafe({ email: cleanEmail });
     if (existing) {
       if (existing.emailVerified) {
         return res.status(400).json({
@@ -218,8 +256,8 @@ exports.register = async (req, res, next) => {
     const otp = generateSecureOtp();
     const otpHash = await bcrypt.hash(otp, 8);
 
-    // Create user in UNVERIFIED state — instant DB write
-    const user = await User.create({
+    // Create user in UNVERIFIED state (safe & resilient)
+    const user = await createUserSafe({
       name: name.trim(),
       email: cleanEmail,
       passwordHash,
@@ -233,13 +271,15 @@ exports.register = async (req, res, next) => {
       verificationLastSentAt: new Date()
     });
 
-    // Create default UserSettings (async, non-blocking)
-    UserSettings.create({
-      userId: user._id,
-      language: 'en',
-      theme: 'light',
-      compactMode: false
-    }).catch(e => console.warn('UserSettings create error:', e.message));
+    // Create default UserSettings (if DB is connected)
+    if (mongoose.connection.readyState === 1) {
+      UserSettings.create({
+        userId: user._id,
+        language: 'en',
+        theme: 'light',
+        compactMode: false
+      }).catch(e => console.warn('UserSettings create error:', e.message));
+    }
 
     // ── FIRE-AND-FORGET email (never block registration response) ────────────
     // Respond to user IMMEDIATELY, then send email in background
@@ -293,7 +333,7 @@ exports.verifyEmail = async (req, res, next) => {
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const user = await User.findOne({ email: cleanEmail });
+    const user = await findUserSafe({ email: cleanEmail });
 
     if (!user) {
       return res.status(404).json({
@@ -380,21 +420,21 @@ exports.verifyEmail = async (req, res, next) => {
     user.lastLogin = new Date();
     await user.save();
 
-    // Log Activity
-    await Activity.create({
+    // Log Activity (non-blocking)
+    Activity.create({
       userId: user._id,
       action: 'LOGIN',
       details: { method: 'email_verified' }
-    });
+    }).catch(() => {});
 
-    // Create system notification
-    await createNotification({
+    // Create system notification (non-blocking)
+    createNotification({
       userId: user._id,
       type: 'SYSTEM',
       title: 'Email Verified',
       message: 'Your email address was successfully verified. Your account is now fully active.',
       route: '/dashboard/settings/profile'
-    });
+    }).catch(() => {});
 
     const token = generateToken(user._id);
 
@@ -437,7 +477,7 @@ exports.resendVerification = async (req, res, next) => {
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const user = await User.findOne({ email: cleanEmail });
+    const user = await findUserSafe({ email: cleanEmail });
 
     if (!user) {
       // Return safe success message to prevent user enumeration
@@ -528,7 +568,7 @@ exports.login = async (req, res, next) => {
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const user = await User.findOne({ email: cleanEmail });
+    const user = await findUserSafe({ email: cleanEmail });
 
     if (!user) {
       return res.status(401).json({
@@ -589,7 +629,7 @@ exports.login = async (req, res, next) => {
     await user.save();
 
     const token = generateToken(user._id);
-    await Activity.create({ userId: user._id, action: 'LOGIN', details: { method: 'login' } });
+    Activity.create({ userId: user._id, action: 'LOGIN', details: { method: 'login' } }).catch(() => {});
 
     res.json({
       success: true,
@@ -774,8 +814,8 @@ exports.googleAuth = async (req, res, next) => {
 
     const cleanEmail = email.toLowerCase().trim();
 
-    // Find existing user by googleId or verified email
-    let user = await User.findOne({ 
+    // Find existing user by googleId or verified email (safe & resilient)
+    let user = await findUserSafe({ 
       $or: [
         { googleId: sub },
         { email: cleanEmail }
@@ -796,7 +836,7 @@ exports.googleAuth = async (req, res, next) => {
       user.lastLogin = Date.now();
       await user.save();
     } else {
-      user = await User.create({
+      user = await createUserSafe({
         name: name || cleanEmail.split('@')[0],
         username: (cleanEmail.split('@')[0] + '_' + sub.slice(-4)).toLowerCase(),
         email: cleanEmail,
@@ -810,16 +850,16 @@ exports.googleAuth = async (req, res, next) => {
         theme: 'dark'
       });
 
-      await UserSettings.create({
+      UserSettings.create({
         userId: user._id,
         language: 'en',
         theme: 'dark',
         compactMode: false
-      });
+      }).catch(() => {});
     }
 
     const appToken = generateToken(user._id);
-    await Activity.create({ userId: user._id, action: 'LOGIN', details: { method: 'google_oauth' } });
+    Activity.create({ userId: user._id, action: 'LOGIN', details: { method: 'google_oauth' } }).catch(() => {});
 
     res.json({
       success: true,
@@ -898,7 +938,7 @@ exports.facebookAuth = async (req, res, next) => {
       ? email.toLowerCase().trim() 
       : `fb_${fbId}@facebook.user.local`;
 
-    let user = await User.findOne({
+    let user = await findUserSafe({
       $or: [
         { facebookId: fbId },
         ...(email ? [{ email: cleanEmail }] : [])
@@ -919,7 +959,7 @@ exports.facebookAuth = async (req, res, next) => {
       user.lastLogin = Date.now();
       await user.save();
     } else {
-      user = await User.create({
+      user = await createUserSafe({
         name: name || 'Facebook User',
         username: ('fb_' + fbId.slice(-6)).toLowerCase(),
         email: cleanEmail,
@@ -933,16 +973,16 @@ exports.facebookAuth = async (req, res, next) => {
         theme: 'dark'
       });
 
-      await UserSettings.create({
+      UserSettings.create({
         userId: user._id,
         language: 'en',
         theme: 'dark',
         compactMode: false
-      });
+      }).catch(() => {});
     }
 
     const appToken = generateToken(user._id);
-    await Activity.create({ userId: user._id, action: 'LOGIN', details: { method: 'facebook_oauth' } });
+    Activity.create({ userId: user._id, action: 'LOGIN', details: { method: 'facebook_oauth' } }).catch(() => {});
 
     res.json({
       success: true,

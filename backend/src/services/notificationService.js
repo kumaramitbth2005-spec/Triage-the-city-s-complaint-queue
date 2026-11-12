@@ -1,9 +1,13 @@
+const mongoose = require('mongoose');
 const Notification = require('../models/Notification');
 
 /**
  * Create a new notification for a user.
  */
 async function createNotification({ userId, type, title, message, route, complaintId, clusterId }) {
+  if (mongoose.connection.readyState !== 1) {
+    return null;
+  }
   try {
     const notification = await Notification.create({
       userId,

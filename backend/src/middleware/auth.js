@@ -1,5 +1,17 @@
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const User = require('../models/User');
+const resilientStore = require('../services/resilientStore');
+
+const findUserById = async (id) => {
+  if (mongoose.connection.readyState === 1) {
+    try {
+      const u = await User.findById(id).select('-passwordHash -verificationOtpHash');
+      if (u) return u;
+    } catch (e) {}
+  }
+  return resilientStore.findUser({ _id: id });
+};
 
 /**
  * Strict protect: requires a valid JWT token.
@@ -17,7 +29,11 @@ const protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecretjwtkey_change_in_production');
-    req.user = await User.findById(decoded.id).select('-passwordHash -verificationOtpHash');
+    const user = await findUserById(decoded.id);
+    if (!user) {
+      return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'User account not found' } });
+    }
+    req.user = user;
     next();
   } catch (_error) {
     return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Token is invalid or expired' } });
@@ -37,7 +53,7 @@ const optionalProtect = async (req, res, next) => {
   if (token) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecretjwtkey_change_in_production');
-      req.user = await User.findById(decoded.id).select('-passwordHash -verificationOtpHash');
+      req.user = await findUserById(decoded.id);
     } catch (_error) {
       // Invalid token — continue as anonymous
     }

@@ -39,5 +39,6 @@ Pipfile.lock
 *.sw?
 *.local
 scratch/
+backend/data/
 
 

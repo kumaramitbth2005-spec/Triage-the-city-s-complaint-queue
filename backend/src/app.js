@@ -4,6 +4,10 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
 
+// Never buffer queries when disconnected (prevents 10000ms timeouts)
+mongoose.set('bufferCommands', false);
+mongoose.set('bufferTimeoutMS', 2000);
+
 const path = require('path');
 const fs = require('fs');
 
@@ -56,11 +60,12 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Health Checks
 app.get(['/health', '/api/health'], (req, res) => {
   const dbState = mongoose.connection.readyState;
-  const dbStatus = dbState === 1 ? 'connected' : dbState === 2 ? 'connecting' : 'disconnected';
+  const dbStatus = dbState === 1 ? 'connected' : 'resilient-fallback';
   res.json({
     status: 'ok',
     service: 'triage-backend',
     database: dbStatus,
+    mode: dbState === 1 ? 'mongodb-atlas' : 'resilient-offline-store',
     aiService: process.env.AI_SERVICE_URL || 'http://localhost:8000',
     timestamp: new Date().toISOString()
   });

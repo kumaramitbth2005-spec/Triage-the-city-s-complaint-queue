@@ -8,57 +8,93 @@ try {
   // Fallback to system DNS
 }
 
-const connectDB = async (retries = 5, delay = 3000) => {
+// CRITICAL: Disable command buffering so queries NEVER hang for 10,000ms
+// when database is disconnected or cold-starting.
+mongoose.set('bufferCommands', false);
+
+let isConnecting = false;
+let reconnectInterval = null;
+
+const connectDB = async (retries = 2, delay = 2000) => {
   const uri = process.env.MONGODB_URI;
 
   if (!uri) {
-    throw new Error('MONGODB_URI environment variable is not set. Please configure it in your .env file.');
+    console.warn('⚠️ MONGODB_URI is not set. Running in resilient offline mode.');
+    return null;
   }
+
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
+  if (isConnecting) return null;
+  isConnecting = true;
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       console.log(`📡 Connecting to MongoDB (Attempt ${attempt}/${retries})...`);
       const conn = await mongoose.connect(uri, {
-        // Connection timeouts — generous enough for Atlas free-tier cold starts
-        serverSelectionTimeoutMS: 30000,
-        connectTimeoutMS:         30000,
-        socketTimeoutMS:          45000,
-
-        // Buffering: allow mongoose to queue ops while (re-)connecting
-        // but cap the buffer so stale ops don't pile up
-        bufferCommands: true,
-        maxPoolSize:    10,
-        minPoolSize:    2,
-
-        // Heartbeat keeps the connection alive between requests
+        serverSelectionTimeoutMS: 5000,
+        connectTimeoutMS: 5000,
+        socketTimeoutMS: 15000,
+        bufferCommands: false,
+        maxPoolSize: 10,
+        minPoolSize: 2,
         heartbeatFrequencyMS: 10000,
-
-        // Automatically retry once on initial connection failure
         retryWrites: true,
-        retryReads:  true,
+        retryReads: true,
       });
-      console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
 
-      // Reconnect event handlers
+      console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+      isConnecting = false;
+
+      if (reconnectInterval) {
+        clearInterval(reconnectInterval);
+        reconnectInterval = null;
+      }
+
       mongoose.connection.on('disconnected', () => {
-        console.warn('⚠️ MongoDB disconnected — will auto-reconnect');
-      });
-      mongoose.connection.on('reconnected', () => {
-        console.log('🔄 MongoDB reconnected');
+        console.warn('⚠️ MongoDB disconnected — auto-reconnect scheduled');
+        scheduleBackgroundReconnect();
       });
 
       return conn;
     } catch (error) {
-      console.error(`⚠️ MongoDB connection attempt ${attempt} failed: ${error.message}`);
-      if (attempt === retries) {
-        console.error('❌ All MongoDB connection attempts exhausted. Continuing in resilient mode.');
-        throw error;
+      console.warn(`⚠️ MongoDB connection attempt ${attempt} failed: ${error.message}`);
+      if (attempt < retries) {
+        await new Promise(res => setTimeout(res, delay));
       }
-      await new Promise(res => setTimeout(res, delay));
     }
   }
+
+  isConnecting = false;
+  console.warn('⚠️ MongoDB Atlas is not yet reachable. Backend is active in resilient fallback mode (Zero downtime).');
+  scheduleBackgroundReconnect();
+  return null;
 };
 
+function scheduleBackgroundReconnect() {
+  if (reconnectInterval) return;
+  reconnectInterval = setInterval(async () => {
+    if (mongoose.connection.readyState === 1 || isConnecting) return;
+    try {
+      const uri = process.env.MONGODB_URI;
+      if (!uri) return;
+      console.log('🔄 Background MongoDB Atlas reconnect attempt...');
+      await mongoose.connect(uri, {
+        serverSelectionTimeoutMS: 5000,
+        connectTimeoutMS: 5000,
+        bufferCommands: false
+      });
+      console.log('✅ Background MongoDB Atlas reconnection successful!');
+      if (reconnectInterval) {
+        clearInterval(reconnectInterval);
+        reconnectInterval = null;
+      }
+    } catch (err) {
+      // Quiet background failure, keeps retrying
+    }
+  }, 20000);
+}
+
 module.exports = connectDB;
-
-
